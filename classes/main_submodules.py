@@ -9,9 +9,14 @@ from household import Household
 
 
 
-def CreateScenario(hh_table, simulation_depth):
+
+def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, simulation_depth):
     #Initialize society: create household, person, etc dictionaries
-    soc = Society(hh_table)
+    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table)
+ 
+    print soc.hh_dict['g1c1z001'].Hname
+    a = soc.model_table
+    print a[1]
     
     #Start simulation
     

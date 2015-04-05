@@ -48,10 +48,6 @@ class DataAccess(object):
             dict_ins[temp.HID] = temp
     
         return dict_ins
-    
-    # How to go through the houshold dictionary
-    # for hh in household_dict:
-    #    print household_dict[hh].Hname
 
 
     # Write the household table to the Database
