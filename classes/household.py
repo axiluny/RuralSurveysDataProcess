@@ -11,9 +11,6 @@ class Household(object):
     This is the definition of the household class
     '''
     
-    # Define person list in the household
-    pp_list = list()
-    
     
     def __init__(self, record, VarList, db, pp_table_name, pp_table):
         '''
@@ -32,6 +29,9 @@ class Household(object):
         for pp in pp_table:
             if pp.HID == self.HID:
                 pp_temp = Person(pp, self.pp_var_list)
+                
+                # Define person list in the household
+                self.pp_list = []
                 self.pp_list.append(pp_temp)
             
 #         for pp in self.pp_list:
