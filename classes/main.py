@@ -22,7 +22,7 @@ household_table_name = 'HouseholdTable_all_selected'
 person_table_name = 'PersonTable_all_selected'
 
 #rounds of iteration (years)
-simulation_depth=30
+simulation_depth = 1
 
 
 
@@ -53,8 +53,7 @@ person_table = DataAccess.get_table(db, person_table_name)
 # print person_dict['g1c1z002'].Hname
 
 
-main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, simulation_depth)
-
+main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, simulation_depth)
 
 
 

@@ -4,7 +4,7 @@ Created on Mar 25, 2015
 @author: Hongmou
 '''
 import pyodbc
-from household import Household
+# from household import Household
 
 
 class DataAccess(object):
@@ -38,27 +38,30 @@ class DataAccess(object):
         
         return table
 
-    # Make a dictionary for a table by a given name and variables list
-    def make_dict(self, table, var_list):    
+#     # Make a dictionary for a table by a given name and variables list
+#     def make_dict(self, table, var_list):    
+# 
+#         dict_ins = dict()
+#         for record in table:
+#             temp = Household(record, var_list)     # For household objects only for now... 20150401
+#             # Insert the household into the household dictionary indexed by HID
+#             dict_ins[temp.HID] = temp
+#     
+#         return dict_ins
 
-        dict_ins = dict()
-        for record in table:
-            temp = Household(record, var_list)     # For household objects only for now... 20150401
-            # Insert the household into the household dictionary indexed by HID
-            dict_ins[temp.HID] = temp
+
+    def add_stat_results(self):
+        pass
     
-        return dict_ins
-
-
-    # Write the household table to the Database
-    scenario_id = '1'
-    year = '2015'
      
 
-    def SaveResultsToDB(self):
+    def save_results_to_db(self):
         pass
 
 
+#     # Write the household table to the Database
+#     scenario_id = '1'
+#     year = '2015'
 # 
 #     '''
 #         CAUTION: The following part should be capsuled
