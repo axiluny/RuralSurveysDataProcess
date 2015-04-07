@@ -24,23 +24,28 @@ class Household(object):
 
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
         
+        # Define person list in the household
+        self.pp_list = []
         
-        # sth wrong here - why the whole people list is added to every household in the household list?
+        # Add respective persons into the person list of the household
         for pp in pp_table:
             if pp.HID == self.HID:
                 pp_temp = Person(pp, self.pp_var_list)
                 
-                # Define person list in the household
-                self.pp_list = []
                 self.pp_list.append(pp_temp)
             
-#         for pp in self.pp_list:
-#             print pp.Hname
-#             print pp.Pname
-
     
     
-    def step_go(self):
+    def step_go(self, start_year, end_year):
+        
+        # Update current year record
+        if self.StatDate == None:
+            self.StatDate = start_year
+                    
+        else:
+            self.StatDate += 1
+        
+        
         for pp in self.pp_list:
-            Person.step_go(pp)
+            Person.step_go(pp, start_year, end_year)
     

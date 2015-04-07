@@ -9,7 +9,6 @@ with major improvements.
 
 '''
 from data_access import DataAccess
-from household import Household
 from society import Society
 import main_submodules
 
@@ -21,9 +20,12 @@ model_table_name = 'ModelTable'
 household_table_name = 'HouseholdTable_all_selected'
 person_table_name = 'PersonTable_all_selected'
 
-#rounds of iteration (years)
-simulation_depth = 1
+# Rounds of iteration (years)
+simulation_depth = 2
 
+# Starting and ending year of simulation
+start_year = 2015
+end_year = 2030
 
 
 '''
@@ -53,7 +55,7 @@ person_table = DataAccess.get_table(db, person_table_name)
 # print person_dict['g1c1z002'].Hname
 
 
-main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, simulation_depth)
+main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, simulation_depth, start_year, end_year)
 
 
 
