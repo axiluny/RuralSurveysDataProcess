@@ -69,4 +69,5 @@ class Person(object):
             return False
     
     def childbirth(self):
-        pass
+        # can be something like this
+        return person()
