@@ -13,12 +13,12 @@ from society import Society
 import main_submodules
 
 
-dbname = 'C:/20120824/Wolong4Run.mdb'
+dbname = 'C:/WolongRun/WolongDB.mdb'
 dbdriver = '{Microsoft Access Driver (*.mdb)}'
 
 model_table_name = 'ModelTable'
-household_table_name = 'HouseholdTable_all_selected'
-person_table_name = 'PersonTable_all_selected'
+household_table_name = 'HouseholdTable'
+person_table_name = 'PersonTable'
 
 # Rounds of iteration (years)
 simulation_depth = 2

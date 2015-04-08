@@ -21,6 +21,8 @@ class Society(object):
         Constructor
 
         '''
+        self.current_year = 0
+        
         self.model_var_list = DataAccess.get_var_list(db, model_table_name)
         self.model_table = DataAccess.get_table(db, model_table_name)
         # Define and give value to Model variables
@@ -43,19 +45,24 @@ class Society(object):
 
         # Define a list to store all the person instances
         self.pp_list = list()
-        # Define a dictionary to store and index all the household instances
+        # Define a dictionary to store and index all the person instances
         self.pp_dict = dict()
         
-        # Add household instances to hh_list and hh_dict
+        # Add person instances to pp_list and pp_dict
         for pp in pp_table:
             pp_temp = Person(pp, self.pp_var_list)
             self.pp_list.append(pp_temp)
             self.pp_dict[pp_temp.PID] = pp_temp # Indexed by PID
 
         
-    def step_go(self, start_year, end_year):
+    def step_go(self, start_year, end_year, simulation_count):
+        
+        self.current_year = start_year + simulation_count
+        
         for hh in self.hh_list:
-            Household.step_go(hh, start_year, end_year)
+            Household.step_go(hh, self.current_year)
+        
+        
             
     
         

@@ -36,16 +36,12 @@ class Household(object):
             
     
     
-    def step_go(self, start_year, end_year):
+    def step_go(self, current_year):
         
-        # Update current year record
-        if self.StatDate == None:
-            self.StatDate = start_year
-                    
-        else:
-            self.StatDate += 1
+        # Update current time stamp
+        self.StatDate = current_year
         
         
         for pp in self.pp_list:
-            Person.step_go(pp, start_year, end_year)
+            Person.step_go(pp, current_year)
     

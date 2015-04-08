@@ -6,17 +6,17 @@ Created on Mar 26, 2015
 from data_access import DataAccess
 from society import Society
 
-# Define scenario name
+# Define scenario name temporarily
 scenario_name = ''
 
 
-def step_go(database, society_instance, start_year, end_year):
+def step_go(database, society_instance, start_year, end_year, simulation_count):
 
     #Do statistics and add records to stat table in database
 #     add_stat_results(society_instance)
     
     # Do the simulation
-    Society.step_go(society_instance, start_year, end_year)
+    Society.step_go(society_instance, start_year, end_year, simulation_count)
     
     # Then save updated tables in database
     save_results_to_db(database, society_instance)
@@ -30,29 +30,10 @@ def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, p
     
     # Initialize society: create society, household, person, etc instances
     soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table)
-
-    '''
-     Debug Codes
-    ''' 
-#     print soc.hh_dict['g1c1z001'].Hname
-#     a = soc.model_table
-#     print a[1]
-# 
-#     print soc.hh_list[1].Hname
-#     print soc.hh_list[1].pp_var_list[2]
-#     print soc.hh_list[0].pp_list[0].Hname
-#     print soc.hh_list[1].pp_list[1].IdentityID
-#     for hh in soc.hh_list:
-#         print hh.Hname
-#     for pp in soc.hh_list[1].pp_list:
-#         print pp.Pname
-
     
     #Start simulation
-
-
-    for i in range(simulation_depth):
-        step_go(db, soc, start_year, end_year)
+    for simulation_count in range(simulation_depth):
+        step_go(db, soc, start_year, end_year, simulation_count)
 
 
     # Temporarily adding this - signaling the end of run.
