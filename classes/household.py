@@ -25,14 +25,14 @@ class Household(object):
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
         
         # Define person list in the household
-        self.pp_list = []
+        self.own_pp_list = []
         
         # Add respective persons into the person list of the household
         for pp in pp_table:
             if pp.HID == self.HID:
                 pp_temp = Person(pp, self.pp_var_list)
                 
-                self.pp_list.append(pp_temp)
+                self.own_pp_list.append(pp_temp)
             
     
     
@@ -42,6 +42,6 @@ class Household(object):
         self.StatDate = current_year
         
         
-        for pp in self.pp_list:
+        for pp in self.own_pp_list:
             Person.step_go(pp, current_year)
     

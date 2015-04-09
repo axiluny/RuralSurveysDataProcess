@@ -9,7 +9,6 @@ with major improvements.
 
 '''
 from data_access import DataAccess
-from society import Society
 import main_submodules
 
 

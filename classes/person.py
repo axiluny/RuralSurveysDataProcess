@@ -61,7 +61,7 @@ class Person(object):
         pass
     
     def divorce(self):
-        if 1 > 2:#Never let anyone to divorce for now
+        if 1 > 2:#Never let anyone to divorce for now/20150407
             return True
         
         else:
@@ -70,4 +70,7 @@ class Person(object):
     
     def childbirth(self):
         # can be something like this
-        return person()
+        return Person()
+    
+    
+    
