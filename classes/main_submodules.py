@@ -69,7 +69,7 @@ def save_results_to_db(database, society_instance):
     # i.e. in the first round of iteration,
     # Then first create a new table, then insert the records.
     # Otherwise, just find the right table, and then insert the records.
-    if DataAccess.get_table(database, new_hh_table_name) == None: # This is most indecent... see dataaccess for details
+    if DataAccess.get_table(database, new_hh_table_name) == None: 
      
         # Create a new Household table from the variable list of Household Class
         new_household_table_formatter = '('

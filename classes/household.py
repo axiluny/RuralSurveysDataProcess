@@ -4,6 +4,8 @@ Created on Mar 25, 2015
 @author: Hongmou
 '''
 import copy
+import random
+
 from person import Person
 from data_access import DataAccess
 
@@ -51,11 +53,44 @@ class Household(object):
         20150409 Liyan Xu
         '''
         
-        new_hh = copy.deepcopy(self)
-#         new_hh = Household(hh_table, self.hh_var_list, db, pp_table_name, pp_table) # Why this isn't working?
+        # Define returned tuple
+        res = tuple()
+        
+        # Test code for creating a new household
+        if random.random() < 0.1: # Temporarily allow 10% chance to generate new households
+            if len(self.own_pp_list) >= 2: # And only if the current household has more than 2 (include 2) members
+                res = self.create_new_household(self.own_pp_list[1], current_year) # Then create a new household with the second member being head of the new household
+        
+            else: # No new household created
+                res_list = [self]
+                res = (False, res_list) # False indicates no new household created
+        
+        else: # No new household created
+            res_list = [self]
+            res = (False, res_list)
+        
+        return res
+        
 
-        new_hh.Hname = self.Hname + '1'
+    
+    
+    # Create a new household with a given household head
+    def create_new_household(self, Person, current_year):
+        
+        new_hh = copy.deepcopy(self)
+#         new_hh = Household(hh_table, self.hh_var_list, db, pp_table_name, pp_table) # Why this isn't working?        
+        
+        # Reset all properties
+        for var in new_hh.hh_var_list:
+            setattr(new_hh, var[0], None)        
+        
+        # Grant new properties
+        new_hh.Hname = self.Hname + 'n'
+        new_hh.StatDate = current_year
+        
         # Temporarily manipulating HIDs so that the household dictionary gets non-duplicate indices
+        new_hh.HID = self.HID
+        
         if current_year == 2015:
             if new_hh.HID[:1] == 'g':
                 new_hh.HID = 'G' + self.HID[1:]
@@ -66,12 +101,21 @@ class Household(object):
                 new_hh.HID = self.HID[:2] + 'C' + self.HID[3:]
             elif new_hh.HID[:1] == 'w' or new_hh.HID[:1] == 'W':
                 new_hh.HID = self.HID[:2] + 'C' + self.HID[3:]
-         
-         
-#         for pp in new_hh.own_pp_list:
-#             new_hh.own_pp_list.remove(pp)
-         
-        new_hh_list = [self, new_hh]
-        return new_hh_list
-
-    
+        
+        
+        # Clear new_hh.own_pp_list
+        
+        
+        # Add new household head to new_hh.own_pp_list
+        
+        
+        # Lastly, take care of the original household
+#         self.own_pp_list.remove(self.own_pp_list(1)) # Remove that person from the original household        
+        
+        
+        # Return a tuple. True indicates a new household generated. Both original and new household instances are also returned in a list.
+        res_list = [self, new_hh]
+        res = (True, res_list)
+        
+        return res
+ 

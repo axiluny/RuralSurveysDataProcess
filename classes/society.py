@@ -31,14 +31,14 @@ class Society(object):
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
 
 
-        # Define a list to store all the household instances
+        # Define a list to store all the household instances, and a dictionary to store and index all the household instances
         self.hh_list = list()
-        # Define a dictionary to store and index all the household instances
         self.hh_dict = dict()
         
-        
-        self.temp_hh_dict = dict()
-        self.temp_hh_list = list()
+#         # Define household list and dict for current year (after household status update)
+#         self.cur_hh_list = list()        
+#         self.cur_hh_dict = dict()
+
         
         
         # Add household instances to hh_list and hh_dict
@@ -48,9 +48,8 @@ class Society(object):
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
      
 
-        # Define a list to store all the person instances
+        # Define a list to store all the person instances and a dictionary to store and index all the person instances
         self.pp_list = list()
-        # Define a dictionary to store and index all the person instances
         self.pp_dict = dict()
         
         # Add person instances to pp_list and pp_dict
@@ -63,18 +62,19 @@ class Society(object):
     def step_go(self, start_year, end_year, simulation_count, db, hh_table_name, hh_table, pp_table_name, pp_table):
         
         self.current_year = start_year + simulation_count
-        self.temp_hh_list = list()
-        self.temp_hh_dict = dict()
+        self.cur_hh_list = list()
+        self.cur_hh_dict = dict()
         
         for hh in self.hh_list:
-            temp_list = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table)
-            for h in temp_list:
-                self.temp_hh_list.append(h)
-                self.temp_hh_dict[h.HID] = h
+            temp_tup = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table)
+               
+            for h in temp_tup[1]:
+                self.cur_hh_list.append(h)
+                self.cur_hh_dict[h.HID] = h
              
              
-        self.hh_list = self.temp_hh_list            
-        self.hh_dict = self.temp_hh_dict # Indexed by HID        
+        self.hh_list = self.cur_hh_list            
+        self.hh_dict = self.cur_hh_dict # Indexed by HID        
           
     
         

@@ -45,14 +45,6 @@ person_table = DataAccess.get_table(db, person_table_name)
  When "Create Scenario - Run" button is pushed in the app, do the following.
 '''
 
-# household_var_list = DataAccess.get_var_list(db, household_table_name)
-# household_dict = DataAccess.make_dict(db, household_table, household_var_list)
-# person_var_list = DataAccess.get_var_list(db, person_table_name)
-# person_dict = DataAccess.make_dict(db, person_table, person_var_list)
-#  
-# print household_dict['g1c1z001'].Hname
-# print person_dict['g1c1z002'].Hname
-
 
 main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, simulation_depth, start_year, end_year)
 
