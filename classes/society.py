@@ -65,16 +65,26 @@ class Society(object):
         self.cur_hh_list = list()
         self.cur_hh_dict = dict()
         
+        self.cur_pp_list = list()
+        self.cur_pp_dict = dict()
+        
         for hh in self.hh_list:
-            temp_tup = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table)
+            temp_list = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table)
                
-            for h in temp_tup[1]:
+            for h in temp_list:
                 self.cur_hh_list.append(h)
                 self.cur_hh_dict[h.HID] = h
+                
+                for p in h.own_pp_list:
+                    self.cur_pp_list.append(p)
+                    self.cur_pp_dict[p.PID] = p
              
              
         self.hh_list = self.cur_hh_list            
         self.hh_dict = self.cur_hh_dict # Indexed by HID        
+        
+        self.pp_list = self.cur_pp_list
+        self.pp_dict = self.cur_pp_dict # Indexed by PID
           
     
         

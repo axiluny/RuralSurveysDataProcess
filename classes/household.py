@@ -28,16 +28,17 @@ class Household(object):
         self.hh_var_list = VarList
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
         
-        # Define person list in the household
-        self.own_pp_list = []
+        # Define person list and dict of the household
+        self.own_pp_list = list()
+        self.own_pp_dict = dict()
         
-        # Add respective persons into the person list of the household
+        # Add respective persons into the person list and dict of the household
         for pp in pp_table:
             if pp.HID == self.HID:
                 pp_temp = Person(pp, self.pp_var_list)
                 
                 self.own_pp_list.append(pp_temp)
-            
+                self.own_pp_dict[pp_temp.PID] = pp_temp # Indexed by PID            
   
     
     def step_go(self, current_year, db, hh_table_name, hh_table, pp_table_name, pp_table):
@@ -45,29 +46,46 @@ class Household(object):
         # Update current time stamp
         self.StatDate = current_year
         
-#         for pp in self.own_pp_list:
-#             Person.step_go(pp, current_year)
+        # First run population dynamics
+        self.cur_own_pp_list = list()
+        self.cur_own_pp_dict = dict()
 
+        for pp in self.own_pp_list:
+            temp_res = Person.step_go(pp, current_year)
+            
+            for p in temp_res:
+                if p.is_alive == True:
+                    self.cur_own_pp_list.append(p)
+                    self.cur_own_pp_dict[p.PID] = p                
+
+        self.own_pp_list = self.cur_own_pp_list           
+        self.own_pp_dict = self.cur_own_pp_dict # Indexed by PID       
+        
         '''
-        The following codes are for testing adding new household instances, and the save them to the database.
+        The following codes are for testing adding new household instances, or removing some household records, and then save the results to the database.
         20150409 Liyan Xu
         '''
         
-        # Define returned tuple
-        res = tuple()
+        # Define returned list
+        res = list()
         
-        # Test code for creating a new household
-        if random.random() < 0.1: # Temporarily allow 10% chance to generate new households
-            if len(self.own_pp_list) >= 2: # And only if the current household has more than 2 (include 2) members
-                res = self.create_new_household(self.own_pp_list[1], current_year) # Then create a new household with the second member being head of the new household
+        # Test code for removing household records with no members (all died this year)
+        if len(self.own_pp_list) == 0:
+            res = []
+            self.legacy()
         
+        else:
+                
+            # Test code for creating a new household
+            if random.random() < 0.1: # Temporarily allow 10% chance to generate new households
+                if len(self.own_pp_list) >= 2: # And only if the current household has more than 2 (include 2) members
+                    res = self.create_new_household(self.own_pp_list[1], current_year) # Then create a new household with the second member being head of the new household
+             
+                else: # No new household created
+                    res = [self]
+             
             else: # No new household created
-                res_list = [self]
-                res = (False, res_list) # False indicates no new household created
-        
-        else: # No new household created
-            res_list = [self]
-            res = (False, res_list)
+                res = [self]
         
         return res
         
@@ -103,19 +121,30 @@ class Household(object):
                 new_hh.HID = self.HID[:2] + 'C' + self.HID[3:]
         
         
-        # Clear new_hh.own_pp_list
+        # Clear new_hh.own_pp_list and new_hh.own_pp_dict
+        new_hh.own_pp_list = list()
+        new_hh.own_pp_dict = dict()
         
         
         # Add new household head to new_hh.own_pp_list
-        
+        new_hh.own_pp_list.append(Person)
+        new_hh.own_pp_dict[Person.PID] = Person   
         
         # Lastly, take care of the original household
-#         self.own_pp_list.remove(self.own_pp_list(1)) # Remove that person from the original household        
+        self.own_pp_list.remove(Person) # Remove that person from the original household
+        del self.own_pp_dict[Person.PID]
         
         
-        # Return a tuple. True indicates a new household generated. Both original and new household instances are also returned in a list.
-        res_list = [self, new_hh]
-        res = (True, res_list)
+        # Return both original and new household instances in a list
+        res = [self, new_hh]
         
         return res
+    
+    
+    
+    
+    def legacy(self):
+        pass
+    
+    
  
