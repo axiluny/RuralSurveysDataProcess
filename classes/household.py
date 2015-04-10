@@ -52,7 +52,7 @@ class Household(object):
         '''
         
         new_hh = copy.deepcopy(self)
-#         Household(hh_table, self.hh_var_list, db, pp_table_name, pp_table) # Why this isn't working?
+#         new_hh = Household(hh_table, self.hh_var_list, db, pp_table_name, pp_table) # Why this isn't working?
 
         new_hh.Hname = self.Hname + '1'
         # Temporarily manipulating HIDs so that the household dictionary gets non-duplicate indices
