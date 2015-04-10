@@ -36,6 +36,11 @@ class Society(object):
         # Define a dictionary to store and index all the household instances
         self.hh_dict = dict()
         
+        
+        self.temp_hh_dict = dict()
+        self.temp_hh_list = list()
+        
+        
         # Add household instances to hh_list and hh_dict
         for hh in hh_table:
             hh_temp = Household(hh, self.hh_var_list, db, pp_table_name, pp_table)
@@ -55,15 +60,22 @@ class Society(object):
             self.pp_dict[pp_temp.PID] = pp_temp # Indexed by PID
 
         
-    def step_go(self, start_year, end_year, simulation_count):
+    def step_go(self, start_year, end_year, simulation_count, db, hh_table_name, hh_table, pp_table_name, pp_table):
         
         self.current_year = start_year + simulation_count
+        self.temp_hh_list = list()
+        self.temp_hh_dict = dict()
         
         for hh in self.hh_list:
-            Household.step_go(hh, self.current_year)
-        
-        
-            
+            temp_list = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table)
+            for h in temp_list:
+                self.temp_hh_list.append(h)
+                self.temp_hh_dict[h.HID] = h
+             
+             
+        self.hh_list = self.temp_hh_list            
+        self.hh_dict = self.temp_hh_dict # Indexed by HID        
+          
     
         
 

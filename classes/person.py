@@ -15,6 +15,7 @@ class Person(object):
         Constructor of Person
         VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}
         '''
+        
         for var in VarList:
             setattr(self, var[0], record[var[1]])
     
@@ -22,7 +23,7 @@ class Person(object):
         self.is_alive = True
         self.is_college = False
         self.marriage_length = 0 #This value should have been given in the original database!
-    
+            
         
     def step_go(self, current_year):
 

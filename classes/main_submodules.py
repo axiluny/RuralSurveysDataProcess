@@ -10,13 +10,13 @@ from society import Society
 scenario_name = ''
 
 
-def step_go(database, society_instance, start_year, end_year, simulation_count):
+def step_go(database, society_instance, start_year, end_year, simulation_count, hh_table_name, hh_table, pp_table_name, pp_table):
 
     #Do statistics and add records to stat table in database
 #     add_stat_results(society_instance)
     
     # Do the simulation
-    Society.step_go(society_instance, start_year, end_year, simulation_count)
+    Society.step_go(society_instance, start_year, end_year, simulation_count, database, hh_table_name, hh_table, pp_table_name, pp_table)
     
     # Then save updated tables in database
     save_results_to_db(database, society_instance)
@@ -33,7 +33,7 @@ def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, p
     
     #Start simulation
     for simulation_count in range(simulation_depth):
-        step_go(db, soc, start_year, end_year, simulation_count)
+        step_go(db, soc, start_year, end_year, simulation_count, hh_table_name, hh_table, pp_table_name, pp_table)
 
 
     # Temporarily adding this - signaling the end of run.
