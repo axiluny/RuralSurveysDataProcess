@@ -5,9 +5,11 @@ Created on Apr 5, 2015
 '''
 import random
 import copy
-
+from enum import Enum
 
 class Person(object):
+    
+    Education_type = Enum('Education_type','uneducated primary secondary high_school college graduate' )
 
     '''
     This is the definition of the person class
