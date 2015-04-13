@@ -1,7 +1,7 @@
 '''
 Created on Mar 25, 2015
 
-@author: Hongmou Zhang; Liyan Xu
+@author: Liyan Xu; Hongmou Zhang
 
 Adapted and redeveloped from the original WolongABM Visual Basic program;
 by Liyan Xu, Yansheng Yang, Hong You, and Hailong Li;

@@ -1,7 +1,7 @@
 '''
 Created on Apr 5, 2015
 
-@author: xuliy_000
+@author: Liyan Xu; Hongmou Zhang
 '''
 import random
 import copy
@@ -137,4 +137,6 @@ class Person(object):
         res = [self, new_pp]
         return res
              
+    
+
     

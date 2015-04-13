@@ -1,7 +1,7 @@
 '''
 Created on Mar 25, 2015
 
-@author: Hongmou
+@author: Liyan Xu; Hongmou Zhang
 '''
 import pyodbc
 # from household import Household
@@ -23,6 +23,8 @@ class DataAccess(object):
 
 
     # Get a table by a given name in the database; create a pointer to that table
+
+
     def get_table (self, table_name):
         
         try:
@@ -34,7 +36,6 @@ class DataAccess(object):
         
         except pyodbc.ProgrammingError: #This is ridiculously indecent... How to get a None value decently here?
             return None
-
 
         
     # Get the variables list for a table by a given name in the database

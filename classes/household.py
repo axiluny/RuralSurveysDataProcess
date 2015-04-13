@@ -1,7 +1,7 @@
 '''
 Created on Mar 25, 2015
 
-@author: Hongmou
+@author: Liyan Xu; Hongmou Zhang
 '''
 import copy
 import random
@@ -88,11 +88,13 @@ class Household(object):
                 res = [self]
         
         return res
-        
 
-    
-    
+
+
+   
     # Create a new household with a given household head
+
+
     def create_new_household(self, Person, current_year):
         
         new_hh = copy.deepcopy(self)

@@ -1,7 +1,7 @@
 '''
 Created on Mar 26, 2015
 
-@author: xuliy_000
+@author: Liyan Xu; Hongmou Zhang
 '''
 from data_access import DataAccess
 from household import Household
@@ -23,10 +23,18 @@ class Society(object):
         '''
         self.current_year = 0
         
+        # Create a dictionary to store model parameters, indexed by Variable_Name, and contents are Variable_Value      
         self.model_var_list = DataAccess.get_var_list(db, model_table_name)
-        self.model_table = DataAccess.get_table(db, model_table_name)
-        # Define and give value to Model variables
+        self.model_parameters_dict = dict()
         
+        for record in model_table:
+            self.model_parameters_dict[record.Variable_Name] = record.Variable_Value
+
+        # How to cite a model parameter        
+#         print self.model_parameters_dict['SecondarySchoolCostPerKidII']
+           
+        
+        # Get the variable lists for household and person classes 
         self.hh_var_list = DataAccess.get_var_list(db, hh_table_name)
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
 
@@ -34,13 +42,7 @@ class Society(object):
         # Define a list to store all the household instances, and a dictionary to store and index all the household instances
         self.hh_list = list()
         self.hh_dict = dict()
-        
-#         # Define household list and dict for current year (after household status update)
-#         self.cur_hh_list = list()        
-#         self.cur_hh_dict = dict()
-
-        
-        
+                
         # Add household instances to hh_list and hh_dict
         for hh in hh_table:
             hh_temp = Household(hh, self.hh_var_list, db, pp_table_name, pp_table)
