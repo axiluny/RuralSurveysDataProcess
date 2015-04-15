@@ -9,7 +9,7 @@ from enum import Enum
 
 class Person(object):
     
-    Education_type = Enum('Education_type','uneducated primary secondary high_school college graduate' )
+    edu_type = Enum('edu_type','uneducated primary secondary high_school college graduate' )
 
     '''
     This is the definition of the person class
@@ -29,10 +29,11 @@ class Person(object):
         
         self.is_alive = True
         self.is_college = False
+        self.moved_out = False
         self.marriage_length = 0 #This value should have been given in the original database!
             
         
-    def step_go(self, current_year):
+    def step_go(self, current_year, model_parameters):
 
         # Update current time stamp
         self.StatDate = current_year
@@ -45,12 +46,12 @@ class Person(object):
         if self.is_alive == True: # Must be true for now 20150410
             self.grow()
             
-            if self.decease() == True: # If the person dies
+            if self.decease(model_parameters) == True: # If the person dies
                 self.is_alive = False # Mark the one as not alive
                 res = [self]
             
             else:
-                self.get_education()
+                self.educate(model_parameters)
                 
                 if self.is_college == False:  # Temporarily not allow anyone to go to college
                     if self.IsMarry == True:
@@ -67,18 +68,50 @@ class Person(object):
         self.Age += 1        
     
     
-    def decease(self):
+    def decease(self, model_parameters):
         
-        if random.random() < 0.05: # Temporarily let one's chance to die is 5%
+        # Get the mortality rate according to one's age
+        if self.Age <= 5:
+            mortality = float(model_parameters['MortalityBelow5'])
+        elif self.Age >= 6 and self.Age <= 12:
+            mortality = float(model_parameters['Mortality6To12'])
+        elif self.Age >= 13 and self.Age <= 15:
+            mortality = float(model_parameters['Mortality13To15'])
+        elif self.Age >= 16 and self.Age <= 20:
+            mortality = float(model_parameters['Mortality16To20'])
+        elif self.Age >= 21 and self.Age <= 60:
+            mortality = float(model_parameters['Mortality21To60'])
+        elif self.Age >= 61:
+            mortality = float(model_parameters['MortalityAbove61'])
+        
+        # Make the judgment
+        if mortality > random.random():
+            self.is_alive = False
             return True
-        
         else:
             return False
+        
     
-    
-    
-    def get_education(self):
-        pass
+    def educate(self, model_parameters):
+        if self.Age >= 23:
+            pass
+        else:
+            if self.Age <= 6:
+                self.Education = 'uneducated'
+            elif self.Age >= 7 and self.Age <=12:
+                self.Education = 'primary'
+            elif self.Age >= 13 and self.Age <= 15:
+                self.Education = 'secondary'
+            elif self.Age >= 16 and self.Age <= 18:
+                self.Education = 'high_school'
+            elif self.Age >= 19 and self.Age <= 22:
+                if float(model_parameters['CollegeEnrollmentRate']) > random.random():
+                    self.Education = 'college'
+                    self.is_college = True
+                    self.moved_out = True
+                    
+                else:
+                    self.Education = 'high_school'
     
     def marry(self):
         pass

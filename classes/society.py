@@ -61,7 +61,7 @@ class Society(object):
             self.pp_dict[pp_temp.PID] = pp_temp # Indexed by PID
 
         
-    def step_go(self, start_year, end_year, simulation_count, db, hh_table_name, hh_table, pp_table_name, pp_table):
+    def step_go(self, start_year, end_year, simulation_count, db, hh_table_name, hh_table, pp_table_name, pp_table,):
         
         self.current_year = start_year + simulation_count
         self.cur_hh_list = list()
@@ -71,7 +71,7 @@ class Society(object):
         self.cur_pp_dict = dict()
         
         for hh in self.hh_list:
-            temp_list = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table)
+            temp_list = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table, self.model_parameters_dict)
                
             for h in temp_list:
                 self.cur_hh_list.append(h)

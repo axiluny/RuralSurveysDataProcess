@@ -31,9 +31,9 @@ def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, p
     # Initialize society: create society, household, person, etc instances
     soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table)
     
-#     #Start simulation
-#     for simulation_count in range(simulation_depth):
-#         step_go(db, soc, start_year, end_year, simulation_count, hh_table_name, hh_table, pp_table_name, pp_table)
+    #Start simulation
+    for simulation_count in range(simulation_depth):
+        step_go(db, soc, start_year, end_year, simulation_count, hh_table_name, hh_table, pp_table_name, pp_table)
 
 
     # Temporarily adding this - signaling the end of run.

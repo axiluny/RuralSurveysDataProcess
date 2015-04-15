@@ -41,7 +41,7 @@ class Household(object):
                 self.own_pp_dict[pp_temp.PID] = pp_temp # Indexed by PID            
   
     
-    def step_go(self, current_year, db, hh_table_name, hh_table, pp_table_name, pp_table):
+    def step_go(self, current_year, db, hh_table_name, hh_table, pp_table_name, pp_table, model_parameters):
         
         # Update current time stamp
         self.StatDate = current_year
@@ -51,7 +51,7 @@ class Household(object):
         self.cur_own_pp_dict = dict()
 
         for pp in self.own_pp_list:
-            temp_res = Person.step_go(pp, current_year)
+            temp_res = Person.step_go(pp, current_year, model_parameters)
             
             for p in temp_res:
                 if p.is_alive == True:
