@@ -48,17 +48,24 @@ class Society(object):
             hh_temp = Household(hh, self.hh_var_list, db, pp_table_name, pp_table)
             self.hh_list.append(hh_temp)
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
+        
      
-
         # Define a list to store all the person instances and a dictionary to store and index all the person instances
         self.pp_list = list()
         self.pp_dict = dict()
+
         
         # Add person instances to pp_list and pp_dict
         for pp in pp_table:
             pp_temp = Person(pp, self.pp_var_list)
             self.pp_list.append(pp_temp)
             self.pp_dict[pp_temp.PID] = pp_temp # Indexed by PID
+
+#         for hh in self.hh_list:
+#             for pp in hh.own_pp_list:
+#                 self.pp_list.append(pp)
+#                 self.pp_dict[pp.PID] = pp
+
 
         
     def step_go(self, start_year, end_year, simulation_count, db, hh_table_name, hh_table, pp_table_name, pp_table,):
@@ -70,25 +77,40 @@ class Society(object):
         self.cur_pp_list = list()
         self.cur_pp_dict = dict()
         
-        for hh in self.hh_list:
-            temp_list = Household.step_go(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table, self.model_parameters_dict)
+        self.agents_update(db, hh_table_name, hh_table, pp_table_name, pp_table)
+        
+        self.marriage()
+        
+        self.child_birth()
                
+            
+    def agents_update(self, db, hh_table_name, hh_table, pp_table_name, pp_table):
+        # household and people status update; everything except for marriage and child birth
+
+        for hh in self.hh_list:
+            temp_list = Household.annual_update(hh, self.current_year, db, hh_table_name, hh_table, pp_table_name, pp_table, self.model_parameters_dict)
+                
             for h in temp_list:
                 self.cur_hh_list.append(h)
                 self.cur_hh_dict[h.HID] = h
-                
+                 
                 for p in h.own_pp_list:
                     self.cur_pp_list.append(p)
                     self.cur_pp_dict[p.PID] = p
-             
-             
+              
+              
         self.hh_list = self.cur_hh_list            
         self.hh_dict = self.cur_hh_dict # Indexed by HID        
-        
+         
         self.pp_list = self.cur_pp_list
         self.pp_dict = self.cur_pp_dict # Indexed by PID
-          
+    
+    
+    def marriage(self):
+        pass
+    
+    
+    def child_birth(self):
+        pass
     
         
-
-

@@ -41,7 +41,7 @@ class Household(object):
                 self.own_pp_dict[pp_temp.PID] = pp_temp # Indexed by PID            
   
     
-    def step_go(self, current_year, db, hh_table_name, hh_table, pp_table_name, pp_table, model_parameters):
+    def annual_update(self, current_year, db, hh_table_name, hh_table, pp_table_name, pp_table, model_parameters):
         
         # Update current time stamp
         self.StatDate = current_year
@@ -51,7 +51,7 @@ class Household(object):
         self.cur_own_pp_dict = dict()
 
         for pp in self.own_pp_list:
-            temp_res = Person.step_go(pp, current_year, model_parameters)
+            temp_res = Person.annual_update(pp, current_year, model_parameters)
             
             for p in temp_res:
                 if p.is_alive == True:
@@ -60,41 +60,53 @@ class Household(object):
 
         self.own_pp_list = self.cur_own_pp_list           
         self.own_pp_dict = self.cur_own_pp_dict # Indexed by PID       
-        
-        '''
-        The following codes are for testing adding new household instances, or removing some household records, and then save the results to the database.
-        20150409 Liyan Xu
-        '''
-        
+
+
         # Define returned list
         res = list()
-        
-        # Test code for removing household records with no members (all died this year)
+
+        # If all household members die this year, dissolve the household.
         if len(self.own_pp_list) == 0:
             res = []
             self.legacy()
         
         else:
-                
-            # Test code for creating a new household
-            if random.random() < 0.1: # Temporarily allow 10% chance to generate new households
-                if len(self.own_pp_list) >= 2: # And only if the current household has more than 2 (include 2) members
-                    res = self.create_new_household(self.own_pp_list[1], current_year) # Then create a new household with the second member being head of the new household
-             
-                else: # No new household created
-                    res = [self]
-             
-            else: # No new household created
-                res = [self]
+            res = [self]
         
         return res
+        
+#         '''
+#         The following codes are for testing adding new household instances, or removing some household records, and then save the results to the database.
+#         20150409 Liyan Xu
+#         '''
+#         
+#         # Define returned list
+#         res = list()
+#         
+#         # Test code for removing household records with no members (all died this year)
+#         if len(self.own_pp_list) == 0:
+#             res = []
+#             self.legacy()
+#         
+#         else:
+#                 
+#             # Test code for creating a new household
+#             if random.random() < 0.1: # Temporarily allow 10% chance to generate new households
+#                 if len(self.own_pp_list) >= 2: # And only if the current household has more than 2 (include 2) members
+#                     res = self.create_new_household(self.own_pp_list[1], current_year) # Then create a new household with the second member being head of the new household
+#              
+#                 else: # No new household created
+#                     res = [self]
+#              
+#             else: # No new household created
+#                 res = [self]
+#         
+#         return res
 
 
 
    
     # Create a new household with a given household head
-
-
     def create_new_household(self, Person, current_year):
         
         new_hh = copy.deepcopy(self)

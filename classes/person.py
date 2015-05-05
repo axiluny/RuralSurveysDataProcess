@@ -5,11 +5,11 @@ Created on Apr 5, 2015
 '''
 import random
 import copy
-from enum import Enum
+# from enum import Enum
 
 class Person(object):
     
-    edu_type = Enum('edu_type','uneducated primary secondary high_school college graduate' )
+#     edu_type = Enum('edu_type','uneducated primary secondary high_school college graduate' )
 
     '''
     This is the definition of the person class
@@ -30,10 +30,12 @@ class Person(object):
         self.is_alive = True
         self.is_college = False
         self.moved_out = False
+        
+        self.is_married_this_year = False
         self.marriage_length = 0 #This value should have been given in the original database!
             
         
-    def step_go(self, current_year, model_parameters):
+    def annual_update(self, current_year, model_parameters):
 
         # Update current time stamp
         self.StatDate = current_year
@@ -53,12 +55,13 @@ class Person(object):
             else:
                 self.educate(model_parameters)
                 
-                if self.is_college == False:  # Temporarily not allow anyone to go to college
+                if self.is_college == False:  # Going to college indicates moved out and being removed from the system's person list
                     if self.IsMarry == True:
                         if self.divorce() == False: # Temporarily not allow anyone to divorce
-                            res = self.childbirth(current_year)
+                            res = [self]
+#                             res = self.childbirth(current_year)
                     else:
-                        self.marry()
+                        self.marry(model_parameters)
                         res = [self]
         
         return res
@@ -112,9 +115,23 @@ class Person(object):
                     
                 else:
                     self.Education = 'high_school'
-    
-    def marry(self):
-        pass
+
+    # Determine if the person get married this year; if yes, mark self.is_married_this_year as True
+    # The actions of getting married are realized in the Society Class in the next step, when all persons who get married this year are marked
+    def marry(self,model_parameters):
+        if self.Gender == 0: # Female
+            if self.Age >= 20:
+                if self.marriage_rate(model_parameters) > random.random():
+                    self.IsMarry = 1
+                    self.is_married_this_year = True
+                    self.marriage_length = 1
+        else: # Male
+            if self.Age >= 22:
+                if self.marriage_rate(model_parameters) > random.random():
+                    self.IsMarry = 1
+                    self.is_married_this_year = True
+                    self.marriage_length = 1
+
     
     def divorce(self):
         if 1 > 2:#Never let anyone to divorce for now/20150407
@@ -123,6 +140,8 @@ class Person(object):
         else:
             self.marriage_length += 1 
             return False
+
+
     
     def childbirth(self, current_year):
         
@@ -169,7 +188,17 @@ class Person(object):
             
         res = [self, new_pp]
         return res
+
+
              
-    
+    def marriage_rate(self,model_parameters):
+        max_rate = float(model_parameters['MaxMaritalRate'])
+        
+        if self.Age < 30:
+            res = max_rate
+            return res
+        else:
+            res = max_rate/(self.Age - 28)**0.4
+            return res
 
     
