@@ -23,8 +23,6 @@ class DataAccess(object):
 
 
     # Get a table by a given name in the database; create a pointer to that table
-
-
     def get_table (self, table_name):
         
         try:
@@ -51,10 +49,12 @@ class DataAccess(object):
     # Create a new table in the database by an order, which is a "create table from ..." sql order in string format
     def create_table(self, order):
         self.cursor.execute(order)
+
     
     # Insert a new record to a table in the database by an order, similar as "create_table"
     def insert_table(self, order):
         self.cursor.execute(order)
+    
     
     # Commit an activity in the database
     def db_commit(self):

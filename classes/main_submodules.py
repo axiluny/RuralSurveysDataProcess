@@ -39,6 +39,7 @@ def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, p
     # Temporarily adding this - signaling the end of run.
     print 'Success!'
 
+
 # Set up scenario name from UI inputs
 # Should check for already existing names, otherwise later results will be added to the existing table, causing troubles
 def set_up_scenario_name():
@@ -62,7 +63,7 @@ def save_results_to_db(database, society_instance):
     new_land_table_name = scenario_name + '_land'
     
         
-    # Household table
+    # Saving the Household table in the database
  
      
     # If the table with that name does not exist in the database
@@ -122,7 +123,7 @@ def save_results_to_db(database, society_instance):
 
 
 
-    # Person table
+    # Saving the Person table in the database
  
      
     # If the table with that name does not exist in the database

@@ -45,7 +45,7 @@ class Person(object):
 
         
         # Personal demographic dynamics
-        if self.is_alive == True: # Must be true for now 20150410
+        if self.is_alive == True:
             self.grow()
             
             if self.decease(model_parameters) == True: # If the person dies
