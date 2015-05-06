@@ -163,7 +163,7 @@ def save_results_to_db(database, society_instance):
  
      
     else:
-        # Just insert all households into the new table
+        # Just insert all persons into the new table
         # InsertContent = ''
         for PID in society_instance.pp_dict:
             # Make the insert values for this person

@@ -90,48 +90,52 @@ class Society(object):
             
     
     def marriage(self):
-        # Select all person agents who get married this year
-        marry_list = list()
-         
+        
+        # Make matches
         for PID in self.pp_dict:
             if self.pp_dict[PID].is_married_this_year == True:
-                marry_list.append(self.pp_dict[PID])
-         
-         
-        # Make matches
-        for pp in marry_list:
-            if pp.is_married_this_year == True:
-                if pp.Gender == 1: #Male
+                if self.pp_dict[PID].Gender == 1: #Male
                     # Find him a spouse
-                    for sp in marry_list: # sp = spouse
-                        if sp.Gender == 0 and pp.HID != sp.HID and sp.is_married_this_year == True: # spouse must be a female and from a different household
-                            pp.is_married_this_year = False
-                            sp.is_married_this_year = False # Remove the two persons from the "to be married" list
-                             
+                    for SPID in self.pp_dict: # SPID = Spouse PID
+                        if self.pp_dict[SPID].Gender == 0 and self.pp_dict[PID].HID != self.pp_dict[SPID].HID and self.pp_dict[SPID].is_married_this_year == True: # spouse must be a female and from a different household
+                            self.pp_dict[PID].is_married_this_year = False
+                            self.pp_dict[SPID].is_married_this_year = False # Remove the two persons from the "to be married" list
+                              
                             # Assign household affiliation for the new couple
-                            if len(self.hh_dict[pp.HID].own_pp_dict) == 1: # if the male is the only member of his original household
-                                self.add_person_to_household(sp, pp.HID) # then just add his new wife to his household
-                                 
+                            if len(self.hh_dict[self.pp_dict[PID].HID].own_pp_dict) == 1: # if the male is the only member of his original household
+                                self.add_person_to_household(self.pp_dict[SPID], self.pp_dict[PID].HID, 'spouse') # then just add his new wife to his household
+                                break
+                                  
                             else:
-                                self.create_new_household(pp) # Create a new household with the male pp being the household head
-                                self.add_person_to_household(sp, pp.HID) # Add the spouse to the newly created household
-                             
+                                self.create_new_household(self.pp_dict[PID]) # Create a new household with the male pp being the household head
+                                self.add_person_to_household(self.pp_dict[SPID], self.pp_dict[PID].HID, 'spouse') # Add the spouse to the newly created household
+                                break
+
+                     
+                    self.pp_dict[PID].is_married_this_year = False # Failed to find a match
+                              
                 else: #Female
-                    # Find her a spouse
-                    for sp in marry_list:
-                        if sp.Gender == 1 and pp.HID != sp.HID and sp.is_married_this_year == True:
-                            pp.is_married_this_year = False
-                            sp.is_married_this_year = False # Remove the two persons from the "to be married" list
-                             
+                    # Find her a spouse                             
+                    for SPID in self.pp_dict: # SPID = Spouse PID
+                        if self.pp_dict[SPID].Gender == 1 and self.pp_dict[PID].HID != self.pp_dict[SPID].HID and self.pp_dict[SPID].is_married_this_year == True: # spouse must be a female and from a different household
+                            self.pp_dict[PID].is_married_this_year = False
+                            self.pp_dict[SPID].is_married_this_year = False # Remove the two persons from the "to be married" list
+                              
                             # Assign household affiliation for the new couple
-                            if len(self.hh_dict[sp.HID].own_pp_dict) == 1: # if her spouse is the only member of his original household
-                                self.add_person_to_household(pp, sp.HID) # then just add her to her husband's household
-                                 
+                            if len(self.hh_dict[self.pp_dict[SPID].HID].own_pp_dict) == 1: # if her spouse is the only member of his original household
+                                self.add_person_to_household(self.pp_dict[PID], self.pp_dict[SPID].HID, 'spouse') # then just add her to her husband's household
+                                break
+                              
                             else:
-                                self.create_new_household(sp) # Create a new household with her spouse sp(male) being the household head
-                                self.add_person_to_household(pp, sp.HID) # Add herself to the newly created household
-                         
-    
+                                self.create_new_household(self.pp_dict[SPID]) # Create a new household with her spouse sp(male) being the household head
+                                self.add_person_to_household(self.pp_dict[PID], self.pp_dict[SPID].HID, 'spouse') # Add herself to the newly created household
+                                break
+                            
+                    self.pp_dict[PID].is_married_this_year = False # Failed to find a match                    
+                    
+
+
+
     
     def child_birth(self):
         pass
@@ -157,23 +161,46 @@ class Society(object):
         new_hh.HID = self.get_new_hid(pp)
          
         # Grant other new household properties
-        new_hh.Hname = pp.Hname
+        new_hh.Hname = pp.Pname
         new_hh.StatDate = self.current_year
-                          
-        # Add new household head to new_hh.own_pp_dict
-        new_hh.own_pp_dict[pp.PID] = pp   
+        new_hh.NonRural = self.hh_dict[ori_hid].NonRural
+        
+        # Modify the new household head's personal properties to match the new household
+        pp.HID = new_hh.HID
+        pp.Hname = new_hh.Hname
+        pp.R2HD = '31'
+                                          
+        # Add the new household head to new_hh.own_pp_dict
+        new_hh.own_pp_dict[pp.PID] = self.pp_dict[pp.PID]
                   
         # Remove the new household head from his original household's persons dict
         del self.hh_dict[ori_hid].own_pp_dict[pp.PID]
                   
         # Add the newly created household to Society's household dict
         self.hh_dict[new_hh.HID] = new_hh
-
+        
 
 
     
-    def add_person_to_household(self, pp, HID):
-        pass
+    def add_person_to_household(self, pp, HID, r_2_hh_head):
+        # Adding the person pp into the household with HID = HID;
+        # r_2_hh_head indicates pp's relationship to the household head, of which values include 'spouse', 'child', etc
+
+        # Record the original HID
+        ori_hid = pp.HID
+        
+        # Modify the personal properties of the newly added person
+        pp.HID = HID
+        pp.Hname = self.hh_dict[HID].Hname 
+        pp.R2HD = self.get_relation_to_hh_head(pp, r_2_hh_head)       
+        
+        # Add the person to household members dict
+        self.hh_dict[HID].own_pp_dict[pp.PID] = self.pp_dict[pp.PID]
+
+        # Remove the person from his/her original household's persons dict
+        del self.hh_dict[ori_hid].own_pp_dict[pp.PID]        
+        
+
     
     
     
@@ -194,4 +221,16 @@ class Society(object):
             new_id = max(group_hid_list)[:5] + '00' + str(new_id_num)
         
         return new_id
+    
+    
+    # This submodule needs elaboration. 
+    def get_relation_to_hh_head(self, pp, r_2_hh_head):
         
+        relation = ''
+        
+        if r_2_hh_head == 'spouse':
+            relation = '32'
+        elif r_2_hh_head == 'child':
+            relation = '41' # Need elaboration
+        
+        return relation

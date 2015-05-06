@@ -12,7 +12,8 @@ from data_access import DataAccess
 import main_submodules
 
 
-dbname = 'C:/WolongRun/WolongDB.mdb'
+# dbname = 'C:/WolongRun/test_db/SimplifiedDB.mdb'
+dbname = 'C:/WolongRun/WolongDB'
 dbdriver = '{Microsoft Access Driver (*.mdb)}'
 
 model_table_name = 'ModelTable'
@@ -20,7 +21,7 @@ household_table_name = 'HouseholdTable'
 person_table_name = 'PersonTable'
 
 # Rounds of iteration (years)
-simulation_depth = 2
+simulation_depth = 1
 
 # Starting and ending year of simulation
 start_year = 2015
