@@ -4,6 +4,7 @@ Created on Mar 26, 2015
 @author: Liyan Xu; Hongmou Zhang
 '''
 import copy
+import random
 
 from data_access import DataAccess
 from household import Household
@@ -100,6 +101,9 @@ class Society(object):
                         if self.pp_dict[SPID].Gender == 0 and self.pp_dict[PID].HID != self.pp_dict[SPID].HID and self.pp_dict[SPID].is_married_this_year == True: # spouse must be a female and from a different household
                             self.pp_dict[PID].is_married_this_year = False
                             self.pp_dict[SPID].is_married_this_year = False # Remove the two persons from the "to be married" list
+                            
+                            self.pp_dict[PID].SpousePID = SPID
+                            self.pp_dict[SPID].SpousePID = PID
                               
                             # Assign household affiliation for the new couple
                             if len(self.hh_dict[self.pp_dict[PID].HID].own_pp_dict) == 1: # if the male is the only member of his original household
@@ -120,7 +124,10 @@ class Society(object):
                         if self.pp_dict[SPID].Gender == 1 and self.pp_dict[PID].HID != self.pp_dict[SPID].HID and self.pp_dict[SPID].is_married_this_year == True: # spouse must be a female and from a different household
                             self.pp_dict[PID].is_married_this_year = False
                             self.pp_dict[SPID].is_married_this_year = False # Remove the two persons from the "to be married" list
-                              
+
+                            self.pp_dict[PID].SpousePID = SPID
+                            self.pp_dict[SPID].SpousePID = PID
+                                                          
                             # Assign household affiliation for the new couple
                             if len(self.hh_dict[self.pp_dict[SPID].HID].own_pp_dict) == 1: # if her spouse is the only member of his original household
                                 self.add_person_to_household(self.pp_dict[PID], self.pp_dict[SPID].HID, 'spouse') # then just add her to her husband's household
@@ -138,7 +145,18 @@ class Society(object):
 
     
     def child_birth(self):
-        pass
+        
+        mom_list = list()
+        
+        for PID in self.pp_dict:
+            if self.pp_dict[PID].is_giving_birth_this_year == True:
+                mom_list.append(self.pp_dict[PID])
+                
+        for mom in mom_list:
+            new_baby = self.create_new_person(mom)
+            self.add_person_to_household(new_baby, mom.HID, 'child')
+
+
 
 
     
@@ -180,29 +198,71 @@ class Society(object):
         self.hh_dict[new_hh.HID] = new_hh
         
 
+    def create_new_person(self, pp):
+        # The only occasion to create a new person instance is the birth of a new baby. pp indicates the mother.
+
+        new_pp = copy.deepcopy(pp)        
+
+        # Reset all properties
+        for var in new_pp.pp_var_list:
+            setattr(new_pp, var[0], None)       
+            
+        # Grant new properties
+        new_pp.HID = pp.HID
+        new_pp.Hname = pp.Hname
+        
+        new_pp.PID = self.get_new_pid(pp)
+        new_pp.Pname = pp.Pname + 'c'
+
+        new_pp.Gender = int(round(random.random(), 0))        
+        new_pp.Age = 0
+        new_pp.R2HD = self.get_relation_to_hh_head(new_pp, 'child')
+        new_pp.IsMarry = 0
+
+        new_pp.MotherID = pp.PID
+        new_pp.FatherID = pp.SpousePID
+        new_pp.SpousePID = None
+        
+        new_pp.Education = 'uneducated'
+#         new_pp.Nationality = self.pp_dict[pp.SpousePID].Nationality
+        
+        new_pp.StatDate = self.current_year
+        
+        # Add the newly created person to self.pp_dict
+        self.pp_dict[new_pp.PID] = new_pp
+
+        return new_pp
+
+    
+    
+
 
     
     def add_person_to_household(self, pp, HID, r_2_hh_head):
         # Adding the person pp into the household with HID = HID;
         # r_2_hh_head indicates pp's relationship to the household head, of which values include 'spouse', 'child', etc
 
-        # Record the original HID
-        ori_hid = pp.HID
-        
-        # Modify the personal properties of the newly added person
-        pp.HID = HID
-        pp.Hname = self.hh_dict[HID].Hname 
-        pp.R2HD = self.get_relation_to_hh_head(pp, r_2_hh_head)       
-        
-        # Add the person to household members dict
-        self.hh_dict[HID].own_pp_dict[pp.PID] = self.pp_dict[pp.PID]
-
-        # Remove the person from his/her original household's persons dict
-        del self.hh_dict[ori_hid].own_pp_dict[pp.PID]        
-        
-
+        if r_2_hh_head == 'spouse':
+            # Record the original HID
+            ori_hid = pp.HID
+            
+            # Modify the personal properties of the newly added person
+            pp.HID = HID
+            pp.Hname = self.hh_dict[HID].Hname 
+            pp.R2HD = self.get_relation_to_hh_head(pp, r_2_hh_head)       
+            
+            # Add the person to household members dict
+            self.hh_dict[HID].own_pp_dict[pp.PID] = self.pp_dict[pp.PID]
     
-    
+            # Remove the person from his/her original household's persons dict
+            del self.hh_dict[ori_hid].own_pp_dict[pp.PID]        
+        
+        elif r_2_hh_head == 'child':
+            # Add the person to household members dict
+            self.hh_dict[HID].own_pp_dict[pp.PID] = self.pp_dict[pp.PID]
+
+
+
     
     def get_new_hid(self, pp):
         group_hid_list = list()
@@ -221,6 +281,23 @@ class Society(object):
             new_id = max(group_hid_list)[:5] + '00' + str(new_id_num)
         
         return new_id
+    
+    
+    def get_new_pid(self, pp):
+        household_member_list = list()
+        
+        for PID in self.pp_dict:
+            if self.pp_dict[PID].HID == pp.HID: # find other household members
+                household_member_list.append(self.pp_dict[PID])
+        
+        new_id_num = int(len(household_member_list)+1)
+        
+        if int(new_id_num/10) != 0: # if the new id number is in tens
+            new_id = pp.HID + str(new_id_num)
+        else:
+            new_id = pp.HID + '0' + str(new_id_num)
+        
+        return new_id        
     
     
     # This submodule needs elaboration. 

@@ -33,6 +33,10 @@ class Person(object):
         
         self.is_married_this_year = False
         self.marriage_length = 0 #This value should have been given in the original database!
+        
+        self.is_giving_birth_this_year = False
+        
+        self.SpousePID = None
             
         
     def annual_update(self, current_year, model_parameters):
@@ -58,8 +62,8 @@ class Person(object):
                 if self.is_college == False:  # Going to college indicates moved out and being removed from the system's person list
                     if self.IsMarry == True:
                         if self.divorce() == False: # Temporarily not allow anyone to divorce
-                            res = [self]
-#                             res = self.childbirth(current_year)
+                            self.marriage_length += 1
+                            res = self.childbirth()
                     else:
                         self.marry(model_parameters)
                         res = [self]
@@ -143,11 +147,12 @@ class Person(object):
 
 
     
-    def childbirth(self, current_year):
+    def childbirth(self):
         
         if self.Gender == 0: # Only women can give birth.
             if random.random() < 0.1: # Temporarily allow 10% chance to give birth           
-                res = self.add_person(current_year)
+                self.is_giving_birth_this_year = True
+                res = [self]
             else:
                 res = [self]
         
@@ -157,37 +162,37 @@ class Person(object):
         return res
     
     
-    def add_person(self, current_year):
-
-        new_pp = copy.deepcopy(self)        
-
-        # Reset all properties
-        for var in new_pp.pp_var_list:
-            setattr(new_pp, var[0], None)       
-            
-        # Grant new properties
-        new_pp.Pname = self.Pname + 'n'
-        new_pp.Age = 0
-        new_pp.Gender = int(round(random.random(), 0))
-        new_pp.StatDate = current_year
-        
-        # Temporarily manipulating PIDs so that the persons dictionary gets non-duplicate indices
-        new_pp.PID = self.PID
-        
-        if current_year == 2015:
-            if new_pp.PID[:1] == 'g':
-                new_pp.PID = 'G' + self.PID[1:]
-            elif new_pp.PID[:1] == 'w':
-                new_pp.PID = 'W' + self.PID[1:]
-        else:
-            if new_pp.PID[:1] == 'g' or new_pp.PID[:1] == 'G':
-                new_pp.PID = self.PID[:2] + 'C' + self.PID[3:]
-            elif new_pp.PID[:1] == 'w' or new_pp.PID[:1] == 'W':
-                new_pp.PID = self.PID[:2] + 'C' + self.PID[3:]            
-
-            
-        res = [self, new_pp]
-        return res
+#     def add_person(self, current_year):
+# 
+#         new_pp = copy.deepcopy(self)        
+# 
+#         # Reset all properties
+#         for var in new_pp.pp_var_list:
+#             setattr(new_pp, var[0], None)       
+#             
+#         # Grant new properties
+#         new_pp.Pname = self.Pname + 'n'
+#         new_pp.Age = 0
+#         new_pp.Gender = int(round(random.random(), 0))
+#         new_pp.StatDate = current_year
+#         
+#         # Temporarily manipulating PIDs so that the persons dictionary gets non-duplicate indices
+#         new_pp.PID = self.PID
+#         
+#         if current_year == 2015:
+#             if new_pp.PID[:1] == 'g':
+#                 new_pp.PID = 'G' + self.PID[1:]
+#             elif new_pp.PID[:1] == 'w':
+#                 new_pp.PID = 'W' + self.PID[1:]
+#         else:
+#             if new_pp.PID[:1] == 'g' or new_pp.PID[:1] == 'G':
+#                 new_pp.PID = self.PID[:2] + 'C' + self.PID[3:]
+#             elif new_pp.PID[:1] == 'w' or new_pp.PID[:1] == 'W':
+#                 new_pp.PID = self.PID[:2] + 'C' + self.PID[3:]            
+# 
+#             
+#         res = [self, new_pp]
+#         return res
 
 
              
