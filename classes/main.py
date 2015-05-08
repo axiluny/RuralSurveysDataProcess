@@ -21,7 +21,7 @@ household_table_name = 'HouseholdTable'
 person_table_name = 'PersonTable'
 
 # Rounds of iteration (years)
-simulation_depth = 1
+simulation_depth = 2
 
 # Starting and ending year of simulation
 start_year = 2015

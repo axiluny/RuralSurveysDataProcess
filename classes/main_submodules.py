@@ -16,7 +16,7 @@ def step_go(database, society_instance, start_year, end_year, simulation_count, 
 #     add_stat_results(society_instance)
     
     # Do the simulation
-    Society.step_go(society_instance, start_year, end_year, simulation_count, database, hh_table_name, hh_table, pp_table_name, pp_table)
+    Society.step_go(society_instance, start_year, end_year, simulation_count)
     
     # Then save updated tables in database
     save_results_to_db(database, society_instance)
