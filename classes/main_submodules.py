@@ -10,7 +10,7 @@ from society import Society
 scenario_name = ''
 
 
-def step_go(database, society_instance, start_year, end_year, simulation_count, hh_table_name, hh_table, pp_table_name, pp_table):
+def step_go(database, society_instance, start_year, end_year, simulation_count):
 
     #Do statistics and add records to stat table in database
 #     add_stat_results(society_instance)
@@ -33,7 +33,7 @@ def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, p
     
     #Start simulation
     for simulation_count in range(simulation_depth):
-        step_go(db, soc, start_year, end_year, simulation_count, hh_table_name, hh_table, pp_table_name, pp_table)
+        step_go(db, soc, start_year, end_year, simulation_count)
 
 
     # Temporarily adding this - signaling the end of run.
@@ -143,45 +143,83 @@ def save_results_to_db(database, society_instance):
         DataAccess.create_table(database, create_table_order)
         DataAccess.db_commit(database)
  
+#         # Then insert all persons into the new table
+#         # InsertContent = ''
+#         for PID in society_instance.pp_dict:
+#             # Make the insert values for this person
+#             new_person_record_content = '('
+#             for var in society_instance.pp_var_list:
+#                 # If the value is string, add quotes
+#                 if var[2] == 'VARCHAR' and getattr(society_instance.pp_dict[PID], var[0]) != None: 
+#                     new_person_record_content += '\''+ unicode(getattr(society_instance.pp_dict[PID], var[0]))+ '\','
+#                 else:
+#                     new_person_record_content += unicode(getattr(society_instance.pp_dict[PID], var[0]))+ ','
+#             # Change the ending comma to a closing parenthesis
+#             new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
+#             # Insert one person record
+#             insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
+#             DataAccess.insert_table(database, insert_table_order)
+#         DataAccess.db_commit(database)  
+#  
+#      
+#     else:
+#         # Just insert all persons into the new table
+#         # InsertContent = ''
+#         for PID in society_instance.pp_dict:
+#             # Make the insert values for this person
+#             new_person_record_content = '('
+#             for var in society_instance.pp_var_list:
+#                 # If the value is string, add quotes
+#                 if var[2] == 'VARCHAR' and getattr(society_instance.pp_dict[PID], var[0]) != None: 
+#                     new_person_record_content += '\''+ unicode(getattr(society_instance.pp_dict[PID], var[0]))+ '\','
+#                 else:
+#                     new_person_record_content += unicode(getattr(society_instance.pp_dict[PID], var[0]))+ ','
+#             # Change the ending comma to a closing parenthesis
+#             new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
+#             # Insert one person record
+#             insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
+#             DataAccess.insert_table(database, insert_table_order)
+#         DataAccess.db_commit(database)  
+
         # Then insert all persons into the new table
         # InsertContent = ''
-        for PID in society_instance.pp_dict:
-            # Make the insert values for this person
-            new_person_record_content = '('
-            for var in society_instance.pp_var_list:
-                # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(society_instance.pp_dict[PID], var[0]) != None: 
-                    new_person_record_content += '\''+ unicode(getattr(society_instance.pp_dict[PID], var[0]))+ '\','
-                else:
-                    new_person_record_content += unicode(getattr(society_instance.pp_dict[PID], var[0]))+ ','
-            # Change the ending comma to a closing parenthesis
-            new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
-            # Insert one person record
-            insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-            DataAccess.insert_table(database, insert_table_order)
-        DataAccess.db_commit(database)  
+        for HID in society_instance.hh_dict:
+            for PID in society_instance.hh_dict[HID].own_pp_dict:
+                # Make the insert values for this person
+                new_person_record_content = '('
+                for var in society_instance.pp_var_list:
+                    # If the value is string, add quotes
+                    if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]) != None: 
+                        new_person_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ '\','
+                    else:
+                        new_person_record_content += unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ ','
+                # Change the ending comma to a closing parenthesis
+                new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
+                # Insert one person record
+                insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
+                DataAccess.insert_table(database, insert_table_order)
+            DataAccess.db_commit(database)  
  
      
     else:
         # Just insert all persons into the new table
         # InsertContent = ''
-        for PID in society_instance.pp_dict:
-            # Make the insert values for this person
-            new_person_record_content = '('
-            for var in society_instance.pp_var_list:
-                # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(society_instance.pp_dict[PID], var[0]) != None: 
-                    new_person_record_content += '\''+ unicode(getattr(society_instance.pp_dict[PID], var[0]))+ '\','
-                else:
-                    new_person_record_content += unicode(getattr(society_instance.pp_dict[PID], var[0]))+ ','
-            # Change the ending comma to a closing parenthesis
-            new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
-            # Insert one person record
-            insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-            DataAccess.insert_table(database, insert_table_order)
-        DataAccess.db_commit(database)  
-
-
+        for HID in society_instance.hh_dict:
+            for PID in society_instance.hh_dict[HID].own_pp_dict:
+                # Make the insert values for this person
+                new_person_record_content = '('
+                for var in society_instance.pp_var_list:
+                    # If the value is string, add quotes
+                    if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]) != None: 
+                        new_person_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ '\','
+                    else:
+                        new_person_record_content += unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ ','
+                # Change the ending comma to a closing parenthesis
+                new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
+                # Insert one person record
+                insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
+                DataAccess.insert_table(database, insert_table_order)
+            DataAccess.db_commit(database)  
 
 
 
