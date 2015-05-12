@@ -20,6 +20,8 @@ model_table_name = 'ModelTable'
 household_table_name = 'HouseholdTable'
 person_table_name = 'PersonTable'
 
+stat_table_name = 'StatTable'
+
 # Rounds of iteration (years)
 simulation_depth = 2
 
@@ -39,7 +41,7 @@ db = DataAccess(dbname, dbdriver)
 model_table = DataAccess.get_table(db, model_table_name)
 household_table = DataAccess.get_table(db, household_table_name)
 person_table = DataAccess.get_table(db, person_table_name)
-
+stat_table = DataAccess.get_table(db, stat_table_name)
 
 
 '''
@@ -47,7 +49,7 @@ person_table = DataAccess.get_table(db, person_table_name)
 '''
 
 
-main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, simulation_depth, start_year, end_year)
+main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, stat_table_name, stat_table, simulation_depth, start_year, end_year)
 
 
 

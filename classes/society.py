@@ -9,7 +9,8 @@ import random
 from data_access import DataAccess
 from household import Household
 # from person import Person
-
+from statistics import StatClass
+import statistics
 
 class Society(object):
     '''
@@ -19,7 +20,7 @@ class Society(object):
     '''
 
 
-    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table):
+    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table):
         '''
         Constructor
 
@@ -50,17 +51,20 @@ class Society(object):
         # Also define a current hh dict to store only the existing households
         self.cur_hh_dict = self.hh_dict # At initiation the two dicts are identical
         
-     
-#         # Define a dictionary to store all the person instances, indexed by PID
-#         self.pp_dict = dict()
-#         
-#         # Add person instances to pp_dict
-#         for pp in pp_table:
-#             pp_temp = Person(pp, self.pp_var_list)
-#             self.pp_dict[pp_temp.PID] = pp_temp # Indexed by PID
-# 
-#         # Also define a current pp dict to store only the alive persons
-#         self.cur_pp_dict = self.pp_dict # At initiation the two dicts are identical
+        
+        
+        # Get the variable list for the statistics class
+        self.stat_var_list = DataAccess.get_var_list(db, stat_table_name)
+        
+        # Define a statistics dictionary; indexed by Variable Names
+        self.stat_dict = dict()
+        
+        
+        
+
+        
+    
+
 
 
 
@@ -69,11 +73,18 @@ class Society(object):
         
         self.current_year = start_year + simulation_count
         
+#         # Get the statistics for the starting point first.
+#         if simulation_count == 0:
+#             self.get_statistics(start_year)
+        
         self.agents_update()
         
         self.marriage()
         
         self.child_birth()
+        
+        # When everything is done, get statistics before moving to the next round of iteration (year)
+        self.get_statistics(self.current_year)
 
 
                
@@ -270,7 +281,7 @@ class Society(object):
         new_pp.PID = self.get_new_pid(mom)
         new_pp.Pname = mom.Pname + 'c'
 
-        new_pp.Gender = self.generate_gender()
+        new_pp.Gender = self.assign_gender()
         new_pp.Age = 0
         new_pp.R2HHH = self.get_relation_to_hh_head(new_pp, 'child')
         new_pp.IsMarry = 0
@@ -495,8 +506,56 @@ class Society(object):
     
     
     # Random assign a gender to a newly created Person
-    def generate_gender(self):
+    def assign_gender(self):
         return int(round(random.random(), 0))
     
+    
+    
+    
+    
+    
+    def get_statistics(self, current_year):
+        
+#         statistics.get_population_count(self, current_year)
+
+        self.stat_dict = dict()
+                        
+        hh_ct = 0
+        pp_ct = 0
+        
+        # Get the statistics
+        for HID in self.hh_dict:
+            if self.hh_dict[HID].is_exist == 1:
+                hh_ct += 1 # total household count
+                
+                for PID in self.hh_dict[HID].own_pp_dict:
+                    if self.hh_dict[HID].own_pp_dict[PID].is_alive == 1:
+                        pp_ct += 1 # total population
+        
+        # Add total population
+        pp_stat = StatClass()
+        
+        pp_stat.ScenarioVersion = 'test'
+        pp_stat.StatDate = current_year
+        pp_stat.Variable = 'Population'
+        pp_stat.StatValue = pp_ct
+#         pp_stat.StatID = pp_stat.Variable + '_' + str(pp_stat.StatDate)
+        pp_stat.StatID = 'Population' + '_' + str(current_year)
+                
+        self.stat_dict[pp_stat.StatID] = pp_stat
+        
+        
+        
+        # Add household count
+        hh_stat = StatClass()
+        
+        hh_stat.ScenarioVersion = 'test'
+        hh_stat.StatDate = current_year
+        hh_stat.Variable = 'Household_Count'
+        hh_stat.StatValue = hh_ct
+#         hh_stat.StatID = hh_stat.Variable + '_' + str(hh_stat.StatDate)
+        hh_stat.StatID = 'Household_Count' + '_' + str(current_year)
+                        
+        self.stat_dict[hh_stat.StatID] = hh_stat      
     
     
