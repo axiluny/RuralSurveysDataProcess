@@ -298,16 +298,15 @@ def make_plots(society_instance, db, stat_table_name):
     household_count = list()
     
     for st in stat_table:
+                            
         if st.Variable == 'Total_Population':
             time_stamps.append(st.StatDate)
             population.append(st.StatValue)
         
         elif st.Variable == 'Household_Count':
-            time_stamps.append(st.StatDate)
             household_count.append(st.StatValue)
+            
 
-    
-    
     # Show plot in a GUI window
     app = QtGui.QApplication(sys.argv)
     

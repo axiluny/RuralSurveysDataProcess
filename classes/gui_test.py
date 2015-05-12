@@ -41,8 +41,8 @@ class Window(QtGui.QDialog):
     def plot(self, x_data, y_data):
 
         # create an axis
-        ax = self.figure.add_subplot(111)
-#         ax = plt.subplot()
+#         ax = self.figure.add_subplot(111)
+        ax = plt.subplot()
 
         # discards the old graph
         ax.hold(False)
