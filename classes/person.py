@@ -4,7 +4,7 @@ Created on Apr 5, 2015
 @author: Liyan Xu; Hongmou Zhang
 '''
 import random
-import copy
+# import copy
 # from enum import Enum
 
 class Person(object):

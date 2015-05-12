@@ -3,24 +3,16 @@ Created on Mar 26, 2015
 
 @author: Liyan Xu; Hongmou Zhang
 '''
+import sys
+from PyQt4 import QtGui
+
 from data_access import DataAccess
 from society import Society
+import statistics
+from gui_test import Window
 
 # Define scenario name temporarily
 scenario_name = ''
-
-
-def step_go(database, society_instance, start_year, end_year, simulation_count):
-
-    #Do statistics and add records to stat table in database
-#     add_stat_results(society_instance)
-    
-    # Do the simulation
-    Society.step_go(society_instance, start_year, end_year, simulation_count)
-    
-    # Then save updated tables in database
-    save_results_to_db(database, society_instance)
-
 
 
 def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, simulation_depth, start_year, end_year):
@@ -29,14 +21,26 @@ def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, p
     set_up_scenario_name()
     
     # Initialize society: create society, household, person, etc instances
-    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table)
+    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, start_year, end_year)
+
+    # Add statistics for the starting point
+    add_stat_results(soc)
+    
+    # Then save updated tables in database
+    save_results_to_db(db, soc)
+    
+    
     
     #Start simulation
     for simulation_count in range(simulation_depth):
         step_go(db, soc, start_year, end_year, simulation_count)
+        
+        
+    # Make plots of results
+    make_plots(soc, db, stat_table_name)
 
 
-    # Temporarily adding this - signaling the end of run.
+    # Temporarily adding this - signaling end of the run.
     print 'Success!'
 
 
@@ -50,8 +54,34 @@ scenario_name = set_up_scenario_name()
 
 
 
+def step_go(database, society_instance, start_year, end_year, simulation_count):
+
+    
+    # Do the simulation
+    Society.step_go(society_instance, start_year, end_year, simulation_count)
+
+    # Do statistics and add records to statistics table in database
+    add_stat_results(society_instance)
+    
+    # Then save updated tables in database
+    save_results_to_db(database, society_instance)
+
+
+
+
 def add_stat_results(society_instance):
-    pass
+    
+    society_instance.stat_dict = dict()
+
+    # Total population
+    pp = statistics.StatClass()
+    statistics.StatClass.get_population_count(pp, society_instance, scenario_name)
+    
+    # Household count
+    hh = statistics.StatClass()
+    statistics.StatClass.get_household_count(hh, society_instance, scenario_name)
+   
+    
     
     
 def save_results_to_db(database, society_instance):
@@ -60,7 +90,7 @@ def save_results_to_db(database, society_instance):
     # Format: Scenario_name + household/people/land
     new_hh_table_name = scenario_name + '_household'
     new_pp_table_name = scenario_name + '_persons'
-    new_land_table_name = scenario_name + '_land'
+#     new_land_table_name = scenario_name + '_land'
     
     stat_table_name = 'StatTable'
     
@@ -252,6 +282,47 @@ def save_results_to_db(database, society_instance):
 
 
 
+
+def make_plots(society_instance, db, stat_table_name):
+    
+    # For tech demo, just add one plot without the event driver.
+    
+    # Data must be read from the database, rather than lists and dictionaries in the program, 
+    # for users may need to make plots after the iteration (running of main simulation program).
+    
+    # Read the statistics table and make the lists for plotting charts
+    stat_table = DataAccess.get_table(db, stat_table_name)
+    
+    time_stamps = list()
+    population = list()
+    household_count = list()
+    
+    for st in stat_table:
+        if st.Variable == 'Total_Population':
+            time_stamps.append(st.StatDate)
+            population.append(st.StatValue)
+        
+        elif st.Variable == 'Household_Count':
+            time_stamps.append(st.StatDate)
+            household_count.append(st.StatValue)
+
+    
+    
+    # Show plot in a GUI window
+    app = QtGui.QApplication(sys.argv)
+    
+    # population
+    gui = Window(time_stamps, population)
+    gui.show()
+    
+    # household count
+    gui1 = Window(time_stamps, household_count)
+    gui1.show()
+    
+    sys.exit(app.exec_())
+    
+    
+    
 
 
 

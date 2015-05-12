@@ -3,8 +3,8 @@ Created on Mar 25, 2015
 
 @author: Liyan Xu; Hongmou Zhang
 '''
-import copy
-import random
+# import copy
+# import random
 
 from person import Person
 from data_access import DataAccess
@@ -101,4 +101,3 @@ class Household(object):
         pass
     
     
- 

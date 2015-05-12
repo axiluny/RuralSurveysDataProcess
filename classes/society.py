@@ -9,8 +9,7 @@ import random
 from data_access import DataAccess
 from household import Household
 # from person import Person
-from statistics import StatClass
-import statistics
+
 
 class Society(object):
     '''
@@ -20,12 +19,12 @@ class Society(object):
     '''
 
 
-    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table):
+    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, start_year, end_year):
         '''
         Constructor
 
         '''
-        self.current_year = 0
+        self.current_year = start_year
         
         # Create a dictionary to store model parameters, indexed by Variable_Name, and contents are Variable_Value      
 #         self.model_var_list = DataAccess.get_var_list(db, model_table_name)
@@ -71,11 +70,9 @@ class Society(object):
         
     def step_go(self, start_year, end_year, simulation_count):
         
-        self.current_year = start_year + simulation_count
-        
-#         # Get the statistics for the starting point first.
-#         if simulation_count == 0:
-#             self.get_statistics(start_year)
+
+        self.current_year = start_year + simulation_count + 1
+                    
         
         self.agents_update()
         
@@ -83,8 +80,6 @@ class Society(object):
         
         self.child_birth()
         
-        # When everything is done, get statistics before moving to the next round of iteration (year)
-        self.get_statistics(self.current_year)
 
 
                
@@ -510,52 +505,5 @@ class Society(object):
         return int(round(random.random(), 0))
     
     
-    
-    
-    
-    
-    def get_statistics(self, current_year):
-        
-#         statistics.get_population_count(self, current_year)
-
-        self.stat_dict = dict()
-                        
-        hh_ct = 0
-        pp_ct = 0
-        
-        # Get the statistics
-        for HID in self.hh_dict:
-            if self.hh_dict[HID].is_exist == 1:
-                hh_ct += 1 # total household count
-                
-                for PID in self.hh_dict[HID].own_pp_dict:
-                    if self.hh_dict[HID].own_pp_dict[PID].is_alive == 1:
-                        pp_ct += 1 # total population
-        
-        # Add total population
-        pp_stat = StatClass()
-        
-        pp_stat.ScenarioVersion = 'test'
-        pp_stat.StatDate = current_year
-        pp_stat.Variable = 'Population'
-        pp_stat.StatValue = pp_ct
-#         pp_stat.StatID = pp_stat.Variable + '_' + str(pp_stat.StatDate)
-        pp_stat.StatID = 'Population' + '_' + str(current_year)
-                
-        self.stat_dict[pp_stat.StatID] = pp_stat
-        
-        
-        
-        # Add household count
-        hh_stat = StatClass()
-        
-        hh_stat.ScenarioVersion = 'test'
-        hh_stat.StatDate = current_year
-        hh_stat.Variable = 'Household_Count'
-        hh_stat.StatValue = hh_ct
-#         hh_stat.StatID = hh_stat.Variable + '_' + str(hh_stat.StatDate)
-        hh_stat.StatID = 'Household_Count' + '_' + str(current_year)
-                        
-        self.stat_dict[hh_stat.StatID] = hh_stat      
     
     
