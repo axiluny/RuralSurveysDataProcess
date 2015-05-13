@@ -25,6 +25,7 @@ class Window(QtGui.QDialog):
         # Just some button connected to `plot` method
         self.button = QtGui.QPushButton('Plot')
         self.button.clicked.connect(self.plot)
+        
 
         # set the layout
         layout = QtGui.QVBoxLayout()
