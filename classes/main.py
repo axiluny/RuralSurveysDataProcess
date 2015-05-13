@@ -9,12 +9,12 @@ with major improvements.
 
 '''
 import sys
-
+# 
 from PyQt4 import QtCore, QtGui
-from seems_gui import Ui_frm_SEEMS_main
+# from seems_gui import Ui_frm_SEEMS_main
 
 # from data_access import DataAccess
-# import main_submodules
+import main_submodules
 #  
 #  
 # # dbname = 'C:/WolongRun/test_db/SimplifiedDB.mdb'
@@ -63,7 +63,7 @@ if __name__ == '__main__':
       
     main_window = QtGui.QMainWindow()
   
-    main = Ui_frm_SEEMS_main()
+    main = main_submodules.Ui_frm_SEEMS_main()
     main.setupUi(main_window)
       
     main_window.show()
