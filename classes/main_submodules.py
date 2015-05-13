@@ -9,7 +9,7 @@ from PyQt4 import QtGui
 from data_access import DataAccess
 from society import Society
 import statistics
-from gui_test import Window
+from plot_test import Window
 
 # Define scenario name temporarily
 scenario_name = ''
@@ -36,8 +36,8 @@ def CreateScenario(db, model_table_name, model_table, hh_table_name, hh_table, p
         step_go(db, soc, start_year, end_year, simulation_count)
         
         
-    # Make plots of results
-    make_plots(soc, db, stat_table_name)
+#     # Make plots of results
+#     make_plots(soc, db, stat_table_name)
 
 
     # Temporarily adding this - signaling end of the run.
