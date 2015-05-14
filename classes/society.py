@@ -19,7 +19,7 @@ class Society(object):
     '''
 
 
-    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, start_year, end_year):
+    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, simulation_depth, start_year, end_year):
         '''
         Constructor
 
@@ -59,8 +59,7 @@ class Society(object):
         self.stat_dict = dict()
         
         
-        
-
+    
         
     
 
@@ -89,8 +88,10 @@ class Society(object):
         
         temp_hh_list = list()
 
+
         for HID in self.hh_dict:
             temp_hh_list.append(Household.annual_update(self.hh_dict[HID], self.current_year, self.model_parameters_dict))
+
         
         # Refresh households and current households dicts
         self.hh_dict = dict()

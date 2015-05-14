@@ -8,7 +8,7 @@ by Liyan Xu, Yansheng Yang, Hong You, and Hailong Li;
 with major improvements.
 
 '''
-import sys
+import sys, os
 # 
 from PyQt4 import QtCore, QtGui
 # from seems_gui import Ui_frm_SEEMS_main
@@ -57,7 +57,8 @@ import main_submodules
 # main_submodules.CreateScenario(db, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, stat_table_name, stat_table, simulation_depth, start_year, end_year)
 
 
- 
+
+
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
       
@@ -71,7 +72,17 @@ if __name__ == '__main__':
     sys.exit(app.exec_())
 
 
+'''
+How come the following codes different from the above lines?
+'''
 
-
-
-
+# if __name__ == '__main__':
+#     app = QtGui.QApplication(sys.argv)
+#            
+#     main_window = QtGui.QMainWindow()
+#        
+#     main_submodules.Ui_frm_SEEMS_main().setupUi(main_window)
+#            
+#     main_window.show()
+#        
+#     sys.exit(app.exec_())
