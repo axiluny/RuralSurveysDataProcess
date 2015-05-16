@@ -4,7 +4,6 @@ Created on Mar 26, 2015
 @author: Liyan Xu; Hongmou Zhang
 '''
 
-
 from data_access import DataAccess
 from society import Society
 import statistics
@@ -70,7 +69,7 @@ try:
 except AttributeError:
     def _fromUtf8(s):
         return s
-
+ 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
     def _translate(context, text, disambig):
@@ -133,10 +132,40 @@ class Ui_frm_SEEMS_main(object):
         self.cmb_select_variable = QtGui.QComboBox(self.results_review)
         self.cmb_select_variable.setGeometry(QtCore.QRect(130, 60, 201, 25))
         self.cmb_select_variable.setObjectName(_fromUtf8("cmb_select_variable"))
+
+        self.gbx_plot_type = QtGui.QGroupBox(self.results_review)
+        self.gbx_plot_type.setGeometry(QtCore.QRect(10, 270, 321, 71))
+        self.gbx_plot_type.setObjectName(_fromUtf8("gbx_plot_type"))
+        self.rdbtn_bar_chart = QtGui.QRadioButton(self.gbx_plot_type)
+        self.rdbtn_bar_chart.setGeometry(QtCore.QRect(10, 30, 119, 23))
+        self.rdbtn_bar_chart.setObjectName(_fromUtf8("rdbtn_bar_chart"))
+        self.rdbtn_line_chart = QtGui.QRadioButton(self.gbx_plot_type)
+        self.rdbtn_line_chart.setGeometry(QtCore.QRect(120, 30, 119, 23))
+        self.rdbtn_line_chart.setObjectName(_fromUtf8("rdbtn_line_chart"))
+        self.gbx_plot_period = QtGui.QGroupBox(self.results_review)
+        self.gbx_plot_period.setGeometry(QtCore.QRect(10, 100, 321, 151))
+        self.gbx_plot_period.setObjectName(_fromUtf8("gbx_plot_period"))
+        self.horizontalSlider = QtGui.QSlider(self.gbx_plot_period)
+        self.horizontalSlider.setGeometry(QtCore.QRect(10, 60, 301, 22))
+        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalSlider.setObjectName(_fromUtf8("horizontalSlider"))
+        self.horizontalSlider_2 = QtGui.QSlider(self.gbx_plot_period)
+        self.horizontalSlider_2.setGeometry(QtCore.QRect(10, 120, 301, 22))
+        self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalSlider_2.setObjectName(_fromUtf8("horizontalSlider_2"))
+        self.lbl_start_year = QtGui.QLabel(self.gbx_plot_period)
+        self.lbl_start_year.setGeometry(QtCore.QRect(10, 30, 68, 19))
+        self.lbl_start_year.setObjectName(_fromUtf8("lbl_start_year"))
+        self.lbl_end_year = QtGui.QLabel(self.gbx_plot_period)
+        self.lbl_end_year.setGeometry(QtCore.QRect(10, 90, 68, 19))
+        self.lbl_end_year.setObjectName(_fromUtf8("lbl_end_year"))
+        
         self.tab_controlpanel.addTab(self.results_review, _fromUtf8(""))
+        
 #         self.graphicsView = QtGui.QGraphicsView(self.centralwidget)
 #         self.graphicsView.setGeometry(QtCore.QRect(390, 10, 661, 661))
 #         self.graphicsView.setObjectName(_fromUtf8("graphicsView"))
+
         frm_SEEMS_main.setCentralWidget(self.centralwidget)
          
         self.menubar = QtGui.QMenuBar(frm_SEEMS_main)
@@ -152,8 +181,7 @@ class Ui_frm_SEEMS_main(object):
         self.actionAbout.setObjectName(_fromUtf8("actionAbout"))                
         self.menuFile.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
-         
-         
+
     
         self.retranslateUi(frm_SEEMS_main)
         self.tab_controlpanel.setCurrentIndex(0)
@@ -171,13 +199,20 @@ class Ui_frm_SEEMS_main(object):
               
         # Create a QVBoxLayout within the canvas widget, such that the canvas embeds in the main window frame
         self.lyt = QtGui.QVBoxLayout(self.canvaswidget)
-          
+           
         # Create a canvas instance
         self.mc = MplCanvas(self.canvaswidget)
-           
+            
         # Add the canvas instance into the VBox Layout
         self.lyt.addWidget(self.mc)        
+
+
+
+        
+        # Initiate the results review panel
+        refresh_review_panel(self)
  
+
  
         # Events handling 
         self.btn_plot.clicked.connect(self.on_btn_plot_clicked)
@@ -193,15 +228,25 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_select_scenario_label.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
         self.btn_plot.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.lbl_select_variable_label.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
+        self.gbx_plot_type.setTitle(_translate("frm_SEEMS_main", "Plot Type", None))
+        self.rdbtn_bar_chart.setText(_translate("frm_SEEMS_main", "Bar Chart", None))
+        self.rdbtn_line_chart.setText(_translate("frm_SEEMS_main", "Line Chart", None))
+        self.gbx_plot_period.setTitle(_translate("frm_SEEMS_main", "Plot Period", None))
+        self.lbl_start_year.setText(_translate("frm_SEEMS_main", "Start Year", None))
+        self.lbl_end_year.setText(_translate("frm_SEEMS_main", "End Year", None))
+
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.results_review), _translate("frm_SEEMS_main", "Results Review", None))
         self.menuFile.setTitle(_translate("frm_SEEMS_main", "Help", None))
         self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))
 
 
 
+
     def on_btn_start_simulation_clicked(self):
         
         # Set up the scenario name from the LineEdit box in the GUI
+        # Should check for already existing names, otherwise later results will be added to the existing table, causing troubles
+
         scenario_name = str(self.txt_input_scenario_name.text())
                   
         # Run the simulation
@@ -250,22 +295,23 @@ class Ui_frm_SEEMS_main(object):
         # Draw the plot
         # First, remove any existing canvas contents
         self.lyt.removeWidget(self.mc)
-         
+           
         # Then create a new canvas instance
         self.mc = MplCanvas(self.canvaswidget)
-        self.mc.plot(time_stamps, series)
-          
+        self.mc.plot(time_stamps, series, self)
+#         self.mc.plot(time_stamps, time_stamps, self)
+        
         # Lastly, add the new canvas instance into the VBox Layout
         self.lyt.addWidget(self.mc)
-
 
 
 class MplCanvas(FigureCanvas):
     def __init__(self, parent=None):
         fig = Figure()
         self.axes = fig.add_subplot(111)
-        # We want the axes cleared every time plot() is called
-        self.axes.hold(False)
+        
+        # Set if the axes is cleared every time plot() is called.
+        self.axes.hold(True)
 
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
@@ -274,8 +320,13 @@ class MplCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
 
-    def plot(self, x_data, y_data):
-        self.axes.bar(x_data, y_data)
+    def plot(self, x_data, y_data, gui):
+
+        # Determine the chart type
+        if gui.rdbtn_bar_chart.isChecked():
+            self.axes.bar(x_data, y_data)
+        elif gui.rdbtn_line_chart.isChecked():
+            self.axes.plot(x_data, y_data)
 
 
 
@@ -334,6 +385,18 @@ def CreateScenario(db, scenario_name, model_table_name, model_table, hh_table_na
     order = "insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' + str(start_year + simulation_depth) +");"
     DataAccess.insert_table(db, order)
     DataAccess.db_commit(db)
+
+
+    # Then refresh the result review control panel's scenario and variable combo boxes
+    refresh_review_panel(gui)
+
+
+#     # Temporarily adding this - signaling end of the run.
+#     print 'Success!'
+
+
+
+def refresh_review_panel(gui):
     
     # Refresh the version_table and stat_table cursors
     version_table = DataAccess.get_table(db, version_table_name)
@@ -345,34 +408,14 @@ def CreateScenario(db, scenario_name, model_table_name, model_table, hh_table_na
         scenario_list.append(str(version[0]))
     
     variable_list = list()
-    mk = 0 # a mark for the existence of duplicate variables
+
     for record in stat_table:
-        if record[1] == scenario_name:
-            # check for any duplicate variable entries that are already in the variables list
-            if len(variable_list) == 0:
-                variable_list.append(record[3])            
-            else:
-                for variable in variable_list:                
-                    if record[3] == variable:
-                        mk = 1
-                        break
-                 
-                if mk == 0:
-                    variable_list.append(record[3])
+        if record[3] not in variable_list:
+            variable_list.append(record[3])
                 
     # add the items to the respective combo boxes
     gui.cmb_select_scenario.addItems(scenario_list)
-    gui.cmb_select_variable.addItems(variable_list)
-
-
-#     # Temporarily adding this - signaling end of the run.
-#     print 'Success!'
-
-
-
-# Should check for already existing names, otherwise later results will be added to the existing table, causing troubles
-
-
+    gui.cmb_select_variable.addItems(variable_list)    
 
 
 def step_go(database, society_instance, start_year, end_year, simulation_count, scenario_name):
