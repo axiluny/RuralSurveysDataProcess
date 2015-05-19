@@ -15,18 +15,22 @@ class Person(object):
     This is the definition of the person class
     '''
     
-    def __init__(self, record, VarList):
+    def __init__(self, record, VarList, current_year):
         '''
         Constructor of Person
         VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}
         '''
-        
+                
         for var in VarList:
             setattr(self, var[0], record[var[1]])
     
         # Define other attributes of the person
         self.pp_var_list = VarList
+
+        # Update current time stamp
+        self.StatDate = current_year
         
+                
         self.is_college = False
         self.moved_out = False
         
@@ -55,7 +59,7 @@ class Person(object):
                     if self.IsMarry == True:
                         if self.divorce() == False: # Temporarily not allow anyone to divorce
                             self.marriage_length += 1
-                            self.childbirth()
+                            self.childbirth(model_parameters)
                     else:
                         self.marry(model_parameters)
 
@@ -139,13 +143,34 @@ class Person(object):
 
 
     
-    def childbirth(self):
+    def childbirth(self, model_parameters):
         
-        if self.Gender == 0: # Only women can give birth.
-            if random.random() < 0.1: # Temporarily allow 10% chance to give birth           
-                self.is_giving_birth_this_year = True
-
-
+        self.is_giving_birth_this_year = False
+        
+        if self.Gender == 0 and self.Age < float(model_parameters['UpperBirthAge']):
+        # Only women under a predetermined age can give birth.       
+            if self.Age >= 15 and self.Age <= 19:
+                if random.random() < float(model_parameters['FertilityRate15To19']):
+                    self.is_giving_birth_this_year = True
+            elif self.Age >= 20 and self.Age <= 24:
+                if random.random() < float(model_parameters['FertilityRate20To24']):
+                    self.is_giving_birth_this_year = True
+            elif self.Age >= 25 and self.Age <= 29:
+                if random.random() < float(model_parameters['FertilityRate25To29']):
+                    self.is_giving_birth_this_year = True            
+            elif self.Age >= 30 and self.Age <= 34:
+                if random.random() < float(model_parameters['FertilityRate30To34']):
+                    self.is_giving_birth_this_year = True            
+            elif self.Age >= 35 and self.Age <= 39:
+                if random.random() < float(model_parameters['FertilityRate35To39']):
+                    self.is_giving_birth_this_year = True
+            elif self.Age >= 40 and self.Age <= 44:
+                if random.random() < float(model_parameters['FertilityRate40To44']):
+                    self.is_giving_birth_this_year = True
+            elif self.Age >= 45 and self.Age <= 49:
+                if random.random() < float(model_parameters['FertilityRate45To49']):
+                    self.is_giving_birth_this_year = True
+                    
              
     def marriage_rate(self,model_parameters):
         max_rate = float(model_parameters['MaxMaritalRate'])

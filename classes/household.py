@@ -15,18 +15,22 @@ class Household(object):
     '''
     
     
-    def __init__(self, record, VarList, db, pp_table_name, pp_table):
+    def __init__(self, record, VarList, current_year, db, pp_table_name, pp_table):
         '''
         Constructor of Household
         VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}
         '''       
-    
+            
         for var in VarList:
             setattr(self, var[0], record[var[1]])
 
 
         self.hh_var_list = VarList
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
+
+
+        # Update current time stamp
+        self.StatDate = current_year
         
         # Define own persons (members) dict of the household, indexed by PID
         self.own_pp_dict = dict()
@@ -36,7 +40,7 @@ class Household(object):
         # Add respective persons into the persons dict of the household
         for pp in pp_table:
             if pp.HID == self.HID:
-                pp_temp = Person(pp, self.pp_var_list)
+                pp_temp = Person(pp, self.pp_var_list, current_year)
                 self.own_pp_dict[pp_temp.PID] = pp_temp # Indexed by PID
         
         self.cur_own_pp_dict = self.own_pp_dict
@@ -53,16 +57,16 @@ class Household(object):
         if self.is_exist == 1: # If the household exists
             
             temp_pp_list = list()
-        
-            # First run population dynamics
+                                
+            # Annual population dynamics (personal status updates)
             for PID in self.own_pp_dict:
                 temp_pp_list.append(Person.annual_update(self.own_pp_dict[PID], current_year, model_parameters))
-            
-            
-            # Refresh own persons (members) and current members dicts
+
+            # Reset own persons (members) and current members dicts
             self.own_pp_dict = dict()
             self.cur_own_pp_dict = dict()
                         
+            # Refresh own_pp_list and cur_own_member_list                        
             for p in temp_pp_list:
                 self.own_pp_dict[p.PID] = p
                     

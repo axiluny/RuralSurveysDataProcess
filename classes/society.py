@@ -44,7 +44,7 @@ class Society(object):
         
         # Add household instances to hh_dict
         for hh in hh_table:
-            hh_temp = Household(hh, self.hh_var_list, db, pp_table_name, pp_table)
+            hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table)
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
 
         # Also define a current hh dict to store only the existing households
@@ -69,10 +69,10 @@ class Society(object):
         
     def step_go(self, start_year, end_year, simulation_count):
         
-
+        # Update current year tag
         self.current_year = start_year + simulation_count + 1
                     
-        
+        # Then do the followings step by step
         self.agents_update()
         
         self.marriage()
@@ -87,28 +87,22 @@ class Society(object):
         # household and people status update; everything except for marriage and child birth
         
         temp_hh_list = list()
-
-
+        
+        # Annual household status update
         for HID in self.hh_dict:
             temp_hh_list.append(Household.annual_update(self.hh_dict[HID], self.current_year, self.model_parameters_dict))
 
-        
-        # Refresh households and current households dicts
+        # Reset households and current households dicts
         self.hh_dict = dict()
         self.cur_hh_dict = dict()
         
-#         self.pp_dict =  dict()
-#         self.cur_pp_dict = dict()
-        
+        # Refresh hh_dict and cur_hh_dict
         for h in temp_hh_list:
             self.hh_dict[h.HID] = h                        
-#             for PID in h.own_pp_dict:
-#                 self.pp_dict[PID] = h.own_pp_dict[PID]
             
             if h.is_exist == 1: # Only existing households are added to current hh dict
                 self.cur_hh_dict[h.HID] = h
-#                 for PID in h.cur_own_pp_dict:
-#                     self.cur_pp_dict[PID] = h.cur_own_pp_dict[PID]                 
+            
 
     
     def marriage(self):
@@ -124,10 +118,8 @@ class Society(object):
                     marry_list.append(pp)
                     
         
-        for pp in marry_list:
-            
-            if pp.is_married_this_year == True:
-                    
+        for pp in marry_list:            
+            if pp.is_married_this_year == True:                    
                 if pp.Gender == 1: #Male                
                     # Find him a spouse
                     for sp in marry_list:
@@ -290,6 +282,14 @@ class Society(object):
 #         new_pp.Ethnicity = self.cur_pp_dict[mom.SpouseID].Ethnicity
         
         new_pp.is_alive = 1
+        
+        
+        new_pp.is_college = False
+        new_pp.moved_out = False        
+        new_pp.is_married_this_year = False
+        new_pp.marriage_length = 0        
+        new_pp.is_giving_birth_this_year = False
+        
         new_pp.StatDate = self.current_year
         
 #         # Add the newly created person to self.pp_dict
