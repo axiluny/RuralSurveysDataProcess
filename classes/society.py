@@ -59,6 +59,10 @@ class Society(object):
         self.stat_dict = dict()
         
         
+        # A counter for debugging
+        self.count = 0
+        
+        
     
         
     
@@ -78,6 +82,9 @@ class Society(object):
         self.marriage()
         
         self.child_birth()
+        
+        # Debugging code
+#         print self.count
         
 
 
@@ -112,14 +119,19 @@ class Society(object):
         # Get the "to be married this year" list
         for HID in self.cur_hh_dict:
             for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
-                pp = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
+                p = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
                 
-                if pp.is_married_this_year == True:
-                    marry_list.append(pp)
+                if p.is_married_this_year == True:
+                    marry_list.append(p)
                     
-        
+        # Make matches
         for pp in marry_list:            
-            if pp.is_married_this_year == True:                    
+            if pp.is_married_this_year == True:
+                # Reset the markers
+                found = False
+                new_hh = False            
+                                
+                                    
                 if pp.Gender == 1: #Male                
                     # Find him a spouse
                     for sp in marry_list:
@@ -128,31 +140,61 @@ class Society(object):
                             # Make the match        
                             pp.is_married_this_year = False
                             sp.is_married_this_year = False # Remove the two persons from the "to be married" list
-                                                    
-                            pp.SpouseID = sp.PID
-                            sp.SpouseID = pp.PID
-                                                      
-                            # Assign household affiliation for the new couple
-                            if pp.R2HHH == '3_00_1': # If pp himself is the household head
-                                self.add_person_to_household(sp, pp.HID, 'spouse')
-                                
-                            else:                            
-                                siblings = self.get_siblings(pp)
-                                
-                                if len(siblings) != 0:
-                                    for sib in siblings:
-                                        if sib.HID == pp.HID and sib.Age < pp.Age: # If pp has any younger brothers in his household
-                                            # Create a new household with the male pp being the household head
-                                            self.create_new_household(pp)
-                                            self.add_person_to_household(sp, pp.HID, 'spouse') # Add sp to the newly created household as pp's spouse
-                                            break
-                                        
-                                else:
-                                    self.add_person_to_household(sp, pp.HID, 'spouse')
-                                    break
                             
-                    # If failed to find a match    
-                    pp.is_married_this_year = False 
+                            found = True
+                            break
+                    
+                    if found == True:                                                    
+                        pp.SpouseID = sp.PID
+                        sp.SpouseID = pp.PID
+                                                
+                        # Determine whether to establish a new household                
+                        siblings = self.get_siblings(pp)
+                                
+                        if len(siblings) != 0:
+                            for sib in siblings:
+                                if sib.HID == pp.HID and sib.Age < pp.Age: # If pp has any younger brothers in his household
+                                    new_hh = True # Then establish a new household
+                            
+                        # Assign household affiliation for the new couple 
+                        if new_hh == True:                                        
+                            # Create a new household with the male pp being the household head
+                            self.create_new_household(pp)
+                            self.add_person_to_household(sp, pp.HID) # Add sp to the newly created household as pp's spouse
+                            
+                            # Modify the FatherID/MotherID of any children of pp and sp
+                            # And if either one of the new couple has any unmarried children, add them into the new household
+                            # Father
+                            if self.get_children(pp) is not None:
+                                for kid in self.get_children(pp):
+                                    kid.MotherID = sp.PID        
+                                                                
+                                    if kid.IsMarry == 0:
+                                        self.add_person_to_household(kid, pp.HID)
+
+                            # Mother                         
+                            if self.get_children(sp) is not None:
+                                for kid in self.get_children(sp):
+                                    kid.FatherID = pp.PID
+                                    
+                                    if kid.IsMarry == 0:
+                                        self.add_person_to_household(kid, pp.HID)
+                                                                               
+                        else:
+                            self.add_person_to_household(sp, pp.HID)
+                            # If the female sp has any children, add them into the new household
+                            if self.get_children(sp) is not None:
+                                for kid in self.get_children(sp):
+                                    kid.FatherID = pp.PID
+                                    
+                                    if kid.IsMarry == 0:
+                                        self.add_person_to_household(kid, pp.HID)
+                                                            
+                    else:
+                        # If failed to find a match    
+                        pp.is_married_this_year = False                        
+                            
+
                                     
                                               
                 else: #Female
@@ -163,31 +205,61 @@ class Society(object):
                             # Make the match                    
                             pp.is_married_this_year = False
                             sp.is_married_this_year = False # Remove the two persons from the "to be married" list
-                    
-                            pp.SpouseID = sp.PID
-                            sp.SpouseID = PID
-                                                                              
-                            # Assign household affiliation for the new couple
-                            if sp.R2HHH == '3_00_1': # If pp himself is the household head
-                                self.add_person_to_household(pp, sp.HID, 'spouse')
+
+                            found = True
+                            break
+                        
+                    if found == True:                    
+                        pp.SpouseID = sp.PID
+                        sp.SpouseID = pp.PID             
+                                   
+                        # Determine whether to establish a new household                
+                        siblings = self.get_siblings(sp)
                                 
-                            else:                            
-                                siblings = self.get_siblings(sp)
-                                
-                                if len(siblings) != 0:
-                                    for sib in siblings:
-                                        if sib.HID == sp.HID and sib.Age < sp.Age: # If pp has any younger brothers in his household
-                                            # Create a new household with the male pp being the household head
-                                            self.create_new_household(sp)
-                                            self.add_person_to_household(pp, sp.HID, 'spouse') # Add sp to the newly created household as pp's spouse
-                                            break
+                        if len(siblings) != 0:
+                            for sib in siblings:
+                                if sib.HID == sp.HID and sib.Age < sp.Age: # If pp has any younger brothers in his household
+                                    new_hh = True # Then establish a new household
+
+                        # Assign household affiliation for the new couple 
+                        if new_hh == True:                                        
+                            # Create a new household with the male sp being the household head
+                            self.create_new_household(sp)
+                            self.add_person_to_household(pp, sp.HID) # # Add pp to the newly created household as sp's spouse
+                            
+                            # Modify the FatherID/MotherID of any children of pp and sp
+                            # And if either one of the new couple has any unmarried children, add them into the new household
+                            # Mother
+                            if self.get_children(pp) is not None:
+                                for kid in self.get_children(pp):
+                                    kid.FatherID = sp.PID                                    
+                                    
+                                    if kid.IsMarry == 0:
+                                        self.add_person_to_household(kid, sp.HID)
+
+                                                    
+                            # Father                         
+                            if self.get_children(sp) is not None:
+                                for kid in self.get_children(sp):
+                                    kid.MotherID = pp.PID
+                                    
+                                    if kid.IsMarry == 0:                                    
+                                        self.add_person_to_household(kid, sp.HID)
                                         
-                                else:
-                                    self.add_person_to_household(pp, sp.HID, 'spouse')
-                                    break
-    
-                    # If failed to find a match    
-                    pp.is_married_this_year = False 
+                        else:
+                            self.add_person_to_household(pp, sp.HID)
+                            # If the female pp has any children, add them into the new household
+                            if self.get_children(pp) is not None:
+                                for kid in self.get_children(sp):
+                                    kid.FatherID = sp.PID
+                                    
+                                    if kid.IsMarry == 0:
+                                        self.add_person_to_household(kid, sp.HID)
+                        
+                    else:
+                        # If failed to find a match    
+                        pp.is_married_this_year = False                             
+                            
 
 
 
@@ -205,7 +277,7 @@ class Society(object):
                 
         for mom in mom_list:
             new_baby = self.create_new_person(mom)
-            self.add_person_to_household(new_baby, mom.HID, 'child')
+            self.add_person_to_household(new_baby, mom.HID)
 
 
 
@@ -213,6 +285,7 @@ class Society(object):
     
     def create_new_household(self, pp):
 
+        # Make a new household instance
         new_hh = copy.deepcopy(self.cur_hh_dict[pp.HID])     
          
         # Record the original HID
@@ -239,14 +312,15 @@ class Society(object):
         pp.HID = new_hh.HID
         pp.Hname = new_hh.Hname
         pp.R2HHH = '3_00_1'
+
+
+        # Remove the new household head (pp) from his original household's persons dict
+        del self.hh_dict[ori_hid].own_pp_dict[pp.PID]   
+        del self.cur_hh_dict[ori_hid].cur_own_pp_dict[pp.PID]
                                           
-        # Add the new household head to new_hh.own_pp_dict and current own pp dict
+        # Add the new household head (pp) to new_hh.own_pp_dict and current own pp dict
         new_hh.own_pp_dict[pp.PID] = pp
         new_hh.cur_own_pp_dict[pp.PID] = pp
-                  
-        # Remove the new household head from his original household's persons dict
-        del self.hh_dict[ori_hid].own_pp_dict[pp.PID]        
-        del self.cur_hh_dict[ori_hid].cur_own_pp_dict[pp.PID]
                   
         # Add the newly created household to Society's household dict
         self.hh_dict[new_hh.HID] = new_hh
@@ -276,7 +350,7 @@ class Society(object):
 
         new_pp.MotherID = mom.PID
         new_pp.FatherID = mom.SpouseID
-        new_pp.SpouseID = None
+        new_pp.SpouseID = '0'
         
         new_pp.Education = 'uneducated'
 #         new_pp.Ethnicity = self.cur_pp_dict[mom.SpouseID].Ethnicity
@@ -291,10 +365,6 @@ class Society(object):
         new_pp.is_giving_birth_this_year = False
         
         new_pp.StatDate = self.current_year
-        
-#         # Add the newly created person to self.pp_dict
-#         self.pp_dict[new_pp.PID] = new_pp
-#         self.cur_pp_dict[new_pp.PID] = new_pp
 
         return new_pp
 
@@ -303,13 +373,18 @@ class Society(object):
 
 
     
-    def add_person_to_household(self, pp, HID, r_2_hh_head):
+    def add_person_to_household(self, pp, HID):
         # Adding the person pp into the household with HID = HID;
         # r_2_hh_head indicates pp's position when joining the household, of which values include 'spouse', 'child', etc
 
-        if r_2_hh_head == 'spouse':
+        if pp.Age != 0: # Not newborn kids
             # Record the original HID
             ori_hid = pp.HID
+
+            # Remove the person from his/her original household's persons dict
+            del self.hh_dict[ori_hid].own_pp_dict[pp.PID]          
+            del self.cur_hh_dict[ori_hid].cur_own_pp_dict[pp.PID]
+            
             
             # Modify the personal properties of the newly added person
             pp.HID = HID
@@ -318,27 +393,21 @@ class Society(object):
             
             # Add the person to household members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
-            self.hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
+#             self.hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
             
-            self.cur_hh_dict[HID].own_pp_dict[pp.PID] = pp
+#             self.cur_hh_dict[HID].own_pp_dict[pp.PID] = pp
             self.cur_hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
-    
-            # Remove the person from his/her original household's persons dict
-            del self.hh_dict[ori_hid].own_pp_dict[pp.PID]
-#             del self.hh_dict[ori_hid].cur_own_pp_dict[pp.PID]
-# 
-#             del self.cur_hh_dict[ori_hid].own_pp_dict[pp.PID]             
-            del self.cur_hh_dict[ori_hid].cur_own_pp_dict[pp.PID]
             
             # If the original household then has no members, dissolve it.
             if len(self.cur_hh_dict[ori_hid].cur_own_pp_dict) == 0:
                 self.hh_dict[ori_hid].dissolve_household()
                 
                 # Also need to delete the dissolved household from current hh dict
-                del self.hh_dict[ori_hid]
+#                 del self.hh_dict[ori_hid]
+                del self.cur_hh_dict[ori_hid]
         
         
-        elif r_2_hh_head == 'child':
+        else: # Newborn kids
             # Add the person to household members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
 #             self.hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
@@ -385,33 +454,7 @@ class Society(object):
         return new_id
     
     
-    # This submodule needs elaboration. 
-    def get_relation_to_hh_head(self, pp, role):
-        # "Role" indicates as what role the person, pp, is added to the household (thus needs getting the relationship to the household head;
-        # There are only two possible roles, child or spouse;
-        # If child, the only possible relationships are sons(daughters), grandsons(grand-daughters), grand-grand children, etc;
-        # If spouse, the only possible relationships are wives, daughters-in-law, grand-daughters-in-law, etc
-        
-        relation = ''
-        
-#         if role == 'child':
-#             if self.get_father(pp).R2HHH == '3_00_1':
-#                 relation = '4' # Need elaborate
-#                 
-#             elif self.get_father(pp).R2HHH == '4_00_1': # Need elaborate
-#                 relation = '5'
-#         
-#         else: # spouse
-#             if self.cur_hh_dict[pp.HID].cur_own_pp_dict[pp.SpouseID].R2HHH == '3_00_1':
-#                 relation = '3_00_0'
-#             
-#             elif self.cur_hh_dict[pp.HID].cur_own_pp_dict[pp.SpouseID].R2HHH == '4_00_1': # Need elaborate
-#                 relation = '4_00_0'
-#                 
-#             elif self.cur_hh_dict[pp.HID].cur_own_pp_dict[pp.SpouseID].R2HHH == '5_00_1': # Need elaborate
-#                 relation = '5_00_0'
-                    
-        return relation
+
     
     
     # Get all siblings of a person; returned in a list of person instances
@@ -464,42 +507,110 @@ class Society(object):
                 
         return sibling_list
     
-    
-    
+
     def get_father(self, pp):
-
-        if pp.FatherID == 0: # Then find father within the household by R2HHH     
-            
-            for HID in self.cur_hh_dict:
-                if HID == pp.HID:
-                    for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
-                        ff = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
-                        
-                        if pp.R2HHH == '2_00_1':
-                            if ff.PID == '1_00_1':
-                                return ff
-                        
-                        if pp.R2HHH == '3_00_1' or pp.R2HHH == '3_01_1' or pp.R2HHH == '3_02_1' or pp.R2HHH == '3_03_1' or pp.R2HHH == '3_04_1' or pp.R2HHH == '3_05_1':
-                            if ff.PID == '2_00_1':
-                                return ff
-                        
-                        if pp.R2HHH == '4_00_1' or pp.R2HHH == '4_01_1' or pp.R2HHH == '4_02_1' or pp.R2HHH == '4_03_1' or pp.R2HHH == '4_04_1' or pp.R2HHH == '4_05_1' or pp.R2HHH == '4_06_1' or pp.R2HHH == '4_07_1' or pp.R2HHH == '4_08_1' or pp.R2HHH == '4_09_1':
-                            if ff.PID == '3_00_1':
-                                return ff
-                        
-                        if pp.R2HHH == '5_00_1' or pp.R2HHH == '5_01_1' or pp.R2HHH == '5_02_1' or pp.R2HHH =='5_03_1':
-                            if ff.PID == '4_00_1': # Need elaboration
-                                return ff
-
-        
-        else:
-            for HID in self.cur_hh_dict:
-                for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
-                    ff = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
+        for HID in self.cur_hh_dict:
+            for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
+                ff = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
                     
-                    if ff.PID == pp.FatherID:
-                        return ff
+                if ff.PID == pp.FatherID:
+                    return ff
+        
+        # If not found, return None
+        return None
+                
+
+    def get_mother(self, pp):
+        for HID in self.cur_hh_dict:
+            for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
+                mm = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
+                    
+                if mm.PID == pp.MotherID:
+                    return mm
+        
+        # If not found, return None
+        return None    
+
+
+    def get_children(self, pp):
+        # Define returned list
+        kid_list = list()
+        
+        for HID in self.cur_hh_dict:
+            for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
+                kid = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
+                
+                if pp.Gender == 1: # Male
+                    if kid.FatherID == pp.PID:
+                        kid_list.append(kid)
+                else: # Female
+                    if kid.MotherID == pp.PID:
+                        kid_list.append(kid)
+        
+        return kid_list
+
     
+#     def get_father(self, pp):
+# 
+#         if pp.FatherID == 0: # Then find father within the household by R2HHH     
+#             
+#             for HID in self.cur_hh_dict:
+#                 if HID == pp.HID:
+#                     for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
+#                         ff = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
+#                         
+#                         if pp.R2HHH == '2_00_1':
+#                             if ff.PID == '1_00_1':
+#                                 return ff
+#                         
+#                         if pp.R2HHH == '3_00_1' or pp.R2HHH == '3_01_1' or pp.R2HHH == '3_02_1' or pp.R2HHH == '3_03_1' or pp.R2HHH == '3_04_1' or pp.R2HHH == '3_05_1':
+#                             if ff.PID == '2_00_1':
+#                                 return ff
+#                         
+#                         if pp.R2HHH == '4_00_1' or pp.R2HHH == '4_01_1' or pp.R2HHH == '4_02_1' or pp.R2HHH == '4_03_1' or pp.R2HHH == '4_04_1' or pp.R2HHH == '4_05_1' or pp.R2HHH == '4_06_1' or pp.R2HHH == '4_07_1' or pp.R2HHH == '4_08_1' or pp.R2HHH == '4_09_1':
+#                             if ff.PID == '3_00_1':
+#                                 return ff
+#                         
+#                         if pp.R2HHH == '5_00_1' or pp.R2HHH == '5_01_1' or pp.R2HHH == '5_02_1' or pp.R2HHH =='5_03_1':
+#                             if ff.PID == '4_00_1': # Need elaboration
+#                                 return ff
+# 
+#         
+#         else:
+#             for HID in self.cur_hh_dict:
+#                 for PID in self.cur_hh_dict[HID].cur_own_pp_dict:
+#                     ff = self.cur_hh_dict[HID].cur_own_pp_dict[PID]
+#                     
+#                     if ff.PID == pp.FatherID:
+#                         return ff
+
+    # This submodule needs elaboration. 
+    def get_relation_to_hh_head(self, pp, role):
+        # "Role" indicates as what role the person, pp, is added to the household (thus needs getting the relationship to the household head;
+        # There are only two possible roles, child or spouse;
+        # If child, the only possible relationships are sons(daughters), grandsons(grand-daughters), grand-grand children, etc;
+        # If spouse, the only possible relationships are wives, daughters-in-law, grand-daughters-in-law, etc
+        
+        relation = ''
+        
+#         if role == 'child':
+#             if self.get_father(pp).R2HHH == '3_00_1':
+#                 relation = '4' # Need elaborate
+#                 
+#             elif self.get_father(pp).R2HHH == '4_00_1': # Need elaborate
+#                 relation = '5'
+#         
+#         else: # spouse
+#             if self.cur_hh_dict[pp.HID].cur_own_pp_dict[pp.SpouseID].R2HHH == '3_00_1':
+#                 relation = '3_00_0'
+#             
+#             elif self.cur_hh_dict[pp.HID].cur_own_pp_dict[pp.SpouseID].R2HHH == '4_00_1': # Need elaborate
+#                 relation = '4_00_0'
+#                 
+#             elif self.cur_hh_dict[pp.HID].cur_own_pp_dict[pp.SpouseID].R2HHH == '5_00_1': # Need elaborate
+#                 relation = '5_00_0'
+                    
+        return relation
     
     # Random assign a gender to a newly created Person
     def assign_gender(self):
