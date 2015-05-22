@@ -36,7 +36,7 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
 # Rounds of iteration (years)
-simulation_depth = 10
+simulation_depth = 100
  
 # Starting and ending year of simulation
 start_year = 2015

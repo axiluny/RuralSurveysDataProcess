@@ -137,14 +137,16 @@ class Society(object):
                     for sp in marry_list:
                                         
                         if sp.Gender == 0 and pp.HID != sp.HID and sp.is_married_this_year == True: # spouse must be a female and from a different household
-                            # Make the match        
+                            # Make the match     
                             pp.is_married_this_year = False
                             sp.is_married_this_year = False # Remove the two persons from the "to be married" list
                             
                             found = True
                             break
                     
-                    if found == True:                                                    
+                    if found == True:
+                        pp.IsMarry = 1
+                        sp.IsMarry = 1                                                                               
                         pp.SpouseID = sp.PID
                         sp.SpouseID = pp.PID
                                                 
@@ -210,6 +212,8 @@ class Society(object):
                             break
                         
                     if found == True:                    
+                        pp.IsMarry = 1
+                        sp.IsMarry = 1 
                         pp.SpouseID = sp.PID
                         sp.SpouseID = pp.PID             
                                    
@@ -410,9 +414,6 @@ class Society(object):
         else: # Newborn kids
             # Add the person to household members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
-#             self.hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
-#             
-#             self.cur_hh_dict[HID].own_pp_dict[pp.PID] = pp
             self.cur_hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
 
 
@@ -437,19 +438,24 @@ class Society(object):
     
     
     def get_new_pid(self, pp):
-        household_member_list = list()
+        temp_pid_list = list()
+
+        # Find the PIDs in this household that begin with its HID
+        for PID in self.hh_dict[pp.HID].own_pp_dict: 
+            if PID[:-2] == pp.HID:
+                temp_pid_list.append(PID)
+
+        if len(temp_pid_list) != 0:
+            temp_pid = max(temp_pid_list)
+            new_id_num = int(temp_pid[-2:]) + 1
+            
+            if int(new_id_num/10) != 0: # if the new id number is in tens
+                new_id = pp.HID + str(new_id_num)
+            else:
+                new_id = pp.HID + '0' + str(new_id_num)
         
-        for HID in self.cur_hh_dict:
-            if HID == pp.HID: # Find pp's household
-                for PID in self.cur_hh_dict[HID].cur_own_pp_dict: 
-                    household_member_list.append(self.hh_dict[HID].cur_own_pp_dict[PID])
-        
-        new_id_num = int(len(household_member_list)+1)
-        
-        if int(new_id_num/10) != 0: # if the new id number is in tens
-            new_id = pp.HID + str(new_id_num)
         else:
-            new_id = pp.HID + '0' + str(new_id_num)
+            new_id = pp.HID + '01' # First member in the household with a PID that begins with its own HID
         
         return new_id
     

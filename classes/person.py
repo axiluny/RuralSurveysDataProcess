@@ -50,13 +50,13 @@ class Person(object):
             self.grow()
             
             if self.decease(model_parameters) == True: # If the person dies
-                self.is_alive = 0 # Mark the one as not alive
+                return self
             
-            else:
+            else: # IF the person lives
                 self.educate(model_parameters)
                 
                 if self.is_college == False:  # Going to college indicates moved out and being removed from the system's person list
-                    if self.IsMarry == True:
+                    if self.IsMarry == 1:
                         if self.divorce() == False: # Temporarily not allow anyone to divorce
                             self.marriage_length += 1
                             self.childbirth(model_parameters)
@@ -88,7 +88,7 @@ class Person(object):
         
         # Make the judgment
         if mortality > random.random():
-            self.is_alive = 0
+            self.is_alive = 0 # Mark the one as not alive
             return True
         else:
             return False
@@ -121,13 +121,13 @@ class Person(object):
         if self.Gender == 0: # Female
             if self.Age >= 20:
                 if self.marriage_rate(model_parameters) > random.random():
-                    self.IsMarry = 1
+#                     self.IsMarry = 1
                     self.is_married_this_year = True
                     self.marriage_length = 1
         else: # Male
             if self.Age >= 22:
                 if self.marriage_rate(model_parameters) > random.random():
-                    self.IsMarry = 1
+#                     self.IsMarry = 1
                     self.is_married_this_year = True
                     self.marriage_length = 1
 
