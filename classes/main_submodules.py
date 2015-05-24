@@ -36,7 +36,7 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
 # Rounds of iteration (years)
-simulation_depth = 100
+simulation_depth = 10
  
 # Starting and ending year of simulation
 start_year = 2015
@@ -61,84 +61,47 @@ user created main submodules
 
 def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, simulation_depth, start_year, end_year, gui):
 
-    # Set the progress bar in the GUI
-    gui.prb_progressBar.setMinimum(0)
-    gui.prb_progressBar.setMaximum(simulation_depth * 100)
-    gui.prb_progressBar.setValue(simulation_depth) # Set up an initial value (1%) when clicked so that the user knows it's running.
+    # Set up an initial value (1%) when clicked so that the user knows it's running.
+    refresh_progress_bar(simulation_depth, gui)
     
-    
-    # Initialize society: create society, household, person, etc instances
+    # Initialize the society class: create society, household, person, etc instances
     soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, simulation_depth, stat_table, start_year, end_year)
-
-    # Add statistics for the starting point
-    add_stat_results(soc, scenario_name)
-    
-    # Then save updated tables in database
-    save_results_to_db(db, soc, scenario_name)
-
     
     #Start simulation
     for simulation_count in range(simulation_depth):
         step_go(db, soc, start_year, end_year, simulation_count, scenario_name)
 
         # Set value for the progress bar
-        gui.prb_progressBar.setValue((simulation_count + 1) * 100)
+        refresh_progress_bar((simulation_count + 1) * 100, gui)
         
     
     # When the simulation is successfully completed, insert a record in the VersionTable
-    order = "insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' + str(start_year + simulation_depth) +");"
-    DataAccess.insert_table(db, order)
-    DataAccess.db_commit(db)
-
+    refresh_version_table(db, scenario_name, start_year, simulation_depth)
 
     # Then refresh the result review control panel's scenario and variable combo boxes
     refresh_review_panel(gui)
 
 
-#     # Temporarily adding this - signaling end of the run.
-#     print 'Success!'
 
-
-
-def refresh_review_panel(gui):
-    
-    # Refresh the version_table and stat_table cursors
-    version_table = DataAccess.get_table(db, version_table_name)
-    stat_table = DataAccess.get_table(db, stat_table_name)     
-        
-    # Get scenario and variable lists for the combo boxes in GUI to display
-    scenario_list = list()
-    for version in version_table:
-        scenario_list.append(str(version[0]))
-    
-    variable_list = list()
-
-    for record in stat_table:
-        if record[3] not in variable_list:
-            variable_list.append(record[3])
-    
-
-    # Clear current combo boxes
-    gui.cmb_select_scenario.clear()
-    gui.cmb_select_variable.clear()
-                
-    # add the items to the respective combo boxes
-    if len(scenario_list) != 0:
-        gui.cmb_select_scenario.addItems(scenario_list)
-    if len(variable_list) != 0:
-        gui.cmb_select_variable.addItems(variable_list)    
 
 
 
 def step_go(database, society_instance, start_year, end_year, simulation_count, scenario_name):
-  
+    
+    # If it's the first round of iteration, just get the stats and save the records to database
+    # Else, proceed with the simulation in society.step_go, and then get the stats and save the records to database
+    if simulation_count == 0:  
+        # Do statistics and add records to statistics table in database
+        add_stat_results(society_instance, scenario_name)
+        
+        # Then save updated tables in database
+        save_results_to_db(database, society_instance, scenario_name)
+        
     # Do the simulation
     Society.step_go(society_instance, start_year, end_year, simulation_count)
 
-    # Do statistics and add records to statistics table in database
     add_stat_results(society_instance, scenario_name)
     
-    # Then save updated tables in database
     save_results_to_db(database, society_instance, scenario_name)
 
 
@@ -320,6 +283,46 @@ def save_results_to_db(database, society_instance, scenario_name):
 
 
 
+def refresh_progress_bar(progress, gui):
+    gui.prb_progressBar.setValue(progress)
+
+
+
+def refresh_version_table(database, scenario_name, start_year, simulation_depth):
+    order = "insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' + str(start_year + simulation_depth) +");"
+    DataAccess.insert_table(database, order)
+    DataAccess.db_commit(database)
+    
+    
+
+def refresh_review_panel(gui):
+    
+    # Refresh the version_table and stat_table cursors
+    version_table = DataAccess.get_table(db, version_table_name)
+    stat_table = DataAccess.get_table(db, stat_table_name)     
+        
+    # Get scenario and variable lists for the combo boxes in GUI to display
+    scenario_list = list()
+    for version in version_table:
+        scenario_list.append(str(version[0]))
+    
+    variable_list = list()
+
+    for record in stat_table:
+        if record[3] not in variable_list:
+            variable_list.append(record[3])
+    
+
+    # Clear current combo boxes
+    gui.cmb_select_scenario.clear()
+    gui.cmb_select_variable.clear()
+                
+    # add the items to the respective combo boxes
+    if len(scenario_list) != 0:
+        gui.cmb_select_scenario.addItems(scenario_list)
+    if len(variable_list) != 0:
+        gui.cmb_select_variable.addItems(variable_list)    
+
 
 
 
@@ -464,7 +467,10 @@ class Ui_frm_SEEMS_main(object):
         '''
         The following lines in this submodule are developers added codes
         '''
-        
+
+        # Setup the progress bar in the GUI
+        self.prb_progressBar.setMinimum(0)
+        self.prb_progressBar.setMaximum(simulation_depth * 100)        
  
         # Create another QWidget within frm_SEEMS_main to host the matplotlib canvas
         self.canvaswidget = QtGui.QWidget(frm_SEEMS_main)

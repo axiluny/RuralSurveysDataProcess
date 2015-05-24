@@ -88,34 +88,18 @@ class Household(object):
                     self.own_pp_dict[p.PID].IsMarry = 0
                     self.own_pp_dict[p.PID].SpouseID = '0'                                             
             
-            # If the updated household has no members, dissolve it.
-            if len(self.cur_own_pp_dict) == 0:
-                res = self.dissolve_household()
-                            
-            else:
-                res = self
-        
-        else: # If the household no longer exists
-            res = self # Do nothing to it.
             
-        
-        return res
-
-    
-    
-    def dissolve_household(self):
-        
-        # Mark household a non-exist
-        self.is_exist = 0
-        
-        # Deal with household properties
-        self.legacy()
+            # If the updated household has no members, mark it as non-exist.
+            if len(self.cur_own_pp_dict) == 0:
+                self.is_exist = 0
+            
         
         return self
 
     
     
-    def legacy(self):
-        pass
+
+
+    
     
     

@@ -20,10 +20,7 @@ class Society(object):
 
 
     def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, simulation_depth, start_year, end_year):
-        '''
-        Constructor
 
-        '''
         self.current_year = start_year
         
         # Create a dictionary to store model parameters, indexed by Variable_Name, and contents are Variable_Value      
@@ -286,6 +283,52 @@ class Society(object):
 
 
 
+
+    def create_new_person(self, mom):
+        # The only occasion to create a new person instance is the birth of a new baby. mom indicates the mother.
+
+        new_pp = copy.deepcopy(mom)
+
+        # Reset all properties
+        for var in new_pp.pp_var_list:
+            setattr(new_pp, var[0], None)       
+            
+        # Grant new properties
+        new_pp.HID = mom.HID
+        new_pp.Hname = mom.Hname
+        
+        new_pp.PID = self.get_new_pid(mom)
+        new_pp.Pname = mom.Pname + 'c'
+
+        new_pp.Gender = self.assign_gender()
+        new_pp.Age = 0
+        new_pp.R2HHH = self.get_relation_to_hh_head(new_pp, 'child')
+        new_pp.IsMarry = 0
+
+        new_pp.MotherID = mom.PID
+        new_pp.FatherID = mom.SpouseID
+        new_pp.SpouseID = '0'
+        
+        new_pp.Education = 'uneducated'
+#         new_pp.Ethnicity = self.cur_pp_dict[mom.SpouseID].Ethnicity
+        
+        new_pp.is_alive = 1
+        
+        
+        new_pp.is_college = False
+        new_pp.moved_out = False        
+        new_pp.is_married_this_year = False
+        new_pp.marriage_length = 0        
+        new_pp.is_giving_birth_this_year = False
+        
+        new_pp.StatDate = self.current_year
+
+        return new_pp
+    
+    
+    
+    
+    
     
     def create_new_household(self, pp):
 
@@ -331,46 +374,7 @@ class Society(object):
         self.cur_hh_dict[new_hh.HID] = new_hh
         
 
-    def create_new_person(self, mom):
-        # The only occasion to create a new person instance is the birth of a new baby. mom indicates the mother.
 
-        new_pp = copy.deepcopy(mom)
-
-        # Reset all properties
-        for var in new_pp.pp_var_list:
-            setattr(new_pp, var[0], None)       
-            
-        # Grant new properties
-        new_pp.HID = mom.HID
-        new_pp.Hname = mom.Hname
-        
-        new_pp.PID = self.get_new_pid(mom)
-        new_pp.Pname = mom.Pname + 'c'
-
-        new_pp.Gender = self.assign_gender()
-        new_pp.Age = 0
-        new_pp.R2HHH = self.get_relation_to_hh_head(new_pp, 'child')
-        new_pp.IsMarry = 0
-
-        new_pp.MotherID = mom.PID
-        new_pp.FatherID = mom.SpouseID
-        new_pp.SpouseID = '0'
-        
-        new_pp.Education = 'uneducated'
-#         new_pp.Ethnicity = self.cur_pp_dict[mom.SpouseID].Ethnicity
-        
-        new_pp.is_alive = 1
-        
-        
-        new_pp.is_college = False
-        new_pp.moved_out = False        
-        new_pp.is_married_this_year = False
-        new_pp.marriage_length = 0        
-        new_pp.is_giving_birth_this_year = False
-        
-        new_pp.StatDate = self.current_year
-
-        return new_pp
 
     
     
@@ -397,17 +401,14 @@ class Society(object):
             
             # Add the person to household members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
-#             self.hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
-            
-#             self.cur_hh_dict[HID].own_pp_dict[pp.PID] = pp
             self.cur_hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
             
-            # If the original household then has no members, dissolve it.
+            # If the original household then has no members, mark it as non-exist.
             if len(self.cur_hh_dict[ori_hid].cur_own_pp_dict) == 0:
-                self.hh_dict[ori_hid].dissolve_household()
+                self.hh_dict[ori_hid].is_exist = 0
                 
                 # Also need to delete the dissolved household from current hh dict
-#                 del self.hh_dict[ori_hid]
+                # But should keep its record in the non-current hh_dict
                 del self.cur_hh_dict[ori_hid]
         
         
@@ -415,6 +416,21 @@ class Society(object):
             # Add the person to household members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
             self.cur_hh_dict[HID].cur_own_pp_dict[pp.PID] = pp
+
+
+
+
+    # Dissolve a household with no live members.
+    def dissolve_household(self, HID):
+                
+        # Deal with household properties that were left behind
+        self.legacy()
+
+
+
+    def legacy(self):
+        pass
+
 
 
     

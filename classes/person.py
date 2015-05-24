@@ -115,6 +115,7 @@ class Person(object):
                 else:
                     self.Education = 'high_school'
 
+
     # Determine if the person get married this year; if yes, mark self.is_married_this_year as True
     # The actions of getting married are realized in the Society Class in the next step, when all persons who get married this year are marked
     def marry(self,model_parameters):
