@@ -1,7 +1,7 @@
 '''
 Created on Mar 26, 2015
 
-@author: Liyan Xu; Hongmou Zhang
+@author: Liyan Xu
 '''
 
 from data_access import DataAccess
@@ -36,7 +36,7 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
 # Rounds of iteration (years)
-simulation_depth = 10
+simulation_depth = 15
  
 # Starting and ending year of simulation
 start_year = 2015
@@ -118,7 +118,15 @@ def add_stat_results(society_instance, scenario_name):
     # Household count
     hh = statistics.StatClass()
     statistics.StatClass.get_household_count(hh, society_instance, scenario_name)
-   
+    
+    # Dissolved household count
+    dhh = statistics.StatClass()
+    statistics.StatClass.get_dissolved_household_count(dhh, society_instance, scenario_name)
+        
+    # Total capital
+    tc = statistics.StatClass()
+    statistics.StatClass.get_total_capital(tc, society_instance, scenario_name)
+
     
     
     
@@ -258,8 +266,7 @@ def save_results_to_db(database, society_instance, scenario_name):
 
 
 
-    # Saving the Statistics table in the database
-  
+    # Saving the Statistics table in the database  
       
     # The data table "StatTable" should be pre-created in the database
     # So no need to consider the case when a such table does not exist.
@@ -560,9 +567,10 @@ class Ui_frm_SEEMS_main(object):
         
         population = list()
         household_count = list()
+        dissolved_household_count = list()
+        total_capital = list()
          
-        for st in stat_table:
-            
+        for st in stat_table:            
             # Look only the records for the current scenario version
             if st.ScenarioVersion == self.cmb_select_scenario.currentText():                                 
                 if st.Variable == 'Total_Population':
@@ -571,6 +579,12 @@ class Ui_frm_SEEMS_main(object):
                  
                 elif st.Variable == 'Household_Count':
                     household_count.append(st.StatValue)
+                    
+                elif st.Variable =='Dissolved_Household_Count':
+                    dissolved_household_count.append(st.StatValue)
+                    
+                elif st.Variable == 'Total_Capital':
+                    total_capital.append(st.StatValue)
         
         
         # Get the series to be plot from the combo box selection
@@ -578,6 +592,10 @@ class Ui_frm_SEEMS_main(object):
             series = population
         elif str(self.cmb_select_variable.currentText()) == 'Household_Count':
             series = household_count
+        elif str(self.cmb_select_variable.currentText()) == 'Dissolved_Household_Count':
+            series = dissolved_household_count
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Capital':
+            series = total_capital
              
 
         # Draw the plot
@@ -618,6 +636,9 @@ class MplCanvas(FigureCanvas):
             
         elif gui.rdbtn_line_chart.isChecked():
             self.axes.plot(x_data, y_data, 'blue')
+            
+        else: # Bar chart by default
+            self.axes.bar(x_data, y_data, color = 'red')
 
 
 

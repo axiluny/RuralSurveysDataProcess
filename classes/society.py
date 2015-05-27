@@ -9,6 +9,7 @@ import random
 from data_access import DataAccess
 from household import Household
 # from person import Person
+from factor import *
 
 
 class Society(object):
@@ -56,8 +57,10 @@ class Society(object):
         self.stat_dict = dict()
         
         
-        # A counter for debugging
-        self.count = 0
+#         # A counter for debugging
+#         self.count = 0
+#         self.count1 = 0
+#         self.count2 = 0
         
         
     
@@ -77,14 +80,22 @@ class Society(object):
         self.agents_update()
         
         self.marriage()
-        
+         
         self.child_birth()
         
-        # Debugging code
-#         print self.count
+        self.factors_update()
+        
+#         Debugging code
+        print self.count2, self.count1, self.count
         
 
 
+    def factors_update(self):
+        for HID in self.cur_hh_dict:
+            hh = self.cur_hh_dict[HID]
+            hh.own_factors.refresh(hh)
+#             hh.household_factors_update()
+            
                
             
     def agents_update(self):
@@ -106,6 +117,10 @@ class Society(object):
             
             if h.is_exist == 1: # Only existing households are added to current hh dict
                 self.cur_hh_dict[h.HID] = h
+            
+            else: # Dissolve non-existing households
+                if h.is_dissolved_this_year == True:
+                    self.dissolve_household(h.HID)
             
 
     
@@ -345,6 +360,10 @@ class Society(object):
         new_hh.own_pp_dict = dict()
         new_hh.cur_own_pp_dict = dict()
         
+        # Reset household's properties (factors)
+        # Temporary codes
+        new_hh.own_factors.cash = 0
+        
          
         # Assign a new HID for the new household
         new_hh.HID = self.get_new_hid(pp)
@@ -355,7 +374,7 @@ class Society(object):
         new_hh.NonRural = self.cur_hh_dict[ori_hid].NonRural
         new_hh.is_exist = 1
         
-        # Modify the new household head's personal properties to match the new household
+        # Modify the new household head's personal attributes to match the new household
         pp.HID = new_hh.HID
         pp.Hname = new_hh.Hname
         pp.R2HHH = '3_00_1'
@@ -405,7 +424,10 @@ class Society(object):
             
             # If the original household then has no members, mark it as non-exist.
             if len(self.cur_hh_dict[ori_hid].cur_own_pp_dict) == 0:
-                self.hh_dict[ori_hid].is_exist = 0
+                self.hh_dict[ori_hid].is_exist = 0 # Such that the original household is dissolved
+                
+                # Transfer household properties
+                Factors.merge_properties(self.hh_dict[ori_hid].own_factors, self, ori_hid, HID)
                 
                 # Also need to delete the dissolved household from current hh dict
                 # But should keep its record in the non-current hh_dict
@@ -420,17 +442,100 @@ class Society(object):
 
 
 
-    # Dissolve a household with no live members.
+    
     def dissolve_household(self, HID):
+        '''
+        Dissolve a household with no live members.
+        Only effective when the household is dissolved due to deaths of all its members;
+        The other case, when the household is dissolved as a result of marriage, is taken care of in the add_person_to_household submodule.
+        '''
                 
         # Deal with household properties that were left behind
-        self.legacy()
+        self.legacy(HID)
 
 
 
-    def legacy(self):
-        pass
+    def legacy(self, HID):
+        
+        # First, get the last person who lived in the dissolved household ("the ancestor")
+        # Define a list because multiple persons could die in the same year
+        ancestor_list = list()
+                
+        for PID in self.hh_dict[HID].own_pp_dict:
+            pp = self.hh_dict[HID].own_pp_dict[PID]
+            if pp.is_died_this_year == True:
+                ancestor_list.append((pp.Age, pp))
+                
+                if len(ancestor_list) > 1:
+                    ancestor_list.sort(reverse = True)
+        
+        # Find the one ancestor
+        ancestor = ancestor_list[0][1]
 
+        
+        # Then, get the list of potential heirs
+        heirs_list = list()
+        
+        # Add children
+        if self.get_children(ancestor) is not None:
+            for child in self.get_children(ancestor):
+                heirs_list.append(("1_" + str(child.Age), child))
+        
+        # Add grand-children
+        if len(heirs_list) == 0:
+            if self.get_children(ancestor) is not None:
+                for child in self.get_children(ancestor):
+                    if self.get_children(child) is not None:
+                        for grandchild in self.get_children(child):
+                            if self.get_children(grandchild) is not None:
+                                heirs_list.append(("2_" + str(grandchild.Age), grandchild))
+ 
+         
+#         # Add grand-grand-children
+#         if len(heirs_list) == 0: 
+#             for child in self.get_children(ancestor):
+#                 for grandchild in self.get_children(child):
+#                     for g_grandchild in self.get_children(grandchild):
+#                         heirs_list.append(("3_" + str(g_grandchild.Age), g_grandchild))
+                
+        # Add parents
+        if len(heirs_list) == 0:
+            if self.get_father(ancestor) is not None:
+                heirs_list.append(("4_" + str(self.get_father(ancestor).Age), self.get_father(ancestor)))
+            if self.get_mother(ancestor) is not None:
+                heirs_list.append(("4_" + str(self.get_mother(ancestor).Age), self.get_mother(ancestor)))
+
+#             
+#             # Add grandparents
+#             heirs_list.append(self.get_father(self.get_father(ancestor)))
+#             heirs_list.append(self.get_mother(self.get_father(ancestor)))
+#             heirs_list.append(self.get_father(self.get_mother(ancestor)))
+#             heirs_list.append(self.get_mother(self.get_mother(ancestor)))
+#              
+        # Add siblings
+        if len(heirs_list) == 0:
+            if self.get_siblings(ancestor) is not None:
+                for sibling in self.get_siblings(ancestor):
+                    heirs_list.append(("6_" + str(sibling.Age), sibling))
+            
+    #         
+    #         # Add cousins
+    #         
+    #         # Add nephews/nieces
+    #         
+    
+        # Find the heir and commit the inheritance
+        if len(heirs_list) != 0:
+            heirs_list.sort()
+            heir = heirs_list[0][1]
+            
+            Factors.merge_properties(self.hh_dict[HID].own_factors, self, HID, heir.HID)
+            
+        else: # Confiscate the legacy
+            pass
+
+
+        
 
 
     
@@ -538,8 +643,8 @@ class Society(object):
                 if ff.PID == pp.FatherID:
                     return ff
         
-        # If not found, return None
-        return None
+#         # If not found, return None
+#         return None
                 
 
     def get_mother(self, pp):
@@ -550,8 +655,8 @@ class Society(object):
                 if mm.PID == pp.MotherID:
                     return mm
         
-        # If not found, return None
-        return None    
+#         # If not found, return None
+#         return None    
 
 
     def get_children(self, pp):

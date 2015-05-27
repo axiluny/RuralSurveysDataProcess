@@ -8,6 +8,7 @@ Created on Mar 25, 2015
 
 from person import Person
 from data_access import DataAccess
+from factor import *
 
 class Household(object):
     '''
@@ -44,6 +45,12 @@ class Household(object):
                 self.own_pp_dict[pp_temp.PID] = pp_temp # Indexed by PID
         
         self.cur_own_pp_dict = self.own_pp_dict
+        
+        # Define household's factors of production
+        self.own_factors = Factors(self)
+        
+        # A switch indicating whether the household is dissolved in the current year
+        self.is_dissolved_this_year = False
   
 
 
@@ -52,7 +59,7 @@ class Household(object):
         
         # Update current time stamp
         self.StatDate = current_year
-
+        self.is_dissolved_this_year = False
                 
         if self.is_exist == 1: # If the household exists
             
@@ -92,11 +99,18 @@ class Household(object):
             # If the updated household has no members, mark it as non-exist.
             if len(self.cur_own_pp_dict) == 0:
                 self.is_exist = 0
+                self.is_dissolved_this_year = True
             
         
         return self
 
+
+
     
+    def household_factors_update(self):
+        self.own_factors.refresh(self)
+        
+#         Factors.refresh(self.own_factors, self)
     
 
 

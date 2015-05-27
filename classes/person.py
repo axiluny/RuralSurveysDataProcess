@@ -4,6 +4,7 @@ Created on Apr 5, 2015
 @author: Liyan Xu; Hongmou Zhang
 '''
 import random
+from __builtin__ import False
 # import copy
 # from enum import Enum
 
@@ -38,12 +39,18 @@ class Person(object):
         self.marriage_length = 0 #This value should have been given in the original database!
         
         self.is_giving_birth_this_year = False
+        self.is_died_this_year = False
             
         
     def annual_update(self, current_year, model_parameters):
 
         # Update current time stamp
         self.StatDate = current_year
+        
+        # Reset some switches
+        self.is_giving_birth_this_year = False
+        self.is_married_this_year = False
+        self.is_died_this_year = False
 
         # Personal demographic dynamics
         if self.is_alive == 1:
@@ -89,6 +96,7 @@ class Person(object):
         # Make the judgment
         if mortality > random.random():
             self.is_alive = 0 # Mark the one as not alive
+            self.is_died_this_year = True
             return True
         else:
             return False
