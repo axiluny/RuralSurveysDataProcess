@@ -97,7 +97,7 @@ class StatClass(object):
         for HID in soc.hh_dict:
             if soc.hh_dict[HID].is_exist == 1:
                 
-                total_capital = total_capital + soc.hh_dict[HID].own_factors.cash
+                total_capital = total_capital + soc.hh_dict[HID].own_capital_properties.cash
                 
          
         # Add population

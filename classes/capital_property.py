@@ -7,7 +7,7 @@ Created on May 26, 2015
 from land import *
 
 
-class Factors(object):
+class CapitalProperty(object):
     '''
     Households' factors of production: properties and related behaviors
     '''
@@ -31,7 +31,9 @@ class Factors(object):
         self.location_type = hh.LocType # Location types: 1 - hilly; 0 - plain.
         
         if self.location_type == 1:
-            self.old_homestead = hh.Homestead            
+            self.old_homestead = hh.Homestead
+        else: # Temporary adding these two lines to ensure all hh have same capital property structures
+            self.old_homestead = 0       
         
         self.buildings_area = hh.RebuildHouseArea        
         self.building_rooms = int(self.buildings_area/30) # buildings in numbers of rooms; 30 m^2 per room
@@ -146,22 +148,40 @@ class Factors(object):
         self.young_male_labor = 0
         
         
-        for PID in hh.cur_own_pp_dict:
-            if hh.cur_own_pp_dict[PID].Age >= 18: # For now, no upper age limit
-                self.labor += 1
+        for PID in hh.own_pp_dict:
+            if hh.own_pp_dict[PID].is_alive == 1:
+                if hh.own_pp_dict[PID].Age >= 18: # For now, no upper age limit
+                    self.labor += 1
+                    
+                    if hh.own_pp_dict[PID].Gender == 1:
+                        self.male_labor += 1
+                        if hh.own_pp_dict[PID].Age <= 45:
+                            self.young_male_labor += 1
+                    else:
+                        self.female_labor += 1        
+        
+    
+    def merge_capital_properties(self, soc, out_HID, in_HID):
+        '''
+        Merge one household's (out_HID) all capital properties (self) into another's (in_HID)
+        self is the household with HID "out_HID"
+        '''
+        
+        for item in self.__dict__:
+            if item != 'land_properties':
+            # land_properties is a LandClass object and cannot be simply added to each other; Deal with them later
+                          
+#                 if soc.hh_dict[in_HID] is not None:
+                soc.hh_dict[in_HID].own_capital_properties.__dict__[item] = soc.hh_dict[in_HID].own_capital_properties.__dict__[item] + self.__dict__[item]
                 
-                if hh.cur_own_pp_dict[PID].Gender == 1:
-                    self.male_labor += 1
-                    if hh.cur_own_pp_dict[PID].Age <= 45:
-                        self.young_male_labor += 1
-                else:
-                    self.female_labor += 1        
+                # Then reset the original household's capital properties in hh_dict
+                self.__dict__[item] = 0
+            
+            else:
+                # Deal with the land properties
+                pass
         
-    
-    def merge_properties(self, soc, out_HID, in_HID):
         
-        # Temporary codes
-        soc.cur_hh_dict[in_HID].own_factors.cash = soc.cur_hh_dict[in_HID].own_factors.cash + soc.hh_dict[out_HID].own_factors.cash
-        soc.hh_dict[out_HID].own_factors.cash = 0
-    
+
+            
         

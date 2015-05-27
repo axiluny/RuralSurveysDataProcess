@@ -11,55 +11,62 @@ from __builtin__ import False
 class Person(object):
     
 #     edu_type = Enum('edu_type','uneducated primary secondary high_school college graduate' )
-
-    '''
-    This is the definition of the person class
-    '''
     
     def __init__(self, record, VarList, current_year):
         '''
-        Constructor of Person
-        VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}
-        '''
-                
+        Construct the person class from the person table in the DB, and then add some other user-defined attributes.
+
+        record indicates a record in the person table in the DB.
+        
+        VarList is the variable (or field) list of the person table in the DB   
+        VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}   
+        '''       
+
+        # Set the attributes (var) and their values (record) from the person table in the DB.                
         for var in VarList:
             setattr(self, var[0], record[var[1]])
     
-        # Define other attributes of the person
+        # Set the person variables (attributes) lists
         self.pp_var_list = VarList
 
-        # Update current time stamp
+        # Set the current time stamp
         self.StatDate = current_year
         
-                
+        # Define some other attributes of the person class
         self.is_college = False
         self.moved_out = False
-        
-        self.is_married_this_year = False
         self.marriage_length = 0 #This value should have been given in the original database!
         
+        # Define some switch variables indicating whether the person is getting married, giving birth, or die in the current year
+        self.is_married_this_year = False
         self.is_giving_birth_this_year = False
         self.is_died_this_year = False
             
         
     def annual_update(self, current_year, model_parameters):
+        '''
+        Annual demographic updates of the person.
+        '''
 
-        # Update current time stamp
+        # Update the current time stamp
         self.StatDate = current_year
         
-        # Reset some switches
-        self.is_giving_birth_this_year = False
+        # Reset the switches
+        # Note this is before the "is_alive" bifurcation. 
+        # So all person in hh_dict.own_pp_dict get this switch reset (every year).        
         self.is_married_this_year = False
+        self.is_giving_birth_this_year = False
         self.is_died_this_year = False
 
-        # Personal demographic dynamics
+
+        # Only the alive persons proceed into the personal demographic dynamics
         if self.is_alive == 1:
             self.grow()
             
-            if self.decease(model_parameters) == True: # If the person dies
+            if self.decease(model_parameters) == True: # If the person dies this year
                 return self
             
-            else: # IF the person lives
+            else: # If the person lives
                 self.educate(model_parameters)
                 
                 if self.is_college == False:  # Going to college indicates moved out and being removed from the system's person list
@@ -96,7 +103,7 @@ class Person(object):
         # Make the judgment
         if mortality > random.random():
             self.is_alive = 0 # Mark the one as not alive
-            self.is_died_this_year = True
+            self.is_died_this_year = True # And turn on this switch
             return True
         else:
             return False
@@ -124,9 +131,13 @@ class Person(object):
                     self.Education = 'high_school'
 
 
-    # Determine if the person get married this year; if yes, mark self.is_married_this_year as True
-    # The actions of getting married are realized in the Society Class in the next step, when all persons who get married this year are marked
     def marry(self,model_parameters):
+        '''
+        Determine if the person get married this year; if yes, mark self.is_married_this_year as True
+        The actions of getting married are realized in the Society Class in the next step,
+        When all persons who get married this year have been marked
+        '''
+        
         if self.Gender == 0: # Female
             if self.Age >= 20:
                 if self.marriage_rate(model_parameters) > random.random():
@@ -153,8 +164,6 @@ class Person(object):
 
     
     def childbirth(self, model_parameters):
-        
-        self.is_giving_birth_this_year = False
         
         if self.Gender == 0 and self.Age < float(model_parameters['UpperBirthAge']):
         # Only women under a predetermined age can give birth.       
