@@ -70,11 +70,11 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
     soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, simulation_depth, stat_table, start_year, end_year)
     
     #Start simulation
-    for simulation_count in range(simulation_depth):
-        step_go(db, soc, start_year, end_year, simulation_count, scenario_name)
+    for iteration_count in range(simulation_depth):
+        step_go(db, soc, start_year, end_year, iteration_count, scenario_name)
 
         # Set value for the progress bar
-        refresh_progress_bar((simulation_count + 1) * 100, gui)
+        refresh_progress_bar((iteration_count + 1) * 100, gui)
         
     
     # When the simulation is successfully completed, insert a record in the VersionTable
@@ -88,11 +88,11 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
 
 
 
-def step_go(database, society_instance, start_year, end_year, simulation_count, scenario_name):
+def step_go(database, society_instance, start_year, end_year, iteration_count, scenario_name):
     
     # If it's the first round of iteration, just get the stats and save the records to database
     # Else, proceed with the simulation in society.step_go, and then get the stats and save the records to database
-    if simulation_count == 0:  
+    if iteration_count == 0:  
         # Do statistics and add records to statistics table in database
         add_stat_results(society_instance, scenario_name)
         
@@ -100,7 +100,7 @@ def step_go(database, society_instance, start_year, end_year, simulation_count, 
         save_results_to_db(database, society_instance, scenario_name)
         
     # Do the simulation
-    Society.step_go(society_instance, start_year, end_year, simulation_count)
+    Society.step_go(society_instance, start_year, end_year, iteration_count)
 
     add_stat_results(society_instance, scenario_name)
     

@@ -16,42 +16,42 @@ class Society(object):
     '''
     This is the definition of society class
     
-    Creating household, person, etc. lists and dictionaries.
+    Create the household, person, statistics, etc. dictionaries.
+    Load model parameters, business sectors information, etc.
     '''
 
 
     def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, simulation_depth, start_year, end_year):
-
-        self.current_year = start_year
         '''
         Initialize the society class;
         '''
         
+        # Set the current time stamp
+        self.current_year = start_year
+        
         # Create a dictionary to store model parameters, indexed by Variable_Name, and contents are Variable_Value      
-#         self.model_var_list = DataAccess.get_var_list(db, model_table_name)
-        self.model_parameters_dict = dict()
-                # Fill in the model parameters dictionary from the model table (fetched from DB)
+        self.model_parameters_dict = dict()        
+        # Fill in the model parameters dictionary from the model table (fetched from DB)
         for record in model_table:
             self.model_parameters_dict[record.Variable_Name] = record.Variable_Value
           
         
-        # Get the variable lists for household and person classes 
+        # Get the variable lists for household, person, and statistics classes 
         self.hh_var_list = DataAccess.get_var_list(db, hh_table_name)
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
+        self.stat_var_list = DataAccess.get_var_list(db, stat_table_name)
 
 
-        # Define a dictionary to store all the household instances, indexed by HID
+        # Initialize the household instances;
+        # And create a dictionary to store them, indexed by HID.
         self.hh_dict = dict()        
         # Add household instances to hh_dict
         for hh in hh_table:
             hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table)
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
 
-        
-        # Get the variable list for the statistics class
-        self.stat_var_list = DataAccess.get_var_list(db, stat_table_name)
-        
-        # Define a statistics dictionary; indexed by Variable Names.To be filled later.
+                        
+        # Create a statistics dictionary; indexed by Variable Names.To be filled later in Statistics Class.
         self.stat_dict = dict()
         
         
@@ -69,13 +69,13 @@ class Society(object):
 
 
         
-    def step_go(self, start_year, end_year, simulation_count):
+    def step_go(self, start_year, end_year, iteration_count):
         '''
         (Annual) iterative activities of the society class' instance.
         '''
         
         # Update the current year tag
-        self.current_year = start_year + simulation_count + 1
+        self.current_year = start_year + iteration_count + 1
                      
         # Then do the followings step by step
         self.agents_update()
@@ -90,20 +90,6 @@ class Society(object):
         print self.count2, self.count1, self.count
         
 
-        
-        
-
-    def household_capital_property_update(self):
-        '''
-        Traverse the hh_dict. Update every existing household's capital properties status.
-        '''
-        
-        for HID in self.hh_dict:
-            hh = self.hh_dict[HID]
-            
-            if hh.is_exist == 1:
-                # Only deal with existing households
-                hh.own_capital_properties.refresh(hh)
 
             
                
@@ -308,6 +294,20 @@ class Society(object):
 
 
 
+    def household_capital_property_update(self):
+        '''
+        Traverse the hh_dict. Update every existing household's capital properties status.
+        '''
+        
+        for HID in self.hh_dict:
+            hh = self.hh_dict[HID]
+            
+            if hh.is_exist == 1:
+                # Only deal with existing households
+                hh.own_capital_properties.refresh(hh)
+
+
+
 
     def create_new_person(self, mom):
         '''
@@ -344,10 +344,12 @@ class Society(object):
         
         
         new_pp.is_college = False
-        new_pp.moved_out = False        
-        new_pp.is_married_this_year = False
-        new_pp.marriage_length = 0        
+        new_pp.moved_out = False     
+        new_pp.marriage_length = 0
+                
+        new_pp.is_married_this_year = False   
         new_pp.is_giving_birth_this_year = False
+        new_pp.is_died_this_year = False
         
         new_pp.StatDate = self.current_year
 
@@ -369,12 +371,19 @@ class Society(object):
         # Record the original HID
         ori_hid = pp.HID
          
-        # Reset all household properties, and clear own_pp_dict
+        # Reset all household properties, clear own_pp_dict, and reset the own_capital_properties instance
         for var in new_hh.hh_var_list:
             setattr(new_hh, var[0], None)        
 
         new_hh.own_pp_dict = dict()
         
+        # Reset household's capital properties
+        for item in new_hh.own_capital_properties.__dict__:
+            if item != 'land_properties':
+                new_hh.own_capital_properties.__dict__[item] = 0
+            else:
+                pass # Deal with the land properties later.
+            
         
         # Assign a new HID for the new household
         new_hh.HID = self.assign_new_hid(pp)
@@ -384,14 +393,6 @@ class Society(object):
         new_hh.StatDate = self.current_year
         new_hh.NonRural = self.hh_dict[ori_hid].NonRural
         new_hh.is_exist = 1
-
-
-        # Reset household's capital properties
-        for item in new_hh.own_capital_properties.__dict__:
-            if item != 'land_properties':
-                new_hh.own_capital_properties.__dict__[item] = 0
-            else:
-                pass # Deal with the land properties later.
             
         
         # Modify the new household head's personal attributes to match the new household
