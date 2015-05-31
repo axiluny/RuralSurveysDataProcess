@@ -4,8 +4,7 @@ Created on Mar 25, 2015
 @author: Liyan Xu; Hongmou Zhang
 '''
 # import copy
-# import random
-
+import random
 import math
 
 from person import Person
@@ -20,7 +19,7 @@ class Household(object):
     '''
     
     
-    def __init__(self, record, VarList, current_year, db, pp_table_name, pp_table):
+    def __init__(self, record, VarList, current_year, db, pp_table_name, pp_table, model_parameters):
         '''
         Construct the household class from the household table in the DB, and then add some other user-defined attributes.
 
@@ -59,7 +58,7 @@ class Household(object):
 
         
         # Initialize the household's capital properties instance
-        self.own_capital_properties = CapitalProperty(self)
+        self.own_capital_properties = CapitalProperty(self, model_parameters)
         
         # Define an empty list of available business sectors
         self.own_av_business_sectors = list()
@@ -83,7 +82,7 @@ class Household(object):
 
 
     
-    def annual_update(self, current_year, model_parameters):
+    def household_demographic_update(self, current_year, model_parameters):
         '''
         Annual demographic updates of the household.
         '''
@@ -104,7 +103,7 @@ class Household(object):
                                 
             # Annual population dynamics (personal demographic status updates)
             for PID in self.own_pp_dict:
-                temp_pp_list.append(Person.annual_update(self.own_pp_dict[PID], current_year, model_parameters))
+                temp_pp_list.append(Person.personal_demographic_update(self.own_pp_dict[PID], current_year, model_parameters))
 
             # Reset own persons (members) dict (own_pp_dict)
             self.own_pp_dict = dict()
@@ -170,11 +169,15 @@ class Household(object):
         
         # house_size
         house_size = self.own_capital_properties.buildings_area
+        if house_size == None:
+            house_size = 0
+        
         high_school_kids = self.own_capital_properties.high_school_kids
         
         
         
-        p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation))
+#         p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation))
+        p_risk = random.random()
         
         p_labor = math.exp(0.461 * self.own_capital_properties.labor) / (1 + math.exp(0.461 * self.own_capital_properties.labor))
 
@@ -193,33 +196,100 @@ class Household(object):
 
 
 
-    def h_business_revenue(self, business_sector_dict):
+    def household_business_revenue(self, business_sector_dict, model_parameters):
+        '''
+        The process of a household doing business.
+        business_sector_dict: all business sectors. i.e. society.business_sector_dict.
+        '''
         
         self.get_available_business(self.own_capital_properties, business_sector_dict)
         
-        av_business_list_ranked = self.get_rank_available_business(self.own_av_business_sectors)
+        self.get_rank_available_business(self.own_capital_properties, self.own_av_business_sectors, model_parameters)
         
-        self.do_business(self.own_capital_properties, av_business_list_ranked)
+        self.do_business(self.own_capital_properties, self.own_av_business_sectors)
 
 
 
         
     
     def get_available_business(self, hh_capital, business_sector_dict):
+        '''
+        Get the available (enter-able) business sectors list for the household.
+        hh_capital: household's capital properties (factors of production) i.e. self.own_capital_properties;
+        business_sector_dict: all business sectors. i.e. society.business_sector_dict.
+        '''
         
+        # Reset the own available business sectors list
         self.own_av_business_sectors = list()
         
-        for SectorName in business_sector_dict:
-            if business_sector_dict[SectorName].is_available(hh_capital, True) == True:
-                self.own_av_business_sectors.append(business_sector_dict[SectorName])
+        if self.hh_type == 1 or self.hh_type == 2:
+            # Risk aversion. No loans. risk_type = True
+            for SectorName in business_sector_dict:
+                if business_sector_dict[SectorName].is_available(hh_capital, True) == True:
+                    self.own_av_business_sectors.append(business_sector_dict[SectorName])
+        
+        else:
+            # Risk appetite. risk_type = False
+            for SectorName in business_sector_dict:
+                if business_sector_dict[SectorName].is_available(hh_capital, False) == True:
+                    self.own_av_business_sectors.append(business_sector_dict[SectorName])            
         
         
-
-
         
     
-    def get_rank_available_business(self, business_list):
-        pass
+    def get_rank_available_business(self, hh_capital, business_list, model_parameters):
+        '''
+        Rank the business sectors in the household's available business sectors list according to the household's specific preference.
+        hh_capital: household's capital properties (factors of production);
+        business_list: the available business sectors list for the household.
+        '''
+        
+        temp_sectors_list = list()
+        
+        if self.hh_type == 1:
+            '''
+            Max Labor, Min Risk - risk_type = True
+            '''
+            
+            # Get the hypothetical profit of each sector if entered
+            for sector in business_list:
+                profit = sector.calculate_business_revenue(hh_capital, True, False, model_parameters).cash - hh_capital.cash
+                temp_sectors_list.append((profit, sector))
+                
+            # Rank the sectors by profit descendedly
+            temp_sectors_list.sort(reverse = True)
+            
+            # Refresh the household's available business sectors list
+            self.own_av_business_sectors = list()
+            
+            # Always place agriculture (if enter-able) in the first place
+            for item in temp_sectors_list:
+                if item[1].SectorName == 'Agriculture':
+                    self.own_av_business_sectors.append(item[1])
+                    temp_sectors_list.remove(item)
+            
+            # Then add other sectors
+            for item in temp_sectors_list:
+                self.own_av_business_sectors.append(item[1])
+            
+            
+        elif self.hh_type == 2:
+            '''
+            Min Labor, Min Risk
+            '''
+            
+            pass
+        elif self.hh_type == 3:
+            '''
+            Max Labor, Max Risk
+            '''
+            pass
+        elif self.hh_type == 4:
+            '''
+            Min Labor, Max Risk;
+            '''
+            pass
+        
     
 
 

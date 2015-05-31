@@ -53,7 +53,7 @@ class Society(object):
         self.hh_dict = dict()        
         # Add household instances to hh_dict
         for hh in hh_table:
-            hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table)
+            hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table, self.model_parameters_dict)
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
         
         
@@ -140,7 +140,7 @@ class Society(object):
             self.hh_dict[HID].housedhold_categorization()        
         
         for HID in self.hh_dict:
-            self.hh_dict[HID].h_business_revenue(self.business_sector_dict)
+            self.hh_dict[HID].household_business_revenue(self.business_sector_dict, self.model_parameters_dict)
             
         
 
@@ -160,7 +160,7 @@ class Society(object):
         
         # Annual household status update
         for HID in self.hh_dict:
-            temp_hh_list.append(Household.annual_update(self.hh_dict[HID], self.current_year, self.model_parameters_dict))
+            temp_hh_list.append(Household.household_demographic_update(self.hh_dict[HID], self.current_year, self.model_parameters_dict))
 
         # Reset the households dict
         self.hh_dict = dict()

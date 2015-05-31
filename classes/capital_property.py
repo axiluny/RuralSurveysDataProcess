@@ -13,7 +13,7 @@ class CapitalProperty(object):
     '''
 
 
-    def __init__(self, hh):
+    def __init__(self, hh, model_parameters):
         '''
         hh = an instance of the household class.
         '''
@@ -36,7 +36,7 @@ class CapitalProperty(object):
             self.old_homestead = 0       
         
         self.buildings_area = hh.RebuildHouseArea        
-        self.building_rooms = int(self.buildings_area/30) # buildings in numbers of rooms; 30 m^2 per room
+        self.building_rooms = int(self.buildings_area / float(model_parameters['RoomArea'])) # buildings in numbers of rooms; 30 m^2 per room
         
         if self.buildings_area < 200:
             self.homestead = self.buildings_area

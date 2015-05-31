@@ -46,7 +46,7 @@ class Person(object):
         self.is_died_this_year = False
             
         
-    def annual_update(self, current_year, model_parameters):
+    def personal_demographic_update(self, current_year, model_parameters):
         '''
         Annual demographic updates of the person.
         '''
