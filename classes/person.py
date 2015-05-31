@@ -37,6 +37,9 @@ class Person(object):
         self.moved_out = False
         self.marriage_length = 0 #This value should have been given in the original database!
         
+        # Define a variable indicating if the person is a current student
+        self.is_student = False
+        
         # Define some switch variables indicating whether the person is getting married, giving birth, or die in the current year
         self.is_married_this_year = False
         self.is_giving_birth_this_year = False
@@ -111,24 +114,30 @@ class Person(object):
     
     def educate(self, model_parameters):
         if self.Age >= 23:
-            pass
+            self.is_student = False
         else:
             if self.Age <= 6:
                 self.Education = 'uneducated'
+                self.is_student = True
             elif self.Age >= 7 and self.Age <=12:
                 self.Education = 'primary'
+                self.is_student = True
             elif self.Age >= 13 and self.Age <= 15:
                 self.Education = 'secondary'
+                self.is_student = True
             elif self.Age >= 16 and self.Age <= 18:
                 self.Education = 'high_school'
+                self.is_student = True
             elif self.Age >= 19 and self.Age <= 22:
                 if float(model_parameters['CollegeEnrollmentRate']) > random.random():
                     self.Education = 'college'
                     self.is_college = True
                     self.moved_out = True
+                    self.is_student = True
                     
                 else:
                     self.Education = 'high_school'
+                    self.is_student = False
 
 
     def marry(self,model_parameters):

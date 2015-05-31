@@ -10,6 +10,9 @@ from data_access import DataAccess
 from household import Household
 # from person import Person
 from capital_property import *
+from land import *
+from business_sector import *
+from policy import Policy
 
 
 class Society(object):
@@ -21,7 +24,7 @@ class Society(object):
     '''
 
 
-    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, simulation_depth, start_year, end_year):
+    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year, end_year):
         '''
         Initialize the society class;
         '''
@@ -36,9 +39,12 @@ class Society(object):
             self.model_parameters_dict[record.Variable_Name] = record.Variable_Value
           
         
-        # Get the variable lists for household, person, and statistics classes 
+        # Get the variable lists for household, person, land, business sector, policy, and statistics classes 
         self.hh_var_list = DataAccess.get_var_list(db, hh_table_name)
         self.pp_var_list = DataAccess.get_var_list(db, pp_table_name)
+        self.land_var_list = DataAccess.get_var_list(db, land_table_name)
+        self.business_sector_var_list = DataAccess.get_var_list(db, business_sector_table_name)
+        self.policy_var_list = DataAccess.get_var_list(db, policy_table_name)
         self.stat_var_list = DataAccess.get_var_list(db, stat_table_name)
 
 
@@ -49,7 +55,36 @@ class Society(object):
         for hh in hh_table:
             hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table)
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
-
+        
+        
+        # Initialize the land instances;
+        # And create a list to store them
+        self.land_list = list()
+        for land_parcel in land_table:
+            self.land_list.append(Land(land_parcel, self.land_var_list, self.current_year)) 
+        
+        # Then add the land parcels to their respective household's land properties list
+        for land in self.land_list:
+            for HID in self.hh_dict:
+                if land.HID == HID:
+                    self.hh_dict[HID].own_capital_properties.land_properties_list.append(land)
+        
+        
+        # Initialize the business sector instances;
+        # And create a dictionary to store them, indexed by sector name.
+        self.business_sector_dict = dict()
+        for sector in business_sector_table:
+            sector_temp = BusinessSector(sector, self.business_sector_var_list)
+            self.business_sector_dict[sector_temp.SectorName] = sector_temp # Indexed by SectorName
+            
+        
+        # Initialize the policy program instances;
+        # And create a dictionary to store them, indexed by policy program type.
+        self.policy_dict = dict()
+        for program in policy_table:
+            program_temp = Policy(program, self.policy_var_list)
+            self.policy_dict[program_temp.PolicyType] = program_temp
+        
                         
         # Create a statistics dictionary; indexed by Variable Names.To be filled later in Statistics Class.
         self.stat_dict = dict()
@@ -86,11 +121,33 @@ class Society(object):
          
         self.household_capital_property_update()
         
+        
+        self.household_economy()
+        
+        
+        self.land_update()
+        
         # Debugging code
         print self.count2, self.count1, self.count
         
 
 
+
+    
+    def household_economy(self):
+        
+        for HID in self.hh_dict:
+            self.hh_dict[HID].housedhold_categorization()        
+        
+        for HID in self.hh_dict:
+            self.hh_dict[HID].h_business_revenue(self.business_sector_dict)
+            
+        
+
+    
+    def land_update(self):
+        for land_parcel in self.land_list:
+            land_parcel.land_cover_succession(self.current_year)
             
                
             
@@ -379,10 +436,10 @@ class Society(object):
         
         # Reset household's capital properties
         for item in new_hh.own_capital_properties.__dict__:
-            if item != 'land_properties':
+            if item != 'land_properties_list':
                 new_hh.own_capital_properties.__dict__[item] = 0
             else:
-                pass # Deal with the land properties later.
+                new_hh.own_capital_properties.land_properties_list = list()
             
         
         # Assign a new HID for the new household
@@ -483,12 +540,11 @@ class Society(object):
 
     def legacy(self, HID):
         '''
-        When a household (HID = HID) is dissolved due to deaths of all its members, this submodule assigns its legacy
-        to some other household(s).
+        When a household (HID = HID) is dissolved due to deaths of all its members,
+        this submodule finds its heir(s) and then allocate its legacy.
         '''
         
-        # First, get the last person who lived in the dissolved household ("the ancestor")
-        
+        # First, get the last person who lived in the dissolved household ("the ancestor")        
         # Define a list because multiple persons could die in the same year
         ancestor_list = list()                
         for PID in self.hh_dict[HID].own_pp_dict:

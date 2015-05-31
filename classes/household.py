@@ -6,9 +6,13 @@ Created on Mar 25, 2015
 # import copy
 # import random
 
+import math
+
 from person import Person
 from data_access import DataAccess
 from capital_property import CapitalProperty
+from business_sector import *
+from policy import *
 
 class Household(object):
     '''
@@ -57,6 +61,21 @@ class Household(object):
         # Initialize the household's capital properties instance
         self.own_capital_properties = CapitalProperty(self)
         
+        # Define an empty list of available business sectors
+        self.own_av_business_sectors = list()
+        
+        # Define an empty list of participant policy programs
+        self.own_policy_programs = list()
+        
+        
+        # Define a variable indicating household type
+        '''
+        1 - Max Labor, Min Risk;
+        2 - Min Labor, Min Risk;
+        3 - Max Labor, Max Risk;
+        4 - Min Labor, Max Risk;
+        '''
+        self.hh_type = int()
         
         # Define a switch variable indicating whether the household is dissolved in the current year
         self.is_dissolved_this_year = False
@@ -127,8 +146,89 @@ class Household(object):
     def household_capital_properties_update(self):
         self.own_capital_properties.refresh(self)
     
+    
+    
+    
+    def housedhold_categorization(self):
+        
+#         # Define the two dimensional variables
+#         p_risk = float()
+#         p_labor = float()
+        
+        # Define other variables in the formula
+        # is_truck
+        if self.own_capital_properties.truck > 0:
+            is_truck = 1
+        else:
+            is_truck = 0
+        
+        # is_minibus
+        if self.own_capital_properties.minibus > 0:
+            is_minibus = 1
+        else:
+            is_minibus = 0
+        
+        # house_size
+        house_size = self.own_capital_properties.buildings_area
+        high_school_kids = self.own_capital_properties.high_school_kids
+        
+        
+        
+        p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation))
+        
+        p_labor = math.exp(0.461 * self.own_capital_properties.labor) / (1 + math.exp(0.461 * self.own_capital_properties.labor))
+
+        
+        if p_risk < 0.5:
+            if p_labor > 0.5:
+                self.hh_type = 1
+            else:
+                self.hh_type = 2
+        else:
+            if p_labor > 0.5:
+                self.hh_type = 3
+            else:
+                self.hh_type = 4
 
 
+
+
+    def h_business_revenue(self, business_sector_dict):
+        
+        self.get_available_business(self.own_capital_properties, business_sector_dict)
+        
+        av_business_list_ranked = self.get_rank_available_business(self.own_av_business_sectors)
+        
+        self.do_business(self.own_capital_properties, av_business_list_ranked)
+
+
+
+        
+    
+    def get_available_business(self, hh_capital, business_sector_dict):
+        
+        self.own_av_business_sectors = list()
+        
+        for SectorName in business_sector_dict:
+            if business_sector_dict[SectorName].is_available(hh_capital, True) == True:
+                self.own_av_business_sectors.append(business_sector_dict[SectorName])
+        
+        
+
+
+        
+    
+    def get_rank_available_business(self, business_list):
+        pass
+    
+
+
+
+
+    
+    def do_business(self, hh_capital, business_list):
+        pass
+    
     
     
     

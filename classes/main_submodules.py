@@ -31,12 +31,14 @@ dbdriver = '{Microsoft Access Driver (*.mdb)}'
 model_table_name = 'ModelTable'
 household_table_name = 'HouseholdTable'
 person_table_name = 'PersonTable'
- 
+land_table_name = 'LanduseTable'
+business_sector_table_name = 'BusinessSectorTable'
+policy_table_name = 'PolicyTable'
 stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
 # Rounds of iteration (years)
-simulation_depth = 15
+simulation_depth = 5
  
 # Starting and ending year of simulation
 start_year = 2015
@@ -50,6 +52,9 @@ db = DataAccess(dbname, dbdriver)
 model_table = DataAccess.get_table(db, model_table_name)
 household_table = DataAccess.get_table(db, household_table_name)
 person_table = DataAccess.get_table(db, person_table_name)
+land_table = DataAccess.get_table(db, land_table_name)
+business_sector_table = DataAccess.get_table(db, business_sector_table_name)
+policy_table = DataAccess.get_table(db, policy_table_name)
 stat_table = DataAccess.get_table(db, stat_table_name)
 version_table = DataAccess.get_table(db, version_table_name)
 
@@ -61,13 +66,13 @@ user created main submodules
 
 
 
-def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, stat_table, simulation_depth, start_year, end_year, gui):
+def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year, end_year, gui):
 
     # Set up an initial value (1%) when clicked so that the user knows it's running.
     refresh_progress_bar(simulation_depth, gui)
     
     # Initialize the society class: create society, household, person, etc instances
-    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, stat_table_name, simulation_depth, stat_table, start_year, end_year)
+    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, simulation_depth, stat_table, start_year, end_year)
     
     #Start simulation
     for iteration_count in range(simulation_depth):
@@ -138,14 +143,13 @@ def save_results_to_db(database, society_instance, scenario_name):
     # Format: Scenario_name + household/people/land
     new_hh_table_name = scenario_name + '_household'
     new_pp_table_name = scenario_name + '_persons'
-#     new_land_table_name = scenario_name + '_land'
+    new_land_table_name = scenario_name + '_land'
     
     stat_table_name = 'StatTable'
     
         
     # Saving the Household table in the database
- 
-     
+      
     # If the table with that name does not exist in the database
     # i.e. in the first round of iteration,
     # Then first create a new table, then insert the records.
@@ -204,8 +208,7 @@ def save_results_to_db(database, society_instance, scenario_name):
 
 
     # Saving the Person table in the database
- 
-     
+      
     # If the table with that name does not exist in the database
     # i.e. in the first round of iteration,
     # Then first create a new table, then insert the records.
@@ -263,6 +266,68 @@ def save_results_to_db(database, society_instance, scenario_name):
                 insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
                 DataAccess.insert_table(database, insert_table_order)
             DataAccess.db_commit(database)  
+
+
+
+
+
+    # Saving the Land table in the database
+      
+    # If the table with that name does not exist in the database
+    # i.e. in the first round of iteration,
+    # Then first create a new table, then insert the records.
+    # Otherwise, just find the right table, and then insert the records.
+    if DataAccess.get_table(database, new_land_table_name) == None: # This is most indecent... see dataaccess for details
+     
+        # Create a new Land table from the variable list of Land Class
+        new_land_table_formatter = '('
+        for var in society_instance.land_var_list:
+            # Add person variables to the formatter
+            new_land_table_formatter += var[0] + ' ' + var[2] + ','  
+        new_land_table_formatter = new_land_table_formatter[0: len(new_land_table_formatter) - 1] + ')'
+     
+        create_table_order = "create table " + new_land_table_name +''+ new_land_table_formatter
+        DataAccess.create_table(database, create_table_order)
+        DataAccess.db_commit(database)
+
+
+        # Then insert all land parcels into the new table
+        # InsertContent = ''
+        for land_parcel in society_instance.land_list:
+            # Make the insert values for this land parcel
+            new_land_record_content = '('
+            for var in society_instance.land_var_list:
+                # If the value is string, add quotes
+                if var[2] == 'VARCHAR' and getattr(land_parcel, var[0]) != None: 
+                    new_land_record_content += '\''+ unicode(getattr(land_parcel, var[0]))+ '\','
+                else:
+                    new_land_record_content += unicode(getattr(land_parcel, var[0]))+ ','
+            # Change the ending comma to a closing parenthesis
+            new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
+            # Insert one land parcel record
+            insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
+            DataAccess.insert_table(database, insert_table_order)
+        DataAccess.db_commit(database)  
+ 
+     
+    else:
+        # Just insert all land parcels into the new table
+        # InsertContent = ''
+        for land_parcel in society_instance.land_list:
+            # Make the insert values for this household
+            new_land_record_content = '('
+            for var in society_instance.land_var_list:
+                # If the value is string, add quotes
+                if var[2] == 'VARCHAR' and getattr(land_parcel, var[0]) != None: 
+                    new_land_record_content += '\''+ unicode(getattr(land_parcel, var[0]))+ '\','
+                else:
+                    new_land_record_content += unicode(getattr(land_parcel, var[0]))+ ','
+            # Change the ending comma to a closing parenthesis
+            new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
+            # Insert one land parcel record
+            insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
+            DataAccess.insert_table(database, insert_table_order)
+        DataAccess.db_commit(database)        
 
 
 
@@ -547,7 +612,7 @@ class Ui_frm_SEEMS_main(object):
         scenario_name = str(self.txt_input_scenario_name.text())
                   
         # Run the simulation
-        create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, stat_table_name, stat_table, simulation_depth, start_year, end_year, self)
+        create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year, end_year, self)
       
         # Show a message box indicating the completion of run.
         msb = QMessageBox()

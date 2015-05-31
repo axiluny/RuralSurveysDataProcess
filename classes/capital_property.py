@@ -20,12 +20,12 @@ class CapitalProperty(object):
         
         # Monetary assets and liabilities
         self.cash = hh.Capital
-        self.debt  = hh.TotalLoan
+        self.debt  = hh.TotalLoan # Positive values indicate household in debt
         self.lending = 0
         
         
         # Land properties
-        self.land_properties = Land(hh)
+        self.land_properties_list = list() # Define an empty list here; fill land parcels in it later in the society class
         
         self.farmland = hh.FarmlandAreaAfter
         self.location_type = hh.LocType # Location types: 1 - hilly; 0 - plain.
@@ -51,6 +51,13 @@ class CapitalProperty(object):
         self.male_labor = int()
         self.female_labor = int()
         self.young_male_labor = int()
+        
+        self.kids = int()
+        self.preschool_kids = int()
+        self.primary_school_kids = int()
+        self.secondary_school_kids = int()
+        self.high_school_kids = int()
+        self.college_kids = int()
         
         self.update_labors(hh)
 
@@ -146,11 +153,32 @@ class CapitalProperty(object):
         self.male_labor = 0
         self.female_labor = 0
         self.young_male_labor = 0
+
+        self.kids = 0
+        self.preschool_kids = 0
+        self.primary_school_kids = 0
+        self.secondary_school_kids = 0
+        self.high_school_kids = 0
+        self.college_kids = 0
+
         
         
         for PID in hh.own_pp_dict:
             if hh.own_pp_dict[PID].is_alive == 1:
-                if hh.own_pp_dict[PID].Age >= 18: # For now, no upper age limit
+                if hh.own_pp_dict[PID].is_student == True:
+                    if hh.own_pp_dict[PID].Education == 'uneducated' and hh.own_pp_dict[PID].Age >= 4:
+                        self.preschool_kids += 1
+                    elif hh.own_pp_dict[PID].Education == 'primary':
+                        self.primary_school_kids += 1
+                    elif hh.own_pp_dict[PID].Education == 'secondary':
+                        self.secondary_school_kids += 1
+                    elif hh.own_pp_dict[PID].Education == 'high_school':
+                        self.high_school_kids += 1
+                    elif hh.own_pp_dict[PID].Education == 'college':
+                        self.college_kids += 1
+                    
+                
+                if hh.own_pp_dict[PID].Age >= 18: # For now, no upper age limit for being a labor
                     self.labor += 1
                     
                     if hh.own_pp_dict[PID].Gender == 1:
@@ -158,7 +186,10 @@ class CapitalProperty(object):
                         if hh.own_pp_dict[PID].Age <= 45:
                             self.young_male_labor += 1
                     else:
-                        self.female_labor += 1        
+                        self.female_labor += 1
+                
+                else:
+                    self.kids += 1
         
     
     def merge_capital_properties(self, soc, out_HID, in_HID):
@@ -168,7 +199,7 @@ class CapitalProperty(object):
         '''
         
         for item in self.__dict__:
-            if item != 'land_properties':
+            if item != 'land_properties_list':
             # land_properties is a LandClass object and cannot be simply added to each other; Deal with them later
                           
 #                 if soc.hh_dict[in_HID] is not None:
@@ -179,7 +210,9 @@ class CapitalProperty(object):
             
             else:
                 # Deal with the land properties
-                pass
+                for land in soc.hh_dict[out_HID].own_capital_properties.land_properties_list:
+                    soc.hh_dict[in_HID].own_capital_properties.land_properties_list.append(land)
+                    soc.hh_dict[out_HID].own_capital_properties.land_properties_list.remove(land)
         
         
 
