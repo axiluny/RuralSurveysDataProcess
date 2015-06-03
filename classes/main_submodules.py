@@ -18,6 +18,7 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
+import numpy
 
 '''
 Globals, Constants, and other declarations.
@@ -38,7 +39,7 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
 # Rounds of iteration (years)
-simulation_depth = 5
+simulation_depth = 20
  
 # Starting and ending year of simulation
 start_year = 2015
@@ -133,6 +134,50 @@ def add_stat_results(society_instance, scenario_name):
     # Total capital
     tc = statistics.StatClass()
     statistics.StatClass.get_total_capital(tc, society_instance, scenario_name)
+    
+    # Total debt
+    tb = statistics.StatClass()
+    statistics.StatClass.get_total_debt(tb, society_instance, scenario_name)    
+    
+    # Total agriculture income
+    agi = statistics.StatClass()
+    statistics.StatClass.get_total_agriculture_income(agi, society_instance, scenario_name)
+    
+    # Total temporary job income
+    tji = statistics.StatClass()
+    statistics.StatClass.get_total_tempjob_income(tji, society_instance, scenario_name)
+    
+    # Total freight transportation income
+    fti = statistics.StatClass()
+    statistics.StatClass.get_total_freighttrans_income(fti, society_instance, scenario_name)
+    
+    # Total passenger transportation income
+    pti = statistics.StatClass()
+    statistics.StatClass.get_total_passengertrans_income(pti, society_instance, scenario_name)
+    
+    # Total tractor transportation income
+    tti = statistics.StatClass()
+    statistics.StatClass.get_total_tractortrans_income(tti, society_instance, scenario_name)
+    
+    # Total lodging income
+    lgi = statistics.StatClass()
+    statistics.StatClass.get_total_lodging_income(lgi, society_instance, scenario_name)
+    
+    # Total private business income
+    pbi = statistics.StatClass()
+    statistics.StatClass.get_total_prvt_business_income(pbi, society_instance, scenario_name)
+    
+    # Total lending income
+    ldi = statistics.StatClass()
+    statistics.StatClass.get_total_lending_income(ldi, society_instance, scenario_name)
+    
+    # Total renting income
+    rti = statistics.StatClass()
+    statistics.StatClass.get_total_renting_income(rti, society_instance, scenario_name)
+    
+    # Sectors income structure
+    sis = statistics.StatClass()
+    statistics.StatClass.get_sectors_income_structure(sis, society_instance, scenario_name)
 
     
     
@@ -553,9 +598,24 @@ class Ui_frm_SEEMS_main(object):
               
         # Create a QVBoxLayout within the canvas widget, such that the canvas embeds in the main window frame
         self.lyt = QtGui.QVBoxLayout(self.canvaswidget)
-           
+
+
+        # create a canvas
+        fig = Figure()        
+        self.mc = FigureCanvas(fig)
+
+        self.mc.axes = fig.add_subplot(111)
+        self.mc.axes.hold(True) 
+
+        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.mc.updateGeometry()          
+        
+        
+        '''
+        Another way to create a canvas using a seperately defined class
         # Create a canvas instance
         self.mc = MplCanvas(self.canvaswidget)
+        '''
             
         # Add the canvas instance into the VBox Layout
         self.lyt.addWidget(self.mc)        
@@ -635,7 +695,21 @@ class Ui_frm_SEEMS_main(object):
         population = list()
         household_count = list()
         dissolved_household_count = list()
+        
         total_capital = list()
+        total_debt = list()
+        
+        total_agriculture_income = list()
+        total_temp_job_income = list()
+        total_freight_trans_income = list()
+        total_passenger_trans_income = list()
+        total_tractor_trans_income = list()
+        total_lodging_income =  list()
+        total_private_business_income = list()
+        total_lending_income = list()
+        total_renting_income = list()
+        
+        sectors_income_structure = list()
          
         for st in stat_table:            
             # Look only the records for the current scenario version
@@ -652,6 +726,39 @@ class Ui_frm_SEEMS_main(object):
                     
                 elif st.Variable == 'Total_Capital':
                     total_capital.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Debt':
+                    total_debt.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Agriculture_Income':
+                    total_agriculture_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Temp_Job_Income':
+                    total_temp_job_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Freight_Trans_Income':
+                    total_freight_trans_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Passenger_Trans_Income':
+                    total_passenger_trans_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Tractor_Trans_Income':
+                    total_tractor_trans_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Lodging_Income':
+                    total_lodging_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Private_Business_Income':
+                    total_private_business_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Lending_Income':
+                    total_lending_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Renting_Income':
+                    total_renting_income.append(st.StatValue)
+                
+                elif st.Variable == 'Sectors_Income_Structure':
+                    sectors_income_structure = [total_agriculture_income, total_temp_job_income, total_freight_trans_income, total_passenger_trans_income, total_tractor_trans_income, total_lodging_income, total_private_business_income, total_lending_income, total_renting_income]
         
         
         # Get the series to be plot from the combo box selection
@@ -663,20 +770,122 @@ class Ui_frm_SEEMS_main(object):
             series = dissolved_household_count
         elif str(self.cmb_select_variable.currentText()) == 'Total_Capital':
             series = total_capital
-             
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Debt':
+            series = total_debt             
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Agriculture_Income':
+            series = total_agriculture_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Temp_Job_Income':
+            series = total_temp_job_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Freight_Trans_Income':
+            series = total_freight_trans_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Passenger_Trans_Income':
+            series = total_passenger_trans_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Tractor_Trans_Income':
+            series = total_tractor_trans_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Lodging_Income':
+            series = total_lodging_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Private_Business_Income':
+            series = total_private_business_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Lending_Income':
+            series = total_lending_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Renting_Income':
+            series = total_renting_income
+        elif str(self.cmb_select_variable.currentText()) == 'Sectors_Income_Structure':
+            series = sectors_income_structure
+
+
+
 
         # Draw the plot
         # First, remove any existing canvas contents
         self.lyt.removeWidget(self.mc)
-           
-        # Then create a new canvas instance
-        self.mc = MplCanvas(self.canvaswidget)
+
+        # Add the new figure
+        fig = Figure()        
+        self.mc = FigureCanvas(fig)
+
+        self.mc.axes = fig.add_subplot(111)
+        self.mc.axes.hold(True) 
+
+        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.mc.updateGeometry()        
         
-        self.mc.plot(time_stamps, series, self)
-#         self.mc.plot(time_stamps, time_stamps, self)
         
+        # Draw the plot
+        # Determine the chart type
+        
+        # Take care of special, combined variables first
+        if str(self.cmb_select_variable.currentText()) == 'Sectors_Income_Structure':
+            
+            # Set the accumulated series to help place the stacked bars
+            accu_series1 = numpy.add(series[0], series[1])                
+            accu_series2 = numpy.add(accu_series1, series[2])
+            accu_series3 = numpy.add(accu_series2, series[3])                
+            accu_series4 = numpy.add(accu_series3, series[4])
+            accu_series5 = numpy.add(accu_series4, series[5])
+            accu_series6 = numpy.add(accu_series5, series[6])
+            accu_series7 = numpy.add(accu_series6, series[7])                 
+            
+            # Bar plot the series, and set labels for legend                                                                
+            agi = self.mc.axes.bar(time_stamps, series[0], color = 'green')
+            agi.set_label ('Agriculture')
+            
+            tji = self.mc.axes.bar(time_stamps, series[1], bottom = series[0], color = 'yellow')
+            tji.set_label ('Temporary Jobs')
+            
+            fti = self.mc.axes.bar(time_stamps, series[2], bottom = accu_series1, color = '0.5')
+            fti.set_label ('Freight Transportation')
+            
+            pti = self.mc.axes.bar(time_stamps, series[3], bottom = accu_series2, color = '0.25')
+            pti.set_label ('Passenger Transportation')
+            
+            tti = self.mc.axes.bar(time_stamps, series[4], bottom = accu_series3, color = '0.75')
+            tti.set_label ('Tractor Transportation')
+            
+            lgi = self.mc.axes.bar(time_stamps, series[5], bottom = accu_series4, color = 'magenta')
+            lgi.set_label ('Lodging')
+            
+            pbi = self.mc.axes.bar(time_stamps, series[6], bottom = accu_series5, color = 'blue')
+            pbi.set_label ('Private Business')
+            
+            ldi = self.mc.axes.bar(time_stamps, series[7], bottom = accu_series6, color = 'red')
+            ldi.set_label ('Lending')
+            
+            rti = self.mc.axes.bar(time_stamps, series[8], bottom = accu_series7, color = 'cyan')
+            rti.set_label ('Renting')
+            
+            self.mc.axes.set_title('Income Structure of the Sectors')
+            self.mc.axes.legend(loc = 2)
+            self.mc.axes.set_xlabel('Year')
+#             self.mc.axes.set_xticklabels(time_stamps)
+            self.mc.axes.set_ylabel('Income/RMB')
+            
+#             self.mc.axes.set_ybound(upper = 80000000)
+
+        
+        else: # Other "ordinary" variables
+            if self.rdbtn_bar_chart.isChecked():
+                self.mc.axes.bar(time_stamps, series, color = 'red')
+                            
+            elif self.rdbtn_line_chart.isChecked():
+                self.mc.axes.plot(time_stamps, series, 'blue')
+                
+            else: # Bar chart by default
+                self.mc.axes.bar(time_stamps, series, color = 'red')        
+        
+                
         # Lastly, add the new canvas instance into the VBox Layout
         self.lyt.addWidget(self.mc)
+
+
+
+        '''           
+        Another method to draw plots; using another canvas class
+        # Then create a new canvas instance
+#         self.mc = MplCanvas(self.canvaswidget)
+#         self.mc.plot(time_stamps, series, self)
+        '''
+        
 
     
 

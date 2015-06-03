@@ -100,7 +100,7 @@ class CapitalProperty(object):
         self.temp_job_income = float()
         self.freight_trans_income = float()
         self.passenger_trans_income = float()
-        self.tracor_trans_income = float()
+        self.tractor_trans_income = float()
         self.lodging_income = float()
         self.private_business_income = float()
         self.lending_income = float()
@@ -190,7 +190,21 @@ class CapitalProperty(object):
                 
                 else:
                     self.kids += 1
+    
+    
+    def get_monetary_value(self):
         
+        value = self.cash
+        
+        return value
+    
+    
+    def get_total_income(self):
+        
+        total_income = self.agriculture_income + self.temp_job_income + self.freight_trans_income + self.passenger_trans_income + self.tracor_trans_income + self.lodging_income + self.private_business_income + self.renting_income + self.lending_income
+    
+        return total_income
+    
     
     def merge_capital_properties(self, soc, out_HID, in_HID):
         '''

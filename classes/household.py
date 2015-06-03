@@ -60,21 +60,38 @@ class Household(object):
         # Initialize the household's capital properties instance
         self.own_capital_properties = CapitalProperty(self, model_parameters)
         
-        # Define an empty list of available business sectors
+        # Define an empty list of available business sectors,
+        # and another empty list of the business sectors that the household is in in the current year
         self.own_av_business_sectors = list()
+        self.own_current_sectors = list()
         
         # Define an empty list of participant policy programs
         self.own_policy_programs = list()
         
         
-        # Define a variable indicating household type
+        # Define a variable indicating the household's preference type
         '''
         1 - Max Labor, Min Risk;
         2 - Min Labor, Min Risk;
         3 - Max Labor, Max Risk;
         4 - Min Labor, Max Risk;
         '''
-        self.hh_type = int()
+        self.hh_preference_type = int()
+        
+        # Also define a variable indicating the preference toward risks
+        '''
+        True - risk aversion; False - risk appetite;
+        '''
+        self.hh_risk_type = True
+        
+        
+        # Define a variable indicating the household's business type
+        '''
+        0 - agriculture only
+        1 - agriculture and another business sectors; or one business sector which is not agriculture
+        2 - agriculture and more than one other business sectors
+        '''
+        self.business_type = int()
         
         # Define a switch variable indicating whether the household is dissolved in the current year
         self.is_dissolved_this_year = False
@@ -149,12 +166,22 @@ class Household(object):
     
     
     def housedhold_categorization(self):
+
+        '''
+        Categorize the households according to their preferences toward risk and labor/leisure trade-off
         
-#         # Define the two dimensional variables
-#         p_risk = float()
-#         p_labor = float()
+        For combined (risk + labor/leisure) household preference types:
+            1 - Max Labor, Min Risk;
+            2 - Min Labor, Min Risk;
+            3 - Max Labor, Max Risk;
+            4 - Min Labor, Max Risk;
+                
+        For risk preference types:
+            True - risk aversion; False - risk appetite;
+        '''        
+
         
-        # Define other variables in the formula
+        # Define variables in the formula
         # is_truck
         if self.own_capital_properties.truck > 0:
             is_truck = 1
@@ -176,37 +203,43 @@ class Household(object):
         
         
         
-#         p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation))
-        p_risk = random.random()
+        p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation))
         
         p_labor = math.exp(0.461 * self.own_capital_properties.labor) / (1 + math.exp(0.461 * self.own_capital_properties.labor))
 
         
         if p_risk < 0.5:
             if p_labor > 0.5:
-                self.hh_type = 1
+                self.hh_preference_type = 1
+                self.hh_risk_type = True
             else:
-                self.hh_type = 2
+                self.hh_preference_type = 2
+                self.hh_risk_type = True
         else:
             if p_labor > 0.5:
-                self.hh_type = 3
+                self.hh_preference_type = 3
+                self.hh_risk_type = False
             else:
-                self.hh_type = 4
+                self.hh_preference_type = 4
+                self.hh_risk_type = False
 
 
 
 
-    def household_business_revenue(self, business_sector_dict, model_parameters):
+    def household_business_revenue(self, business_sector_dict, risk_effective, model_parameters):
         '''
         The process of a household doing business.
         business_sector_dict: all business sectors. i.e. society.business_sector_dict.
+        
+        risk_effective - whether the random risk factor takes effect in the calculation. True - real world; False: hypothetical.
         '''
         
         self.get_available_business(self.own_capital_properties, business_sector_dict)
         
         self.get_rank_available_business(self.own_capital_properties, self.own_av_business_sectors, model_parameters)
         
-        self.do_business(self.own_capital_properties, self.own_av_business_sectors)
+        self.do_business(self.own_capital_properties, self.own_av_business_sectors, risk_effective, model_parameters)
+
 
 
 
@@ -222,7 +255,7 @@ class Household(object):
         # Reset the own available business sectors list
         self.own_av_business_sectors = list()
         
-        if self.hh_type == 1 or self.hh_type == 2:
+        if self.hh_preference_type == 1 or self.hh_preference_type == 2:
             # Risk aversion. No loans. risk_type = True
             for SectorName in business_sector_dict:
                 if business_sector_dict[SectorName].is_available(hh_capital, True) == True:
@@ -246,11 +279,10 @@ class Household(object):
         
         temp_sectors_list = list()
         
-        if self.hh_type == 1:
+        if self.hh_preference_type == 1:
             '''
             Max Labor, Min Risk - risk_type = True
-            '''
-            
+            '''            
             # Get the hypothetical profit of each sector if entered
             for sector in business_list:
                 profit = sector.calculate_business_revenue(hh_capital, True, False, model_parameters).cash - hh_capital.cash
@@ -273,32 +305,228 @@ class Household(object):
                 self.own_av_business_sectors.append(item[1])
             
             
-        elif self.hh_type == 2:
+        elif self.hh_preference_type == 2:
             '''
-            Min Labor, Min Risk
+            Min Labor, Min Risk - risk_type = True
             '''
+            # Get the hypothetical labor cost of each sector if entered
+            for sector in business_list:
+                labor_cost = sector.calculate_business_revenue(hh_capital, True, False, model_parameters).labor_cost - hh_capital.labor_cost
+                temp_sectors_list.append((labor_cost, sector))
+                
+            # Rank the sectors by labor cost ascendedly
+            temp_sectors_list.sort()
             
-            pass
-        elif self.hh_type == 3:
+            # Refresh the household's available business sectors list
+            self.own_av_business_sectors = list()
+            
+            # Add sectors
+            for item in temp_sectors_list:
+                self.own_av_business_sectors.append(item[1])
+
+            
+        elif self.hh_preference_type == 3:
             '''
-            Max Labor, Max Risk
+            Max Labor, Max Risk - risk_type = False
             '''
-            pass
-        elif self.hh_type == 4:
+            # Get the hypothetical profit of each sector if entered
+            for sector in business_list:
+                profit = sector.calculate_business_revenue(hh_capital, False, False, model_parameters).cash - hh_capital.cash
+                temp_sectors_list.append((profit, sector))
+                
+            # Rank the sectors by profit descendedly
+            temp_sectors_list.sort(reverse = True)
+            
+            # Refresh the household's available business sectors list
+            self.own_av_business_sectors = list()
+            
+            # Always place agriculture (if enter-able) in the first place
+            for item in temp_sectors_list:
+                if item[1].SectorName == 'Agriculture':
+                    self.own_av_business_sectors.append(item[1])
+                    temp_sectors_list.remove(item)
+            
+            # Then add other sectors
+            for item in temp_sectors_list:
+                self.own_av_business_sectors.append(item[1])
+                
+                
+        elif self.hh_preference_type == 4:
             '''
-            Min Labor, Max Risk;
+            Min Labor, Max Risk - risk_type = False
             '''
-            pass
+            # Get the hypothetical labor cost of each sector if entered
+            for sector in business_list:
+                labor_cost = sector.calculate_business_revenue(hh_capital, False, False, model_parameters).labor_cost - hh_capital.labor_cost
+                temp_sectors_list.append((labor_cost, sector))
+                
+            # Rank the sectors by labor cost ascendedly
+            temp_sectors_list.sort()
+            
+            # Refresh the household's available business sectors list
+            self.own_av_business_sectors = list()
+            
+            # Add sectors
+            for item in temp_sectors_list:
+                self.own_av_business_sectors.append(item[1])            
         
     
 
+    
+    def do_business(self, hh_capital, business_list, risk_effective, model_parameters):
+        '''
+        risk_effective - whether the random risk factor takes effect in the calculation. True - real world; False: hypothetical.        
+        '''
+        c_revenue = self.get_compensational_revenues()
+        min_living_cost = self.get_min_living_cost(model_parameters)
+        
+        # Reset the houosehold's current sector list
+        self.own_current_sectors = list()
+        
+                
+        if self.hh_preference_type == 1 or self.hh_preference_type == 3:
+            '''
+            1 - Max Labor, Min Risk; 3 - Max Labor, Max Risk;
+            '''
+            
+            for sector in self.own_av_business_sectors:
+                self.own_capital_properties = BusinessSector.calculate_business_revenue(sector, self.own_capital_properties, self.hh_risk_type, risk_effective, model_parameters)
+                self.own_current_sectors.append(sector)
+                
+                if self.own_capital_properties.av_labor <= 0:
+                    # Exit condition: household running out of its labor resource
+                    break
+            
+                
+        elif self.hh_preference_type == 2 or self.hh_preference_type == 4:
+            '''
+            2 - Min Labor, Min Risk; 4 - Min Labor, Max Risk.
+            '''                     
+            
+            old_cash = self.own_capital_properties.cash
+            
+            for sector in self.own_av_business_sectors:               
+                if self.own_capital_properties.cash - old_cash + c_revenue >= min_living_cost:
+                    # Exit condition: this year's income >= minimal living cost
+                    break 
+                
+                else:
+                    self.own_capital_properties = BusinessSector.calculate_business_revenue(sector, self.own_capital_properties, self.hh_risk_type, risk_effective, model_parameters)
+                    self.own_current_sectors.append(sector)
+                                                  
+                
+        
+
+
+    def household_final_accounting(self, model_parameters):
+        '''
+        Household's final cash capital = own_capital_properties.cash - actual_living_cost - loan_payments
+        '''
+        
+        actual_living_cost = self.get_actual_living_cost(model_parameters)
+        
+        # Subtract living costs from cash reserve; if insufficient, go into debt.
+        if self.own_capital_properties.cash < actual_living_cost:
+            self.own_capital_properties.debt = self.own_capital_properties.debt + (actual_living_cost - self.own_capital_properties.cash)
+            self.own_capital_properties.cash = 0
+        else:
+            self.own_capital_properties.cash = self.own_capital_properties.cash - actual_living_cost
+        
+        
+        # Then pay the debts, if any, with up to half the household cash reserve.
+        payment = self.own_capital_properties.cash / 2
+        
+        if self.own_capital_properties.debt > 0:
+            if payment <= self.own_capital_properties.debt:
+                self.own_capital_properties.cash = self.own_capital_properties.cash - payment
+                self.own_capital_properties.debt = self.own_capital_properties.debt - payment
+            
+            else:
+                self.own_capital_properties.cash = self.own_capital_properties.cash - self.own_capital_properties.debt
+                self.own_capital_properties.debt = 0
+                
+        
+    
+            
+    
+    def get_compensational_revenues(self):
+        
+        return 0
+    
+    
+    def get_min_living_cost(self, model_parameters):
+        
+        min_living_cost = self.own_capital_properties.preschool_kids * float(model_parameters['PreSchooleCostPerKidI'])\
+                        + self.own_capital_properties.primary_school_kids * float(model_parameters['PrimarySchoolCostPerKidI'])\
+                        + self.own_capital_properties.secondary_school_kids * float(model_parameters['SecondarySchoolCostPerKidI'])\
+                        + self.own_capital_properties.high_school_kids * float(model_parameters['HighSchoolCostPerKidI'])\
+                        + self.own_capital_properties.college_kids * float(model_parameters['CollegeCostPerKidI'])\
+                        + ( len(self.own_pp_dict) - self.own_capital_properties.preschool_kids - self.own_capital_properties.primary_school_kids
+                             - self.own_capital_properties.secondary_school_kids - self.own_capital_properties.high_school_kids
+                              - self.own_capital_properties.college_kids) * float(model_parameters['EverydayCostPerCapitaI'])
+        
+        return min_living_cost
+    
+    
+    
+    
+    def get_actual_living_cost(self, model_parameters):
+        
+        self.get_household_business_type()
+        
+        if self.business_type == 0:
+            living_cost = self.own_capital_properties.preschool_kids * float(model_parameters['PreSchooleCostPerKidI'])\
+                            + self.own_capital_properties.primary_school_kids * float(model_parameters['PrimarySchoolCostPerKidI'])\
+                            + self.own_capital_properties.secondary_school_kids * float(model_parameters['SecondarySchoolCostPerKidI'])\
+                            + self.own_capital_properties.high_school_kids * float(model_parameters['HighSchoolCostPerKidI'])\
+                            + self.own_capital_properties.college_kids * float(model_parameters['CollegeCostPerKidI'])\
+                            + ( len(self.own_pp_dict) - self.own_capital_properties.preschool_kids - self.own_capital_properties.primary_school_kids
+                                 - self.own_capital_properties.secondary_school_kids - self.own_capital_properties.high_school_kids
+                                  - self.own_capital_properties.college_kids) * float(model_parameters['EverydayCostPerCapitaI'])
+            
+        
+        elif self.business_type == 1:
+            living_cost = self.own_capital_properties.preschool_kids * float(model_parameters['PreSchooleCostPerKidII'])\
+                            + self.own_capital_properties.primary_school_kids * float(model_parameters['PrimarySchoolCostPerKidII'])\
+                            + self.own_capital_properties.secondary_school_kids * float(model_parameters['SecondarySchoolCostPerKidII'])\
+                            + self.own_capital_properties.high_school_kids * float(model_parameters['HighSchoolCostPerKidII'])\
+                            + self.own_capital_properties.college_kids * float(model_parameters['CollegeCostPerKidII'])\
+                            + ( len(self.own_pp_dict) - self.own_capital_properties.preschool_kids - self.own_capital_properties.primary_school_kids
+                                 - self.own_capital_properties.secondary_school_kids - self.own_capital_properties.high_school_kids
+                                  - self.own_capital_properties.college_kids) * float(model_parameters['EverydayCostPerCapitaII'])
+        
+        else:
+            living_cost = self.own_capital_properties.preschool_kids * float(model_parameters['PreSchooleCostPerKidIII'])\
+                            + self.own_capital_properties.primary_school_kids * float(model_parameters['PrimarySchoolCostPerKidIII'])\
+                            + self.own_capital_properties.secondary_school_kids * float(model_parameters['SecondarySchoolCostPerKidIII'])\
+                            + self.own_capital_properties.high_school_kids * float(model_parameters['HighSchoolCostPerKidIII'])\
+                            + self.own_capital_properties.college_kids * float(model_parameters['CollegeCostPerKidIII'])\
+                            + ( len(self.own_pp_dict) - self.own_capital_properties.preschool_kids - self.own_capital_properties.primary_school_kids
+                                 - self.own_capital_properties.secondary_school_kids - self.own_capital_properties.high_school_kids
+                                  - self.own_capital_properties.college_kids) * float(model_parameters['EverydayCostPerCapitaIII'])
+
+        
+        return living_cost    
+    
+    
+    
+    
+    
+    def get_household_business_type(self):
+        
+        if len(self.own_current_sectors) == 1 and self.own_current_sectors[0].SectorName == 'Agriculture':
+            self.business_type = 0
+        elif  len(self.own_current_sectors) == 2:
+            if self.own_current_sectors[0].SectorName == 'Agriculture' or self.own_current_sectors[1].SectorName == 'Agriculture':
+                self.business_type = 1
+        else:
+            self.business_type = 2
+    
 
 
 
-    
-    def do_business(self, hh_capital, business_list):
-        pass
-    
-    
-    
+    def household_policy_decision(self):
+        
+        # When the decision is made, refresh the household's own capital properties
+        self.own_capital_properties.refresh(self)
     

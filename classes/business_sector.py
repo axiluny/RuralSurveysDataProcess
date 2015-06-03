@@ -348,7 +348,7 @@ class BusinessSector(object):
             new_capital.labor_cost += max_vehicle * self.LaborCost / 365
             new_capital.av_tractor = self.plus(new_capital.minibus - max_vehicle)
              
-            new_capital.tracor_trans_income += revenue
+            new_capital.tractor_trans_income += revenue
             new_capital.cash += revenue
 
   

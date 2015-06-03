@@ -137,13 +137,19 @@ class Society(object):
     def household_economy(self):
         
         for HID in self.hh_dict:
-            self.hh_dict[HID].housedhold_categorization()        
-        
-        for HID in self.hh_dict:
-            self.hh_dict[HID].household_business_revenue(self.business_sector_dict, self.model_parameters_dict)
+            # Determine the household's preferences
+            self.hh_dict[HID].housedhold_categorization()
             
+            # Determine which policy program to participate in
+            self.hh_dict[HID].household_policy_decision()
         
+            # Do the business
+            self.hh_dict[HID].household_business_revenue(self.business_sector_dict, True, self.model_parameters_dict)
+            
+            # Household's final accounting for the year
+            self.hh_dict[HID].household_final_accounting(self.model_parameters_dict)
 
+    
     
     def land_update(self):
         for land_parcel in self.land_list:
@@ -227,7 +233,7 @@ class Society(object):
                         if new_hh == True:                                        
                             # Create a new household with the male pp being the household head
                             self.create_new_household(pp)
-                            self.add_person_to_household(sp, pp.HID) # Add sp to the newly created household as pp's spouse
+                            self.add_person_to_household(sp, pp.HID, 'spouse') # Add sp to the newly created household as pp's spouse
                             
                             # Modify the FatherID/MotherID of any children of pp and sp
                             # And if either one of the new couple has any unmarried children, add them into the new household
@@ -237,7 +243,7 @@ class Society(object):
                                     kid.MotherID = sp.PID        
                                                                 
                                     if kid.IsMarry == 0:
-                                        self.add_person_to_household(kid, pp.HID)
+                                        self.add_person_to_household(kid, pp.HID, 'non_newborn_kid')
 
                             # Mother                         
                             if self.get_children(sp) is not None:
@@ -245,17 +251,17 @@ class Society(object):
                                     kid.FatherID = pp.PID
                                     
                                     if kid.IsMarry == 0:
-                                        self.add_person_to_household(kid, pp.HID)
+                                        self.add_person_to_household(kid, pp.HID, 'non_newborn_kid')
                                                                                
                         else:
-                            self.add_person_to_household(sp, pp.HID)
+                            self.add_person_to_household(sp, pp.HID, 'spouse')
                             # If the female sp has any children, add them into the new household
                             if self.get_children(sp) is not None:
                                 for kid in self.get_children(sp):
                                     kid.FatherID = pp.PID
                                     
                                     if kid.IsMarry == 0:
-                                        self.add_person_to_household(kid, pp.HID)
+                                        self.add_person_to_household(kid, pp.HID, 'non_newborn_kid')
                                                             
                     else:
                         # If failed to find a match    
@@ -294,7 +300,7 @@ class Society(object):
                         if new_hh == True:                                        
                             # Create a new household with the male sp being the household head
                             self.create_new_household(sp)
-                            self.add_person_to_household(pp, sp.HID) # # Add pp to the newly created household as sp's spouse
+                            self.add_person_to_household(pp, sp.HID, 'spouse') # # Add pp to the newly created household as sp's spouse
                             
                             # Modify the FatherID/MotherID of any children of pp and sp
                             # And if either one of the new couple has any unmarried children, add them into the new household
@@ -304,7 +310,7 @@ class Society(object):
                                     kid.FatherID = sp.PID                                    
                                     
                                     if kid.IsMarry == 0:
-                                        self.add_person_to_household(kid, sp.HID)
+                                        self.add_person_to_household(kid, sp.HID, 'non_newborn_kid')
 
                                                     
                             # Father                         
@@ -313,17 +319,17 @@ class Society(object):
                                     kid.MotherID = pp.PID
                                     
                                     if kid.IsMarry == 0:                                    
-                                        self.add_person_to_household(kid, sp.HID)
+                                        self.add_person_to_household(kid, sp.HID, 'non_newborn_kid')
                                         
                         else:
-                            self.add_person_to_household(pp, sp.HID)
+                            self.add_person_to_household(pp, sp.HID, 'spouse')
                             # If the female pp has any children, add them into the new household
                             if self.get_children(pp) is not None:
                                 for kid in self.get_children(sp):
                                     kid.FatherID = sp.PID
                                     
                                     if kid.IsMarry == 0:
-                                        self.add_person_to_household(kid, sp.HID)
+                                        self.add_person_to_household(kid, sp.HID, 'non_newborn_kid')
                         
                     else:
                         # If failed to find a match    
@@ -346,7 +352,7 @@ class Society(object):
                 
         for mom in mom_list:
             new_baby = self.create_new_person(mom)
-            self.add_person_to_household(new_baby, mom.HID)
+            self.add_person_to_household(new_baby, mom.HID, 'newborn_kid')
 
 
 
@@ -450,7 +456,13 @@ class Society(object):
         new_hh.StatDate = self.current_year
         new_hh.NonRural = self.hh_dict[ori_hid].NonRural
         new_hh.is_exist = 1
-            
+                
+        '''
+        Temporarily let the new household inherit its parent household's geographic features
+        '''
+        new_hh.LocType = self.hh_dict[ori_hid].LocType
+        new_hh.Elevation = self.hh_dict[ori_hid].Elevation
+        new_hh.DistanceFrom303 = self.hh_dict[ori_hid].DistanceFrom303
         
         # Modify the new household head's personal attributes to match the new household
         pp.HID = new_hh.HID
@@ -466,6 +478,9 @@ class Society(object):
                   
         # Add the newly created household to Society's household dict
         self.hh_dict[new_hh.HID] = new_hh
+
+        # Reallocate capital properties from the original household to the newly created one.
+        self.household_property_reallocate(new_hh.HID, ori_hid, 'hh_head')
         
 
 
@@ -475,14 +490,13 @@ class Society(object):
 
 
     
-    def add_person_to_household(self, pp, HID):
+    def add_person_to_household(self, pp, HID, role):
         '''
         Add the person pp into the household with HID = HID.
+        role - as what role is the person added into the household: spouse/non_newborn_kid/newborn_kid.
         '''
 
-        if pp.Age != 0:
-            # Not newborn kids
-            
+        if role == 'spouse' or role == 'non_newborn_kid':            
             # Record the original HID
             ori_hid = pp.HID
 
@@ -499,6 +513,12 @@ class Society(object):
             # Add the person to new household's members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
 
+
+            if role == 'spouse':
+                # if the person is added into the household through marriage and as a spouse (by definition female in this program)
+                # reallocate the capital properties between the households
+                self.household_property_reallocate(HID, ori_hid, 'spouse')
+                
             
             # If the original household then has no members, mark it as non-exist.            
             alive_members_count = 0
@@ -514,10 +534,10 @@ class Society(object):
                 
                 # Debugging codes
                 self.count2 += 1
-
+            
+                        
         
-        
-        else: # Newborn kids
+        elif role == 'newborn_kid': # Newborn kids
             # Add the person to household members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
 
@@ -667,8 +687,59 @@ class Society(object):
             pass
 
 
-        
 
+    def household_property_reallocate(self, in_HID, out_HID, role):
+        '''
+        Reallocate capital properties from one household (out_HID) to another (in_HID);
+        This only happens when a new household is created through marriage;
+        role indicates the party in the marriage. role = hh_head/spouse
+        '''
+        
+        # Get the cost for building a new house for the newly created household
+        # adopting a homestead area for 4 persons. 
+        new_house_cost = 4 * float(self.model_parameters_dict['HomesteadArea']) * float(self.model_parameters_dict['HomesteadAreaCost'])
+        
+        if role == 'hh_head':
+            
+            # First deal with real estate properties
+            if self.hh_dict[out_HID].own_capital_properties.cash >= new_house_cost:
+                # The parent household can afford the cost for building the new house
+                
+                # Subtract the building cost from the parent household's cash capitals
+                self.hh_dict[out_HID].own_capital_properties.cash = self.hh_dict[out_HID].own_capital_properties.cash - new_house_cost
+                
+            else:
+                # The parent household goes into debt to cover the building costs
+                self.hh_dict[out_HID].own_capital_properties.debt = self.hh_dict[out_HID].own_capital_properties.debt + new_house_cost - self.hh_dict[out_HID].own_capital_properties.cash
+                self.hh_dict[out_HID].own_capital_properties.cash = 0
+                
+            # Assign house and homestead properties for the newly created household
+            self.hh_dict[in_HID].own_capital_properties.buildings_area = 4 * float(self.model_parameters_dict['HomesteadArea'])
+            self.hh_dict[in_HID].own_capital_properties.building_rooms = int(self.hh_dict[in_HID].own_capital_properties.buildings_area / float(self.model_parameters_dict['RoomArea']))
+            self.hh_dict[in_HID].own_capital_properties.homestead = self.hh_dict[in_HID].own_capital_properties.buildings_area
+
+            # Then deal with monetary capitals
+            transfer = self.hh_dict[out_HID].own_capital_properties.get_monetary_value() / 2
+            
+            if self.hh_dict[out_HID].own_capital_properties.cash >= transfer:
+                self.hh_dict[out_HID].own_capital_properties.cash = self.hh_dict[out_HID].own_capital_properties.cash - transfer
+            else:
+                self.hh_dict[out_HID].own_capital_properties.cash = 0
+                self.hh_dict[out_HID].own_capital_properties.debt = self.hh_dict[out_HID].own_capital_properties.debt + transfer - self.hh_dict[out_HID].own_capital_properties.cash
+            
+            self.hh_dict[in_HID].own_capital_properties.cash = transfer
+
+        elif role == 'spouse':
+            # Just deal with monetary capitals
+            transfer = self.hh_dict[in_HID].own_capital_properties.cash # Here the household in_HID is the newly created household and it has been allocated some cash capital in previous steps
+            
+            if self.hh_dict[out_HID].own_capital_properties.cash >= transfer:
+                self.hh_dict[out_HID].own_capital_properties.cash = self.hh_dict[out_HID].own_capital_properties.cash - transfer
+            else:
+                self.hh_dict[out_HID].own_capital_properties.cash = 0
+                self.hh_dict[out_HID].own_capital_properties.debt = self.hh_dict[out_HID].own_capital_properties.debt + transfer - self.hh_dict[out_HID].own_capital_properties.cash
+            
+            self.hh_dict[in_HID].own_capital_properties.cash += transfer
 
     
     def assign_new_hid(self, pp):
