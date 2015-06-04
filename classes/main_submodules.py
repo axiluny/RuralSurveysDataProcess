@@ -39,7 +39,7 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
 # Rounds of iteration (years)
-simulation_depth = 20
+simulation_depth = 30
  
 # Starting and ending year of simulation
 start_year = 2015
@@ -88,6 +88,7 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
 
     # Then refresh the result review control panel's scenario and variable combo boxes
     refresh_review_panel(gui)
+    refresh_analysis_panel(gui)
 
 
 
@@ -428,7 +429,8 @@ def refresh_review_panel(gui):
     variable_list = list()
 
     for record in stat_table:
-        if record[3] not in variable_list:
+        if record[3] not in variable_list and record[5] == 0:
+            # Exclude the composite indicators
             variable_list.append(record[3])
     
 
@@ -444,6 +446,37 @@ def refresh_review_panel(gui):
 
 
 
+def refresh_analysis_panel(gui):
+    
+    '''
+    Just deal with the time-series data analysis for now'''
+    
+    # Refresh the version_table and stat_table cursors
+    version_table = DataAccess.get_table(db, version_table_name)
+    stat_table = DataAccess.get_table(db, stat_table_name)     
+        
+    # Get scenario and variable lists for the combo boxes in GUI to display
+    scenario_list = list()
+    for version in version_table:
+        scenario_list.append(str(version[0]))
+    
+    variable_list = list()
+
+    for record in stat_table:
+        if record[3] not in variable_list and record[5] == 1:
+            # Exclude the composite indicators
+            variable_list.append(record[3])
+    
+
+    # Clear current combo boxes
+    gui.cmb_select_scenario_3.clear()
+    gui.cmb_select_variable_3.clear()
+                
+    # add the items to the respective combo boxes
+    if len(scenario_list) != 0:
+        gui.cmb_select_scenario_3.addItems(scenario_list)
+    if len(variable_list) != 0:
+        gui.cmb_select_variable_3.addItems(variable_list)
 
 
 
@@ -551,10 +584,73 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_end_year.setObjectName(_fromUtf8("lbl_end_year"))
         
         self.tab_controlpanel.addTab(self.results_review, _fromUtf8(""))
-        
-#         self.graphicsView = QtGui.QGraphicsView(self.centralwidget)
-#         self.graphicsView.setGeometry(QtCore.QRect(390, 10, 661, 661))
-#         self.graphicsView.setObjectName(_fromUtf8("graphicsView"))
+
+
+        self.data_analysis = QtGui.QWidget()
+        self.data_analysis.setObjectName(_fromUtf8("data_analysis"))
+        self.btn_plot_2 = QtGui.QPushButton(self.data_analysis)
+        self.btn_plot_2.setGeometry(QtCore.QRect(110, 580, 112, 34))
+        self.btn_plot_2.setObjectName(_fromUtf8("btn_plot_2"))
+        self.gbx_cross_section_ana = QtGui.QGroupBox(self.data_analysis)
+        self.gbx_cross_section_ana.setGeometry(QtCore.QRect(10, 20, 321, 211))
+        self.gbx_cross_section_ana.setObjectName(_fromUtf8("gbx_cross_section_ana"))
+        self.cmb_select_variable_2 = QtGui.QComboBox(self.gbx_cross_section_ana)
+        self.cmb_select_variable_2.setGeometry(QtCore.QRect(130, 70, 181, 25))
+        self.cmb_select_variable_2.setObjectName(_fromUtf8("cmb_select_variable_2"))
+        self.cmb_select_scenario_2 = QtGui.QComboBox(self.gbx_cross_section_ana)
+        self.cmb_select_scenario_2.setGeometry(QtCore.QRect(130, 30, 181, 25))
+        self.cmb_select_scenario_2.setObjectName(_fromUtf8("cmb_select_scenario_2"))
+        self.lbl_select_variable_label_2 = QtGui.QLabel(self.gbx_cross_section_ana)
+        self.lbl_select_variable_label_2.setGeometry(QtCore.QRect(10, 70, 121, 19))
+        self.lbl_select_variable_label_2.setObjectName(_fromUtf8("lbl_select_variable_label_2"))
+        self.lbl_select_scenario_label_2 = QtGui.QLabel(self.gbx_cross_section_ana)
+        self.lbl_select_scenario_label_2.setGeometry(QtCore.QRect(10, 30, 121, 19))
+        self.lbl_select_scenario_label_2.setObjectName(_fromUtf8("lbl_select_scenario_label_2"))
+        self.lbl_select_year_label = QtGui.QLabel(self.gbx_cross_section_ana)
+        self.lbl_select_year_label.setGeometry(QtCore.QRect(10, 110, 121, 19))
+        self.lbl_select_year_label.setObjectName(_fromUtf8("lbl_select_year_label"))
+        self.sbx_select_year_spinbox = QtGui.QSpinBox(self.gbx_cross_section_ana)
+        self.sbx_select_year_spinbox.setGeometry(QtCore.QRect(160, 110, 151, 25))
+        self.sbx_select_year_spinbox.setObjectName(_fromUtf8("sbx_select_year_spinbox"))
+        self.rdbtn_histogram = QtGui.QRadioButton(self.gbx_cross_section_ana)
+        self.rdbtn_histogram.setGeometry(QtCore.QRect(10, 160, 119, 23))
+        self.rdbtn_histogram.setObjectName(_fromUtf8("rdbtn_histogram"))
+        self.gbx_time_series_ana = QtGui.QGroupBox(self.data_analysis)
+        self.gbx_time_series_ana.setGeometry(QtCore.QRect(10, 250, 321, 291))
+        self.gbx_time_series_ana.setObjectName(_fromUtf8("gbx_time_series_ana"))
+        self.cmb_select_variable_3 = QtGui.QComboBox(self.gbx_time_series_ana)
+        self.cmb_select_variable_3.setGeometry(QtCore.QRect(130, 70, 181, 25))
+        self.cmb_select_variable_3.setObjectName(_fromUtf8("cmb_select_variable_3"))
+        self.cmb_select_scenario_3 = QtGui.QComboBox(self.gbx_time_series_ana)
+        self.cmb_select_scenario_3.setGeometry(QtCore.QRect(130, 30, 181, 25))
+        self.cmb_select_scenario_3.setObjectName(_fromUtf8("cmb_select_scenario_3"))
+        self.lbl_select_variable_label_3 = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_variable_label_3.setGeometry(QtCore.QRect(10, 70, 121, 19))
+        self.lbl_select_variable_label_3.setObjectName(_fromUtf8("lbl_select_variable_label_3"))
+        self.lbl_select_scenario_label_3 = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_scenario_label_3.setGeometry(QtCore.QRect(10, 30, 121, 19))
+        self.lbl_select_scenario_label_3.setObjectName(_fromUtf8("lbl_select_scenario_label_3"))
+        self.lbl_select_start_year_label = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_start_year_label.setGeometry(QtCore.QRect(10, 110, 121, 19))
+        self.lbl_select_start_year_label.setObjectName(_fromUtf8("lbl_select_start_year_label"))
+        self.sbx_select_year_spinbox_2 = QtGui.QSpinBox(self.gbx_time_series_ana)
+        self.sbx_select_year_spinbox_2.setGeometry(QtCore.QRect(160, 110, 151, 25))
+        self.sbx_select_year_spinbox_2.setObjectName(_fromUtf8("sbx_select_year_spinbox_2"))
+        self.lbl_select_end_year_label = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_end_year_label.setGeometry(QtCore.QRect(10, 140, 121, 19))
+        self.lbl_select_end_year_label.setObjectName(_fromUtf8("lbl_select_end_year_label"))
+        self.sbx_select_year_spinbox_3 = QtGui.QSpinBox(self.gbx_time_series_ana)
+        self.sbx_select_year_spinbox_3.setGeometry(QtCore.QRect(160, 140, 151, 25))
+        self.sbx_select_year_spinbox_3.setObjectName(_fromUtf8("sbx_select_year_spinbox_3"))
+        self.rdbtn_stacked_bars_chart = QtGui.QRadioButton(self.gbx_time_series_ana)
+        self.rdbtn_stacked_bars_chart.setGeometry(QtCore.QRect(10, 200, 121, 23))
+        self.rdbtn_stacked_bars_chart.setObjectName(_fromUtf8("rdbtn_stacked_bars_chart"))
+        self.rdbtn_multiple_line_chart = QtGui.QRadioButton(self.gbx_time_series_ana)
+        self.rdbtn_multiple_line_chart.setGeometry(QtCore.QRect(160, 200, 131, 23))
+        self.rdbtn_multiple_line_chart.setObjectName(_fromUtf8("rdbtn_multiple_line_chart"))
+        self.tab_controlpanel.addTab(self.data_analysis, _fromUtf8(""))
+
+
 
         frm_SEEMS_main.setCentralWidget(self.centralwidget)
          
@@ -610,26 +706,30 @@ class Ui_frm_SEEMS_main(object):
         self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.mc.updateGeometry()          
         
-        
+        # Create a matplotlib toolbar
+        self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)
+                
         '''
         Another way to create a canvas using a seperately defined class
         # Create a canvas instance
         self.mc = MplCanvas(self.canvaswidget)
         '''
             
-        # Add the canvas instance into the VBox Layout
+        # Add the canvas and toolbar instances into the VBox Layout
         self.lyt.addWidget(self.mc)        
-
+        self.lyt.addWidget(self.mpl_toolbar)
 
 
         
-        # Initiate the results review panel
+        # Initiate the results review and data analysis panels
         refresh_review_panel(self)
+        refresh_analysis_panel(self)
  
 
  
         # Events handling 
         self.btn_plot.clicked.connect(self.on_btn_plot_clicked)
+        self.btn_plot_2.clicked.connect(self.on_btn_plot_2_clicked)
          
         self.btn_start_simulation.clicked.connect(self.on_btn_start_simulation_clicked)
         
@@ -642,6 +742,7 @@ class Ui_frm_SEEMS_main(object):
         self.btn_start_simulation.setText(_translate("frm_SEEMS_main", "Start Simulation", None))
         self.lbl_input_scenario_name_label.setText(_translate("frm_SEEMS_main", "Scenario Name:", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.scenarios_setup), _translate("frm_SEEMS_main", "Scenarios Setup", None))
+
         self.lbl_select_scenario_label.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
         self.btn_plot.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.lbl_select_variable_label.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
@@ -651,17 +752,30 @@ class Ui_frm_SEEMS_main(object):
         self.gbx_plot_period.setTitle(_translate("frm_SEEMS_main", "Plot Period", None))
         self.lbl_start_year.setText(_translate("frm_SEEMS_main", "Start Year", None))
         self.lbl_end_year.setText(_translate("frm_SEEMS_main", "End Year", None))
+        self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.results_review), _translate("frm_SEEMS_main", "Results Review", None))
+
+        self.btn_plot_2.setText(_translate("frm_SEEMS_main", "Plot", None))
+        self.gbx_cross_section_ana.setTitle(_translate("frm_SEEMS_main", "Cross-section Data Analysis", None))
+        self.lbl_select_variable_label_2.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
+        self.lbl_select_scenario_label_2.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
+        self.lbl_select_year_label.setText(_translate("frm_SEEMS_main", "Select Year:", None))
+        self.rdbtn_histogram.setText(_translate("frm_SEEMS_main", "Histogram", None))
+        self.gbx_time_series_ana.setTitle(_translate("frm_SEEMS_main", "Time-series Data Analysis", None))
+        self.lbl_select_variable_label_3.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
+        self.lbl_select_scenario_label_3.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
+        self.lbl_select_start_year_label.setText(_translate("frm_SEEMS_main", "Select Start Year:", None))
+        self.lbl_select_end_year_label.setText(_translate("frm_SEEMS_main", "Select End Year:", None))
+        self.rdbtn_stacked_bars_chart.setText(_translate("frm_SEEMS_main", "Stacked Bars", None))
+        self.rdbtn_multiple_line_chart.setText(_translate("frm_SEEMS_main", "Multiple Lines", None))
+        self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.data_analysis), _translate("frm_SEEMS_main", "Data Analysis", None))
+        
+        self.menuFile.setTitle(_translate("frm_SEEMS_main", "Help", None))
+        self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))
+
         
         
 #         # Test button color picker
 #         self.btn_color.setText(_translate("frm_SEEMS_main", "Color", None))
-
-
-        self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.results_review), _translate("frm_SEEMS_main", "Results Review", None))
-        self.menuFile.setTitle(_translate("frm_SEEMS_main", "Help", None))
-        self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))
-
-
 
 
     def on_btn_start_simulation_clicked(self):
@@ -682,23 +796,17 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-    def on_btn_plot_clicked(self):
-        # Data must be read from the database, rather than lists and dictionaries in the program, 
-        # for users may need to make plots after the iteration (running of main simulation program).
+    def on_btn_plot_2_clicked(self):
+        '''
+        The Plot button in the 'Data Analysis' Tag of the Control Panel
+        '''
         
         # Read the statistics table and make the lists for plotting charts        
         stat_table = DataAccess.get_table(db, stat_table_name)
          
         time_stamps = list()
         series = list()
-        
-        population = list()
-        household_count = list()
-        dissolved_household_count = list()
-        
-        total_capital = list()
-        total_debt = list()
-        
+                
         total_agriculture_income = list()
         total_temp_job_income = list()
         total_freight_trans_income = list()
@@ -710,27 +818,13 @@ class Ui_frm_SEEMS_main(object):
         total_renting_income = list()
         
         sectors_income_structure = list()
-         
+        
+        # Assign values for the variable lists
         for st in stat_table:            
             # Look only the records for the current scenario version
-            if st.ScenarioVersion == self.cmb_select_scenario.currentText():                                 
-                if st.Variable == 'Total_Population':
-                    time_stamps.append(st.StatDate)
-                    population.append(st.StatValue)
-                 
-                elif st.Variable == 'Household_Count':
-                    household_count.append(st.StatValue)
-                    
-                elif st.Variable =='Dissolved_Household_Count':
-                    dissolved_household_count.append(st.StatValue)
-                    
-                elif st.Variable == 'Total_Capital':
-                    total_capital.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Debt':
-                    total_debt.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Agriculture_Income':
+            if st.ScenarioVersion == self.cmb_select_scenario_3.currentText():                                 
+                if st.Variable == 'Total_Agriculture_Income':
+                    time_stamps.append(st.StatDate)                    
                     total_agriculture_income.append(st.StatValue)
                 
                 elif st.Variable == 'Total_Temp_Job_Income':
@@ -759,46 +853,15 @@ class Ui_frm_SEEMS_main(object):
                 
                 elif st.Variable == 'Sectors_Income_Structure':
                     sectors_income_structure = [total_agriculture_income, total_temp_job_income, total_freight_trans_income, total_passenger_trans_income, total_tractor_trans_income, total_lodging_income, total_private_business_income, total_lending_income, total_renting_income]
-        
-        
+
         # Get the series to be plot from the combo box selection
-        if str(self.cmb_select_variable.currentText()) == 'Total_Population':
-            series = population
-        elif str(self.cmb_select_variable.currentText()) == 'Household_Count':
-            series = household_count
-        elif str(self.cmb_select_variable.currentText()) == 'Dissolved_Household_Count':
-            series = dissolved_household_count
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Capital':
-            series = total_capital
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Debt':
-            series = total_debt             
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Agriculture_Income':
-            series = total_agriculture_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Temp_Job_Income':
-            series = total_temp_job_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Freight_Trans_Income':
-            series = total_freight_trans_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Passenger_Trans_Income':
-            series = total_passenger_trans_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Tractor_Trans_Income':
-            series = total_tractor_trans_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Lodging_Income':
-            series = total_lodging_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Private_Business_Income':
-            series = total_private_business_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Lending_Income':
-            series = total_lending_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Renting_Income':
-            series = total_renting_income
-        elif str(self.cmb_select_variable.currentText()) == 'Sectors_Income_Structure':
+        if str(self.cmb_select_variable_3.currentText()) == 'Sectors_Income_Structure':
             series = sectors_income_structure
-
-
-
 
         # Draw the plot
         # First, remove any existing canvas contents
         self.lyt.removeWidget(self.mc)
+        self.lyt.removeWidget(self.mpl_toolbar)
 
         # Add the new figure
         fig = Figure()        
@@ -810,12 +873,11 @@ class Ui_frm_SEEMS_main(object):
         self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.mc.updateGeometry()        
         
+        # Create a new toolbar
+        self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)
         
         # Draw the plot
-        # Determine the chart type
-        
-        # Take care of special, combined variables first
-        if str(self.cmb_select_variable.currentText()) == 'Sectors_Income_Structure':
+        if str(self.cmb_select_variable_3.currentText()) == 'Sectors_Income_Structure':
             
             # Set the accumulated series to help place the stacked bars
             accu_series1 = numpy.add(series[0], series[1])                
@@ -861,17 +923,155 @@ class Ui_frm_SEEMS_main(object):
             self.mc.axes.set_ylabel('Income/RMB')
             
 #             self.mc.axes.set_ybound(upper = 80000000)
-
         
-        else: # Other "ordinary" variables
-            if self.rdbtn_bar_chart.isChecked():
-                self.mc.axes.bar(time_stamps, series, color = 'red')
-                            
-            elif self.rdbtn_line_chart.isChecked():
-                self.mc.axes.plot(time_stamps, series, 'blue')
                 
-            else: # Bar chart by default
-                self.mc.axes.bar(time_stamps, series, color = 'red')        
+        # Lastly, add the widgets into the VBox Layout
+        self.lyt.addWidget(self.mc)
+        self.lyt.addWidget(self.mpl_toolbar)
+
+
+
+
+
+
+
+    def on_btn_plot_clicked(self):
+        '''
+        The Plot button in the 'Results Review' Tag of the Control Panel
+        '''
+        
+        # Note that data must be read from the database, rather than lists and dictionaries in the program, 
+        # for users may need to make plots after the iteration (running of main simulation program).
+        
+        # Read the statistics table and make the lists for plotting charts        
+        stat_table = DataAccess.get_table(db, stat_table_name)
+         
+        time_stamps = list()
+        series = list()
+        
+        population = list()
+        household_count = list()
+        dissolved_household_count = list()
+        
+        total_capital = list()
+        total_debt = list()
+        
+        total_agriculture_income = list()
+        total_temp_job_income = list()
+        total_freight_trans_income = list()
+        total_passenger_trans_income = list()
+        total_tractor_trans_income = list()
+        total_lodging_income =  list()
+        total_private_business_income = list()
+        total_lending_income = list()
+        total_renting_income = list()
+        
+        
+        # Assign values for the variable lists
+        for st in stat_table:            
+            # Look only the records for the current scenario version
+            if st.ScenarioVersion == self.cmb_select_scenario.currentText():                                 
+                if st.Variable == 'Total_Population':
+                    time_stamps.append(st.StatDate)
+                    population.append(st.StatValue)
+                 
+                elif st.Variable == 'Household_Count':
+                    household_count.append(st.StatValue)
+                    
+                elif st.Variable =='Dissolved_Household_Count':
+                    dissolved_household_count.append(st.StatValue)
+                    
+                elif st.Variable == 'Total_Capital':
+                    total_capital.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Debt':
+                    total_debt.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Agriculture_Income':
+                    total_agriculture_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Temp_Job_Income':
+                    total_temp_job_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Freight_Trans_Income':
+                    total_freight_trans_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Passenger_Trans_Income':
+                    total_passenger_trans_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Tractor_Trans_Income':
+                    total_tractor_trans_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Lodging_Income':
+                    total_lodging_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Private_Business_Income':
+                    total_private_business_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Lending_Income':
+                    total_lending_income.append(st.StatValue)
+                
+                elif st.Variable == 'Total_Renting_Income':
+                    total_renting_income.append(st.StatValue)
+        
+        
+        # Get the series to be plot from the combo box selection
+        if str(self.cmb_select_variable.currentText()) == 'Total_Population':
+            series = population
+        elif str(self.cmb_select_variable.currentText()) == 'Household_Count':
+            series = household_count
+        elif str(self.cmb_select_variable.currentText()) == 'Dissolved_Household_Count':
+            series = dissolved_household_count
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Capital':
+            series = total_capital
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Debt':
+            series = total_debt             
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Agriculture_Income':
+            series = total_agriculture_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Temp_Job_Income':
+            series = total_temp_job_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Freight_Trans_Income':
+            series = total_freight_trans_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Passenger_Trans_Income':
+            series = total_passenger_trans_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Tractor_Trans_Income':
+            series = total_tractor_trans_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Lodging_Income':
+            series = total_lodging_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Private_Business_Income':
+            series = total_private_business_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Lending_Income':
+            series = total_lending_income
+        elif str(self.cmb_select_variable.currentText()) == 'Total_Renting_Income':
+            series = total_renting_income
+
+
+
+
+        # Draw the plot
+        # First, remove any existing canvas contents
+        self.lyt.removeWidget(self.mc)
+
+        # Add the new figure
+        fig = Figure()        
+        self.mc = FigureCanvas(fig)
+
+        self.mc.axes = fig.add_subplot(111)
+        self.mc.axes.hold(True) 
+
+        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.mc.updateGeometry()        
+        
+        
+        # Determine the chart type        
+        if self.rdbtn_bar_chart.isChecked():
+            self.mc.axes.bar(time_stamps, series, color = 'red')
+                        
+        elif self.rdbtn_line_chart.isChecked():
+            self.mc.axes.plot(time_stamps, series, 'blue')
+            
+        else: # Bar chart by default
+            self.mc.axes.bar(time_stamps, series, color = 'red')        
         
                 
         # Lastly, add the new canvas instance into the VBox Layout

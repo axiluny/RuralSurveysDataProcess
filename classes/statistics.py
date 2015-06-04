@@ -19,6 +19,10 @@ class StatClass(object):
         self.StatDate = int()
         self.Variable = ''
         self.StatValue = float()
+        self.CompositeIndicator = 0
+        # Indicates whether the statistics item is a composite indicator, such as 'Income Structure among Sectors'
+        # 0 - No; 1 - Yes.
+        # 0 by default.
     
     
     
@@ -329,6 +333,8 @@ class StatClass(object):
         self.Variable = 'Sectors_Income_Structure'
         self.StatValue = 0
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.CompositeIndicator = 1 # Make it a composite indicator
 
         soc.stat_dict[self.StatID] = self 
         
