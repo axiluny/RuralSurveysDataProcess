@@ -39,7 +39,7 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
 # Rounds of iteration (years)
-simulation_depth = 30
+simulation_depth = 5
  
 # Starting and ending year of simulation
 start_year = 2015
@@ -67,13 +67,19 @@ user created main submodules
 
 
 
-def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year, end_year, gui):
+def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, 
+                    pp_table_name, pp_table, land_table_name, land_table, 
+                    business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
+                    stat_table_name, stat_table, simulation_depth, start_year, end_year, gui):
 
     # Set up an initial value (1%) when clicked so that the user knows it's running.
     refresh_progress_bar(simulation_depth, gui)
     
     # Initialize the society class: create society, household, person, etc instances
-    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, simulation_depth, stat_table, start_year, end_year)
+    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
+                  land_table_name, land_table, business_sector_table_name, business_sector_table, 
+                  policy_table_name, policy_table, stat_table_name, simulation_depth, stat_table, 
+                  start_year, end_year)
     
     #Start simulation
     for iteration_count in range(simulation_depth):
@@ -132,9 +138,9 @@ def add_stat_results(society_instance, scenario_name):
     dhh = statistics.StatClass()
     statistics.StatClass.get_dissolved_household_count(dhh, society_instance, scenario_name)
         
-    # Total capital
+    # Total cash savings
     tc = statistics.StatClass()
-    statistics.StatClass.get_total_capital(tc, society_instance, scenario_name)
+    statistics.StatClass.get_total_cash_savings(tc, society_instance, scenario_name)
     
     # Total debt
     tb = statistics.StatClass()
@@ -156,22 +162,10 @@ def add_stat_results(society_instance, scenario_name):
     pti = statistics.StatClass()
     statistics.StatClass.get_total_passengertrans_income(pti, society_instance, scenario_name)
     
-    # Total tractor transportation income
-    tti = statistics.StatClass()
-    statistics.StatClass.get_total_tractortrans_income(tti, society_instance, scenario_name)
-    
     # Total lodging income
     lgi = statistics.StatClass()
     statistics.StatClass.get_total_lodging_income(lgi, society_instance, scenario_name)
-    
-    # Total private business income
-    pbi = statistics.StatClass()
-    statistics.StatClass.get_total_prvt_business_income(pbi, society_instance, scenario_name)
-    
-    # Total lending income
-    ldi = statistics.StatClass()
-    statistics.StatClass.get_total_lending_income(ldi, society_instance, scenario_name)
-    
+        
     # Total renting income
     rti = statistics.StatClass()
     statistics.StatClass.get_total_renting_income(rti, society_instance, scenario_name)
@@ -464,7 +458,7 @@ def refresh_analysis_panel(gui):
 
     for record in stat_table:
         if record[3] not in variable_list and record[5] == 1:
-            # Exclude the composite indicators
+            # Include only the composite indicators
             variable_list.append(record[3])
     
 
@@ -695,38 +689,35 @@ class Ui_frm_SEEMS_main(object):
         # Create a QVBoxLayout within the canvas widget, such that the canvas embeds in the main window frame
         self.lyt = QtGui.QVBoxLayout(self.canvaswidget)
 
-
-        # create a canvas
-        fig = Figure()        
-        self.mc = FigureCanvas(fig)
-
-        self.mc.axes = fig.add_subplot(111)
-        self.mc.axes.hold(True) 
-
-        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.mc.updateGeometry()          
-        
-        # Create a matplotlib toolbar
-        self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)
-                
-        '''
-        Another way to create a canvas using a seperately defined class
         # Create a canvas instance
         self.mc = MplCanvas(self.canvaswidget)
+
         '''
+        #         Another way to create a canvas, without introducing a seperately defined class
+        #         # create a canvas
+        #         fig = Figure()        
+        #         self.mc = FigureCanvas(fig)
+        # 
+        #         self.mc.axes = fig.add_subplot(111)
+        #         self.mc.axes.hold(True) 
+        # 
+        #         self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        #         self.mc.updateGeometry()          
+        '''
+
+
+        # Create a matplotlib toolbar
+        self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)        
             
         # Add the canvas and toolbar instances into the VBox Layout
         self.lyt.addWidget(self.mc)        
         self.lyt.addWidget(self.mpl_toolbar)
-
-
         
         # Initiate the results review and data analysis panels
         refresh_review_panel(self)
         refresh_analysis_panel(self)
  
-
- 
+  
         # Events handling 
         self.btn_plot.clicked.connect(self.on_btn_plot_clicked)
         self.btn_plot_2.clicked.connect(self.on_btn_plot_2_clicked)
@@ -786,7 +777,10 @@ class Ui_frm_SEEMS_main(object):
         scenario_name = str(self.txt_input_scenario_name.text())
                   
         # Run the simulation
-        create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, person_table_name, person_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year, end_year, self)
+        create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
+                        person_table_name, person_table, land_table_name, land_table, 
+                        business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
+                        stat_table_name, stat_table, simulation_depth, start_year, end_year, self)
       
         # Show a message box indicating the completion of run.
         msb = QMessageBox()
@@ -803,134 +797,64 @@ class Ui_frm_SEEMS_main(object):
         
         # Read the statistics table and make the lists for plotting charts        
         stat_table = DataAccess.get_table(db, stat_table_name)
-         
+
+        # Set the plot title
+        plot_title = str(self.cmb_select_variable_3.currentText())
+        
+        # Define temporary variables
         time_stamps = list()
-        series = list()
                 
         total_agriculture_income = list()
         total_temp_job_income = list()
         total_freight_trans_income = list()
         total_passenger_trans_income = list()
-        total_tractor_trans_income = list()
         total_lodging_income =  list()
-        total_private_business_income = list()
-        total_lending_income = list()
         total_renting_income = list()
-        
-        sectors_income_structure = list()
-        
-        # Assign values for the variable lists
-        for st in stat_table:            
-            # Look only the records for the current scenario version
-            if st.ScenarioVersion == self.cmb_select_scenario_3.currentText():                                 
-                if st.Variable == 'Total_Agriculture_Income':
-                    time_stamps.append(st.StatDate)                    
-                    total_agriculture_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Temp_Job_Income':
-                    total_temp_job_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Freight_Trans_Income':
-                    total_freight_trans_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Passenger_Trans_Income':
-                    total_passenger_trans_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Tractor_Trans_Income':
-                    total_tractor_trans_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Lodging_Income':
-                    total_lodging_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Private_Business_Income':
-                    total_private_business_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Lending_Income':
-                    total_lending_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Renting_Income':
-                    total_renting_income.append(st.StatValue)
-                
-                elif st.Variable == 'Sectors_Income_Structure':
-                    sectors_income_structure = [total_agriculture_income, total_temp_job_income, total_freight_trans_income, total_passenger_trans_income, total_tractor_trans_income, total_lodging_income, total_private_business_income, total_lending_income, total_renting_income]
+
 
         # Get the series to be plot from the combo box selection
         if str(self.cmb_select_variable_3.currentText()) == 'Sectors_Income_Structure':
-            series = sectors_income_structure
+        
+            # Assign values for the variable lists
+            for st in stat_table:            
+                # Look only the records for the current scenario version
+                if st.ScenarioVersion == self.cmb_select_scenario_3.currentText():                                 
+                    if st.Variable == 'Total_Agriculture_Income':
+                        time_stamps.append(st.StatDate)                    
+                        total_agriculture_income.append(st.StatValue)
+                        agri_tuple = (st.Variable, total_agriculture_income)
+                    
+                    elif st.Variable == 'Total_Temp_Job_Income':
+                        total_temp_job_income.append(st.StatValue)
+                        temj_tuple = (st.Variable, total_temp_job_income)
+                    
+                    elif st.Variable == 'Total_Freight_Trans_Income':
+                        total_freight_trans_income.append(st.StatValue)
+                        frtt_tuple = (st.Variable, total_freight_trans_income)
+                    
+                    elif st.Variable == 'Total_Passenger_Trans_Income':
+                        total_passenger_trans_income.append(st.StatValue)
+                        pagt_tuple = (st.Variable, total_passenger_trans_income)
+                    
+                    elif st.Variable == 'Total_Lodging_Income':
+                        total_lodging_income.append(st.StatValue)
+                        ldgg_tuple = (st.Variable, total_lodging_income)
+                    
+                    elif st.Variable == 'Total_Renting_Income':
+                        total_renting_income.append(st.StatValue)
+                        rent_tuple = (st.Variable, total_renting_income)
+            
+            plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
+
 
         # Draw the plot
         # First, remove any existing canvas contents
         self.lyt.removeWidget(self.mc)
         self.lyt.removeWidget(self.mpl_toolbar)
-
-        # Add the new figure
-        fig = Figure()        
-        self.mc = FigureCanvas(fig)
-
-        self.mc.axes = fig.add_subplot(111)
-        self.mc.axes.hold(True) 
-
-        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.mc.updateGeometry()        
         
-        # Create a new toolbar
-        self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)
-        
-        # Draw the plot
-        if str(self.cmb_select_variable_3.currentText()) == 'Sectors_Income_Structure':
-            
-            # Set the accumulated series to help place the stacked bars
-            accu_series1 = numpy.add(series[0], series[1])                
-            accu_series2 = numpy.add(accu_series1, series[2])
-            accu_series3 = numpy.add(accu_series2, series[3])                
-            accu_series4 = numpy.add(accu_series3, series[4])
-            accu_series5 = numpy.add(accu_series4, series[5])
-            accu_series6 = numpy.add(accu_series5, series[6])
-            accu_series7 = numpy.add(accu_series6, series[7])                 
-            
-            # Bar plot the series, and set labels for legend                                                                
-            agi = self.mc.axes.bar(time_stamps, series[0], color = 'green')
-            agi.set_label ('Agriculture')
-            
-            tji = self.mc.axes.bar(time_stamps, series[1], bottom = series[0], color = 'yellow')
-            tji.set_label ('Temporary Jobs')
-            
-            fti = self.mc.axes.bar(time_stamps, series[2], bottom = accu_series1, color = '0.5')
-            fti.set_label ('Freight Transportation')
-            
-            pti = self.mc.axes.bar(time_stamps, series[3], bottom = accu_series2, color = '0.25')
-            pti.set_label ('Passenger Transportation')
-            
-            tti = self.mc.axes.bar(time_stamps, series[4], bottom = accu_series3, color = '0.75')
-            tti.set_label ('Tractor Transportation')
-            
-            lgi = self.mc.axes.bar(time_stamps, series[5], bottom = accu_series4, color = 'magenta')
-            lgi.set_label ('Lodging')
-            
-            pbi = self.mc.axes.bar(time_stamps, series[6], bottom = accu_series5, color = 'blue')
-            pbi.set_label ('Private Business')
-            
-            ldi = self.mc.axes.bar(time_stamps, series[7], bottom = accu_series6, color = 'red')
-            ldi.set_label ('Lending')
-            
-            rti = self.mc.axes.bar(time_stamps, series[8], bottom = accu_series7, color = 'cyan')
-            rti.set_label ('Renting')
-            
-            self.mc.axes.set_title('Income Structure of the Sectors')
-            self.mc.axes.legend(loc = 2)
-            self.mc.axes.set_xlabel('Year')
-#             self.mc.axes.set_xticklabels(time_stamps)
-            self.mc.axes.set_ylabel('Income/RMB')
-            
-#             self.mc.axes.set_ybound(upper = 80000000)
-        
-                
-        # Lastly, add the widgets into the VBox Layout
-        self.lyt.addWidget(self.mc)
-        self.lyt.addWidget(self.mpl_toolbar)
-
-
-
+        # Then create a new canvas instance
+        self.mc = MplCanvas(self.canvaswidget)
+        self.mc.plot('timeseries', time_stamps, plot_series_list, plot_title, self)
 
 
 
@@ -945,146 +869,33 @@ class Ui_frm_SEEMS_main(object):
         
         # Read the statistics table and make the lists for plotting charts        
         stat_table = DataAccess.get_table(db, stat_table_name)
-         
+        
+        # Define the x_data (time_stamps list) and y_data (series list)
         time_stamps = list()
         series = list()
-        
-        population = list()
-        household_count = list()
-        dissolved_household_count = list()
-        
-        total_capital = list()
-        total_debt = list()
-        
-        total_agriculture_income = list()
-        total_temp_job_income = list()
-        total_freight_trans_income = list()
-        total_passenger_trans_income = list()
-        total_tractor_trans_income = list()
-        total_lodging_income =  list()
-        total_private_business_income = list()
-        total_lending_income = list()
-        total_renting_income = list()
-        
+
+        plot_title = str(self.cmb_select_variable.currentText())
         
         # Assign values for the variable lists
         for st in stat_table:            
             # Look only the records for the current scenario version
-            if st.ScenarioVersion == self.cmb_select_scenario.currentText():                                 
-                if st.Variable == 'Total_Population':
+            if st.ScenarioVersion == self.cmb_select_scenario.currentText():       
+                if st.Variable == str(self.cmb_select_variable.currentText()):
                     time_stamps.append(st.StatDate)
-                    population.append(st.StatValue)
-                 
-                elif st.Variable == 'Household_Count':
-                    household_count.append(st.StatValue)
+                    series_name = st.Variable
+                    series.append(st.StatValue)
                     
-                elif st.Variable =='Dissolved_Household_Count':
-                    dissolved_household_count.append(st.StatValue)
-                    
-                elif st.Variable == 'Total_Capital':
-                    total_capital.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Debt':
-                    total_debt.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Agriculture_Income':
-                    total_agriculture_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Temp_Job_Income':
-                    total_temp_job_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Freight_Trans_Income':
-                    total_freight_trans_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Passenger_Trans_Income':
-                    total_passenger_trans_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Tractor_Trans_Income':
-                    total_tractor_trans_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Lodging_Income':
-                    total_lodging_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Private_Business_Income':
-                    total_private_business_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Lending_Income':
-                    total_lending_income.append(st.StatValue)
-                
-                elif st.Variable == 'Total_Renting_Income':
-                    total_renting_income.append(st.StatValue)
-        
-        
-        # Get the series to be plot from the combo box selection
-        if str(self.cmb_select_variable.currentText()) == 'Total_Population':
-            series = population
-        elif str(self.cmb_select_variable.currentText()) == 'Household_Count':
-            series = household_count
-        elif str(self.cmb_select_variable.currentText()) == 'Dissolved_Household_Count':
-            series = dissolved_household_count
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Capital':
-            series = total_capital
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Debt':
-            series = total_debt             
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Agriculture_Income':
-            series = total_agriculture_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Temp_Job_Income':
-            series = total_temp_job_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Freight_Trans_Income':
-            series = total_freight_trans_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Passenger_Trans_Income':
-            series = total_passenger_trans_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Tractor_Trans_Income':
-            series = total_tractor_trans_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Lodging_Income':
-            series = total_lodging_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Private_Business_Income':
-            series = total_private_business_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Lending_Income':
-            series = total_lending_income
-        elif str(self.cmb_select_variable.currentText()) == 'Total_Renting_Income':
-            series = total_renting_income
-
-
-
+        plot_series_list = [(series_name, series)]            
 
         # Draw the plot
         # First, remove any existing canvas contents
         self.lyt.removeWidget(self.mc)
-
-        # Add the new figure
-        fig = Figure()        
-        self.mc = FigureCanvas(fig)
-
-        self.mc.axes = fig.add_subplot(111)
-        self.mc.axes.hold(True) 
-
-        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.mc.updateGeometry()        
+        self.lyt.removeWidget(self.mpl_toolbar)
         
-        
-        # Determine the chart type        
-        if self.rdbtn_bar_chart.isChecked():
-            self.mc.axes.bar(time_stamps, series, color = 'red')
-                        
-        elif self.rdbtn_line_chart.isChecked():
-            self.mc.axes.plot(time_stamps, series, 'blue')
-            
-        else: # Bar chart by default
-            self.mc.axes.bar(time_stamps, series, color = 'red')        
-        
-                
-        # Lastly, add the new canvas instance into the VBox Layout
-        self.lyt.addWidget(self.mc)
-
-
-
-        '''           
-        Another method to draw plots; using another canvas class
         # Then create a new canvas instance
-#         self.mc = MplCanvas(self.canvaswidget)
-#         self.mc.plot(time_stamps, series, self)
-        '''
+        self.mc = MplCanvas(self.canvaswidget)
+        self.mc.plot('timeseries', time_stamps, plot_series_list, plot_title, self)
+
         
 
     
@@ -1104,39 +915,70 @@ class MplCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
 
-    def plot(self, x_data, y_data, gui):
+    def plot(self, data_type, x_data, y_data, plot_title, gui):
+        '''
+        Make a plot.
+        
+        data_type = crosssection/timeseries
+        x_data: a simple list of numbers
+        y_data: a list of tuples; each tuple is in the form of (series_name, [series_data_list]).
+        plot_title: the title of the plot.
+        
+        '''
 
-        # Determine the chart type
-        if gui.rdbtn_bar_chart.isChecked():
-            self.axes.bar(x_data, y_data, color = 'red')
-            
-        elif gui.rdbtn_line_chart.isChecked():
-            self.axes.plot(x_data, y_data, 'blue')
-            
-        else: # Bar chart by default
-            self.axes.bar(x_data, y_data, color = 'red')
+        if data_type == 'timeseries':
+
+            # Determine the chart type
+            if gui.rdbtn_bar_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 1 \
+            or gui.rdbtn_stacked_bars_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 2:                
+                for i in range(len(y_data)):
+                    if i == 0:
+                        accu_series= numpy.subtract(y_data[i][1], y_data[i][1]) 
+                    else:
+                        accu_series= numpy.add(accu_series, y_data[i - 1][1]) 
+                    
+                    self.axes.bar(x_data, y_data[i][1], bottom = accu_series, color = numpy.random.rand(3,1), label = y_data[i][0])                        
+                            
+                self.axes.set_title(plot_title)
+                self.axes.legend(loc = 2)
+                self.axes.set_xlabel('Year')
+        #         self.axes.set_xticklabels(time_stamps)
+        #         self.axes.set_ylabel('Income/RMB')
+                
+            elif gui.rdbtn_line_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 1 \
+            or gui.rdbtn_multiple_line_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 2:
+                for i in range(len(y_data)):                    
+                    self.axes.plot(x_data, y_data[i][1], color = numpy.random.rand(3,1), label = y_data[i][0])                        
+                            
+                self.axes.set_title(plot_title)
+                self.axes.legend(loc = 2)
+                self.axes.set_xlabel('Year')
+
+                 
+            else: # Bar chart by default
+                for i in range(len(y_data)):
+                    if i == 0:
+                        accu_series= numpy.subtract(y_data[i][1], y_data[i][1]) 
+                    else:
+                        accu_series= numpy.add(accu_series, y_data[i - 1][1]) 
+                     
+                    self.axes.bar(x_data, y_data[i][1], bottom = accu_series, color = numpy.random.rand(3,1), label = y_data[i][0])                        
+                             
+                self.axes.set_title(plot_title)
+                self.axes.legend(loc = 2)
+                self.axes.set_xlabel('Year')
+        
+        
+        elif data_type == 'crosssection':
+            pass
+        
 
 
+        # Create a new toolbar
+        gui.mpl_toolbar = NavigationToolbar(gui.mc, gui.canvaswidget)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
+        # Add the widegts to the vbox
+        gui.lyt.addWidget(gui.mc)
+        gui.lyt.addWidget(gui.mpl_toolbar)
 
 

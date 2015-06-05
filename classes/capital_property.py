@@ -19,32 +19,21 @@ class CapitalProperty(object):
         '''
         
         # Monetary assets and liabilities
-        self.cash = hh.Capital
-        self.debt  = hh.TotalLoan # Positive values indicate household in debt
-        self.lending = 0
+        self.netsavings = hh.NetSavings # Net savings of the household; netsavings = cash - debt 
+        self.cash = hh.Cash # Positive values only
+        self.debt  = hh.Debt # Positive values only; Positive values indicate household in debt
         
         
         # Land properties
         self.land_properties_list = list() # Define an empty list here; fill land parcels in it later in the society class
         
-        self.farmland = hh.FarmlandAreaAfter
-        self.location_type = hh.LocType # Location types: 1 - hilly; 0 - plain.
-        
-        if self.location_type == 1:
-            self.old_homestead = hh.Homestead
-        else: # Temporary adding these two lines to ensure all hh have same capital property structures
-            self.old_homestead = 0       
-        
-        self.buildings_area = hh.RebuildHouseArea        
-        self.building_rooms = int(self.buildings_area / float(model_parameters['RoomArea'])) # buildings in numbers of rooms; 30 m^2 per room
-        
-        if self.buildings_area < 200:
-            self.homestead = self.buildings_area
-        elif self.buildings_area >= 200 and self.buildings_area <400:
-            self.homestead = self.buildings_area / 2
-        else:
-            self.homestead = self.buildings_area / 3
-        
+        self.farmland = hh.FarmlandArea
+        self.homestead = hh.Homestead
+        self.house_area = hh.HouseArea        
+        self.house_rooms = int(self.house_area / float(model_parameters['RoomArea'])) # buildings in numbers of rooms; 30 m^2 per room
+                
+        self.location_type = hh.LocType # Location terrain types: 1 - hilly; 0 - plain.
+                   
         
         # Labor (Human capitals)
         self.labor = int()
@@ -66,27 +55,23 @@ class CapitalProperty(object):
         # Other specific factors of production
         self.minibus = hh.Minibus
         self.truck = hh.Truck
-        self.tractor = hh.Tractor
         
         
         # Policy-related factors
-        self.land_policy = hh.LandPolicy
-        self.pre_farm_to_forest = hh.PreReturnToForest
-        self.pre_farm_to_bamboo = hh.PreReturnToBamboo
-        self.pre_occupied_farm = hh.ExchangedLandArea
+        self.pre_ftof = hh.PreFToF
+        self.pre_ftob = hh.PreFToB
         self.is_tianbao = hh.IsTianbao
         
-        self.farm_to_forest = 0 # A "container" to store the FTF area incurred during simulation
+        self.farm_to_forest = 0 # A "container" to store the FToF area incurred during simulation
         
         
         # Available factors; temporary "containers" during simulation
         self.av_farmland = float()
         self.av_homestead = float()
-        self.av_rooms = int()
-        self.av_room_areas = float()
+        self.av_house_area = float()        
+        self.av_house_rooms = int()
         self.av_minibus = int()
         self.av_truck = int()
-        self.av_tractor = int()
         self.av_labor = float()
         self.av_male_labor = float()
         self.av_female_labor = float()
@@ -100,7 +85,6 @@ class CapitalProperty(object):
         self.temp_job_income = float()
         self.freight_trans_income = float()
         self.passenger_trans_income = float()
-        self.tractor_trans_income = float()
         self.lodging_income = float()
         self.private_business_income = float()
         self.lending_income = float()
@@ -123,10 +107,9 @@ class CapitalProperty(object):
         # Reset available factors
         self.av_farmland = self.farmland
         self.av_homestead = self.homestead
-        self.av_rooms = (self.buildings_area - self.homestead) / 30
+        self.av_house_rooms = (self.house_area - self.homestead) / 30
         self.av_minibus = self.minibus
         self.av_truck = self.truck
-        self.av_tractor = self.tractor
         self.av_labor = self.labor
         self.av_male_labor = self.male_labor
         self.av_female_labor = self.female_labor
@@ -140,7 +123,6 @@ class CapitalProperty(object):
         self.temp_job_income = 0
         self.freight_trans_income = 0
         self.passenger_trans_income = 0
-        self.tracor_trans_income = 0
         self.lodging_income = 0
         self.private_business_income = 0
         self.lending_income = 0
@@ -148,6 +130,9 @@ class CapitalProperty(object):
         
     
     def update_labors(self, hh):
+        '''
+        Update the household's human resource conditions according to its latest demographic status
+        '''
         
         self.labor = 0
         self.male_labor = 0
@@ -194,15 +179,18 @@ class CapitalProperty(object):
     
     def get_monetary_value(self):
         
-        value = self.cash
+        value = self.cash # Need to elaborate
         
         return value
     
     
     def get_total_income(self):
         
-        total_income = self.agriculture_income + self.temp_job_income + self.freight_trans_income + self.passenger_trans_income + self.tracor_trans_income + self.lodging_income + self.private_business_income + self.renting_income + self.lending_income
-    
+        # Need to elaborate
+        total_income = self.agriculture_income + self.temp_job_income + self.freight_trans_income \
+                     + self.passenger_trans_income + self.lodging_income + self.private_business_income \
+                     + self.lending_income + self.renting_income
+        
         return total_income
     
     
@@ -230,5 +218,46 @@ class CapitalProperty(object):
         
         
 
-            
+    def update_household_capital_properties(self, hh):
+        '''
+        Write the household's capital properties conditions back to the respective variables of the household class instance
+        '''
+
+        # Monetary assets and liabilities        
+        hh.NetSavings = self.netsavings
+        hh.Cash = self.cash
+        hh.Debt = self.debt
+        
+        
+        # Land properties        
+        hh.FarmlandArea = self.farmland # Need to elaborate
+        hh.HouseArea = self.house_area    
+        hh.Homestead = self.homestead
+         
+        hh.LocType = self.location_type
+        
+                                
+        # Other specific factors of production
+        hh.Minibus = self.minibus 
+        hh.Truck = self.truck
+        
+        # Incomes
+        hh.AgricultureIncome = self.agriculture_income
+        hh.TempJobIncome = self.temp_job_income
+        hh.TruckIncome = self.freight_trans_income
+        hh.PassengerIncome = self.passenger_trans_income
+        hh.LodgingIncome = self.lodging_income
+        hh.PrivateBusinessIncome = self.private_business_income
+        hh.LendingIncome = self.lending_income
+        hh.RentingIncome = self.renting_income
+        
+        hh.AnnualTotalIncome = self.agriculture_income + self.temp_job_income + self.freight_trans_income \
+                             + self.passenger_trans_income + self.lodging_income + self.private_business_income \
+                             + self.lending_income + self.renting_income + hh.AnnualCompensation
+        
+        # hh.AnnualCompensation is assigned in the policy class        
+        
+        # Policy-related land changes
+        hh.AbandonedFarmlandArea = self.av_farmland # available farmland at the end of each simulation circle is considered "abandoned"
+        
         

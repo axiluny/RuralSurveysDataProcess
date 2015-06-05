@@ -195,7 +195,7 @@ class Household(object):
             is_minibus = 0
         
         # house_size
-        house_size = self.own_capital_properties.buildings_area
+        house_size = self.own_capital_properties.house_area
         if house_size == None:
             house_size = 0
         
@@ -258,13 +258,13 @@ class Household(object):
         if self.hh_preference_type == 1 or self.hh_preference_type == 2:
             # Risk aversion. No loans. risk_type = True
             for SectorName in business_sector_dict:
-                if business_sector_dict[SectorName].is_available(hh_capital, True) == True:
+                if business_sector_dict[SectorName].is_doable(hh_capital, True) == True:
                     self.own_av_business_sectors.append(business_sector_dict[SectorName])
         
         else:
             # Risk appetite. risk_type = False
             for SectorName in business_sector_dict:
-                if business_sector_dict[SectorName].is_available(hh_capital, False) == True:
+                if business_sector_dict[SectorName].is_doable(hh_capital, False) == True:
                     self.own_av_business_sectors.append(business_sector_dict[SectorName])            
         
         
@@ -446,10 +446,18 @@ class Household(object):
                 self.own_capital_properties.debt = 0
                 
         
+        # Then calculate the household's net savings
+        self.own_capital_properties.netsavings = self.own_capital_properties.cash - self.own_capital_properties.debt
+        
+        # Finally, update the household's capital properties from the Capital Property Class
+        self.own_capital_properties.update_household_capital_properties(self)
     
             
     
     def get_compensational_revenues(self):
+        
+        # Temporary codes
+        self.AnnualCompensation = 0
         
         return 0
     
@@ -506,6 +514,9 @@ class Household(object):
                                   - self.own_capital_properties.college_kids) * float(model_parameters['EverydayCostPerCapitaIII'])
 
         
+        
+        self.AnnualTotalExpense = living_cost
+        
         return living_cost    
     
     
@@ -521,6 +532,8 @@ class Household(object):
                 self.business_type = 1
         else:
             self.business_type = 2
+        
+        self.HouseholdType = self.business_type
     
 
 

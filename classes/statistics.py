@@ -93,22 +93,22 @@ class StatClass(object):
     
     
     
-    def get_total_capital(self, soc, scenario_name):
+    def get_total_cash_savings(self, soc, scenario_name):
         
-        total_capital = 0
+        total_cash_savings = 0
         
         # Get the statistics
         for HID in soc.hh_dict:
             if soc.hh_dict[HID].is_exist == 1:
                 
-                total_capital = total_capital + soc.hh_dict[HID].own_capital_properties.cash
+                total_cash_savings = total_cash_savings + soc.hh_dict[HID].own_capital_properties.cash
                 
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
         self.StatDate = soc.current_year 
-        self.Variable = 'Total_Capital'
-        self.StatValue = total_capital
+        self.Variable = 'Total_Cash_Savings'
+        self.StatValue = total_cash_savings
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         soc.stat_dict[self.StatID] = self      
@@ -218,27 +218,7 @@ class StatClass(object):
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         soc.stat_dict[self.StatID] = self  
-        
-        
-    def get_total_tractortrans_income(self, soc, scenario_name):
-        
-        total_tractortrans_income = 0
-        
-        # Get the statistics
-        for HID in soc.hh_dict:
-            if soc.hh_dict[HID].is_exist == 1:
-                
-                total_tractortrans_income = total_tractortrans_income + soc.hh_dict[HID].own_capital_properties.tractor_trans_income
-                
-         
-        # Add the statistics
-        self.ScenarioVersion = scenario_name
-        self.StatDate = soc.current_year 
-        self.Variable = 'Total_Tractor_Trans_Income'
-        self.StatValue = total_tractortrans_income
-        self.StatID = self.Variable + '_' + str(self.StatDate)
-                 
-        soc.stat_dict[self.StatID] = self         
+            
         
         
     def get_total_lodging_income(self, soc, scenario_name):
@@ -262,47 +242,8 @@ class StatClass(object):
         soc.stat_dict[self.StatID] = self          
         
         
-    def get_total_prvt_business_income(self, soc, scenario_name):
         
-        total_prvt_business_income = 0
-        
-        # Get the statistics
-        for HID in soc.hh_dict:
-            if soc.hh_dict[HID].is_exist == 1:
-                
-                total_prvt_business_income = total_prvt_business_income + soc.hh_dict[HID].own_capital_properties.private_business_income
-                
-         
-        # Add the statistics
-        self.ScenarioVersion = scenario_name
-        self.StatDate = soc.current_year 
-        self.Variable = 'Total_Private_Business_Income'
-        self.StatValue = total_prvt_business_income
-        self.StatID = self.Variable + '_' + str(self.StatDate)
-                 
-        soc.stat_dict[self.StatID] = self         
-        
-        
-        
-    def get_total_lending_income(self, soc, scenario_name):
-        
-        total_lending_income = 0
-        
-        # Get the statistics
-        for HID in soc.hh_dict:
-            if soc.hh_dict[HID].is_exist == 1:
-                
-                total_lending_income = total_lending_income + soc.hh_dict[HID].own_capital_properties.lending_income
-                
-         
-        # Add the statistics
-        self.ScenarioVersion = scenario_name
-        self.StatDate = soc.current_year 
-        self.Variable = 'Total_Lending_Income'
-        self.StatValue = total_lending_income
-        self.StatID = self.Variable + '_' + str(self.StatDate)
-                 
-        soc.stat_dict[self.StatID] = self            
+     
         
         
         
@@ -325,6 +266,8 @@ class StatClass(object):
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         soc.stat_dict[self.StatID] = self          
+
+
     
     def get_sectors_income_structure(self, soc, scenario_name):
         

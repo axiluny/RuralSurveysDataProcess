@@ -714,9 +714,9 @@ class Society(object):
                 self.hh_dict[out_HID].own_capital_properties.cash = 0
                 
             # Assign house and homestead properties for the newly created household
-            self.hh_dict[in_HID].own_capital_properties.buildings_area = 4 * float(self.model_parameters_dict['HomesteadArea'])
-            self.hh_dict[in_HID].own_capital_properties.building_rooms = int(self.hh_dict[in_HID].own_capital_properties.buildings_area / float(self.model_parameters_dict['RoomArea']))
-            self.hh_dict[in_HID].own_capital_properties.homestead = self.hh_dict[in_HID].own_capital_properties.buildings_area
+            self.hh_dict[in_HID].own_capital_properties.house_area = 4 * float(self.model_parameters_dict['HomesteadArea'])
+            self.hh_dict[in_HID].own_capital_properties.house_rooms = int(self.hh_dict[in_HID].own_capital_properties.house_area / float(self.model_parameters_dict['RoomArea']))
+            self.hh_dict[in_HID].own_capital_properties.homestead = self.hh_dict[in_HID].own_capital_properties.house_area
 
             # Then deal with monetary capitals
             transfer = self.hh_dict[out_HID].own_capital_properties.get_monetary_value() / 2
