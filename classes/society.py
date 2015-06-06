@@ -24,7 +24,9 @@ class Society(object):
     '''
 
 
-    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, land_table_name, land_table, business_sector_table_name, business_sector_table, policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year, end_year):
+    def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
+                 land_table_name, land_table, business_sector_table_name, business_sector_table, 
+                 policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year):
         '''
         Initialize the society class;
         '''
@@ -104,7 +106,7 @@ class Society(object):
 
 
         
-    def step_go(self, start_year, end_year, iteration_count):
+    def step_go(self, start_year, iteration_count):
         '''
         (Annual) iterative activities of the society class' instance.
         '''

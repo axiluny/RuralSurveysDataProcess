@@ -38,12 +38,12 @@ policy_table_name = 'PolicyTable'
 stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
-# Rounds of iteration (years)
-simulation_depth = 5
- 
-# Starting and ending year of simulation
-start_year = 2015
-end_year = 2030
+# # Rounds of iteration (years)
+# simulation_depth = 5
+#  
+# # Starting and ending year of simulation
+# start_year = 2015
+# end_year = 2030
 
  
 # Get the working database
@@ -70,7 +70,7 @@ user created main submodules
 def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, 
                     pp_table_name, pp_table, land_table_name, land_table, 
                     business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
-                    stat_table_name, stat_table, simulation_depth, start_year, end_year, gui):
+                    stat_table_name, stat_table, simulation_depth, start_year, gui):
 
     # Set up an initial value (1%) when clicked so that the user knows it's running.
     refresh_progress_bar(simulation_depth, gui)
@@ -79,11 +79,11 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
     soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
                   land_table_name, land_table, business_sector_table_name, business_sector_table, 
                   policy_table_name, policy_table, stat_table_name, simulation_depth, stat_table, 
-                  start_year, end_year)
+                  start_year)
     
     #Start simulation
     for iteration_count in range(simulation_depth):
-        step_go(db, soc, start_year, end_year, iteration_count, scenario_name)
+        step_go(db, soc, start_year, iteration_count, scenario_name)
 
         # Set value for the progress bar
         refresh_progress_bar((iteration_count + 1) * 100, gui)
@@ -92,16 +92,12 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
     # When the simulation is successfully completed, insert a record in the VersionTable
     refresh_version_table(db, scenario_name, start_year, simulation_depth)
 
-    # Then refresh the result review control panel's scenario and variable combo boxes
-    refresh_review_panel(gui)
-    refresh_analysis_panel(gui)
 
 
 
 
 
-
-def step_go(database, society_instance, start_year, end_year, iteration_count, scenario_name):
+def step_go(database, society_instance, start_year, iteration_count, scenario_name):
     
     # If it's the first round of iteration, just get the stats and save the records to database
     # Else, proceed with the simulation in society.step_go, and then get the stats and save the records to database
@@ -113,7 +109,7 @@ def step_go(database, society_instance, start_year, end_year, iteration_count, s
         save_results_to_db(database, society_instance, scenario_name)
         
     # Do the simulation
-    Society.step_go(society_instance, start_year, end_year, iteration_count)
+    Society.step_go(society_instance, start_year, iteration_count)
 
     add_stat_results(society_instance, scenario_name)
     
@@ -483,71 +479,6 @@ def refresh_version_table(database, scenario_name, start_year, simulation_depth)
     
     
 
-def refresh_review_panel(gui):
-    
-    # Refresh the version_table and stat_table cursors
-    version_table = DataAccess.get_table(db, version_table_name)
-    stat_table = DataAccess.get_table(db, stat_table_name)     
-        
-    # Get scenario and variable lists for the combo boxes in GUI to display
-    scenario_list = list()
-    for version in version_table:
-        scenario_list.append(str(version[0]))
-    
-    variable_list = list()
-
-    for record in stat_table:
-        if record[3] not in variable_list and record[5] == 0:
-            # Exclude the composite indicators
-            variable_list.append(record[3])
-    
-
-    # Clear current combo boxes
-    gui.cmb_select_scenario.clear()
-    gui.cmb_select_variable.clear()
-                
-    # add the items to the respective combo boxes
-    if len(scenario_list) != 0:
-        gui.cmb_select_scenario.addItems(scenario_list)
-    if len(variable_list) != 0:
-        gui.cmb_select_variable.addItems(variable_list)    
-
-
-
-def refresh_analysis_panel(gui):
-    
-    '''
-    Just deal with the time-series data analysis for now'''
-    
-    # Refresh the version_table and stat_table cursors
-    version_table = DataAccess.get_table(db, version_table_name)
-    stat_table = DataAccess.get_table(db, stat_table_name)     
-        
-    # Get scenario and variable lists for the combo boxes in GUI to display
-    scenario_list = list()
-    for version in version_table:
-        scenario_list.append(str(version[0]))
-    
-    variable_list = list()
-
-    for record in stat_table:
-        if record[3] not in variable_list and record[5] == 1:
-            # Include only the composite indicators
-            variable_list.append(record[3])
-    
-
-    # Clear current combo boxes
-    gui.cmb_select_scenario_3.clear()
-    gui.cmb_select_variable_3.clear()
-                
-    # add the items to the respective combo boxes
-    if len(scenario_list) != 0:
-        gui.cmb_select_scenario_3.addItems(scenario_list)
-    if len(variable_list) != 0:
-        gui.cmb_select_variable_3.addItems(variable_list)
-
-
-
 
 '''
 GUI design and Events handling
@@ -602,25 +533,25 @@ class Ui_frm_SEEMS_main(object):
         self.btn_start_simulation = QtGui.QPushButton(self.scenarios_setup)
         self.btn_start_simulation.setGeometry(QtCore.QRect(90, 540, 151, 34))
         self.btn_start_simulation.setObjectName(_fromUtf8("btn_start_simulation"))
-        self.lbl_input_scenario_name_label = QtGui.QLabel(self.scenarios_setup)
-        self.lbl_input_scenario_name_label.setGeometry(QtCore.QRect(10, 490, 121, 19))
-        self.lbl_input_scenario_name_label.setObjectName(_fromUtf8("lbl_input_scenario_name_label"))
+        self.lbl_input_scenario_name = QtGui.QLabel(self.scenarios_setup)
+        self.lbl_input_scenario_name.setGeometry(QtCore.QRect(10, 490, 121, 19))
+        self.lbl_input_scenario_name.setObjectName(_fromUtf8("lbl_input_scenario_name"))
         self.txt_input_scenario_name = QtGui.QLineEdit(self.scenarios_setup)
         self.txt_input_scenario_name.setGeometry(QtCore.QRect(140, 490, 191, 25))
         self.txt_input_scenario_name.setObjectName(_fromUtf8("txt_input_scenario_name"))
         self.gbx_set_simulation_period = QtGui.QGroupBox(self.scenarios_setup)
-        self.gbx_set_simulation_period.setGeometry(QtCore.QRect(10, 10, 321, 71))
+        self.gbx_set_simulation_period.setGeometry(QtCore.QRect(10, 10, 331, 71))
         self.gbx_set_simulation_period.setObjectName(_fromUtf8("gbx_set_simulation_period"))
         self.lbl_set_simulation_start_year = QtGui.QLabel(self.gbx_set_simulation_period)
         self.lbl_set_simulation_start_year.setGeometry(QtCore.QRect(10, 30, 81, 19))
         self.lbl_set_simulation_start_year.setObjectName(_fromUtf8("lbl_set_simulation_start_year"))
         self.lbl_set_simulation_end_year = QtGui.QLabel(self.gbx_set_simulation_period)
-        self.lbl_set_simulation_end_year.setGeometry(QtCore.QRect(170, 30, 68, 19))
+        self.lbl_set_simulation_end_year.setGeometry(QtCore.QRect(180, 30, 81, 19))
         self.lbl_set_simulation_end_year.setObjectName(_fromUtf8("lbl_set_simulation_end_year"))
         self.sbx_set_simulation_end_year = QtGui.QSpinBox(self.gbx_set_simulation_period)
-        self.sbx_set_simulation_end_year.setGeometry(QtCore.QRect(250, 30, 61, 25))
+        self.sbx_set_simulation_end_year.setGeometry(QtCore.QRect(260, 30, 61, 25))
         self.sbx_set_simulation_end_year.setMaximum(3000)
-        self.sbx_set_simulation_end_year.setProperty("value", 2016)
+        self.sbx_set_simulation_end_year.setProperty("value", 2020)
         self.sbx_set_simulation_end_year.setObjectName(_fromUtf8("sbx_set_simulation_end_year"))
         self.sbx_set_simulation_start_year = QtGui.QSpinBox(self.gbx_set_simulation_period)
         self.sbx_set_simulation_start_year.setGeometry(QtCore.QRect(90, 30, 61, 25))
@@ -630,24 +561,25 @@ class Ui_frm_SEEMS_main(object):
         self.tab_controlpanel.addTab(self.scenarios_setup, _fromUtf8(""))
 
 
+
         # Second tab - Results Review
         self.results_review = QtGui.QWidget()
         self.results_review.setObjectName(_fromUtf8("results_review"))
-        self.cmb_select_scenario = QtGui.QComboBox(self.results_review)
-        self.cmb_select_scenario.setGeometry(QtCore.QRect(130, 20, 201, 25))
-        self.cmb_select_scenario.setObjectName(_fromUtf8("cmb_select_scenario"))
-        self.lbl_select_scenario_label = QtGui.QLabel(self.results_review)
-        self.lbl_select_scenario_label.setGeometry(QtCore.QRect(10, 20, 121, 19))
-        self.lbl_select_scenario_label.setObjectName(_fromUtf8("lbl_select_scenario_label"))
-        self.btn_plot = QtGui.QPushButton(self.results_review)
-        self.btn_plot.setGeometry(QtCore.QRect(110, 550, 112, 34))
-        self.btn_plot.setObjectName(_fromUtf8("btn_plot"))
-        self.lbl_select_variable_label = QtGui.QLabel(self.results_review)
-        self.lbl_select_variable_label.setGeometry(QtCore.QRect(10, 60, 121, 19))
-        self.lbl_select_variable_label.setObjectName(_fromUtf8("lbl_select_variable_label"))
-        self.cmb_select_variable = QtGui.QComboBox(self.results_review)
-        self.cmb_select_variable.setGeometry(QtCore.QRect(130, 60, 201, 25))
-        self.cmb_select_variable.setObjectName(_fromUtf8("cmb_select_variable"))
+        self.cmb_select_review_scenario = QtGui.QComboBox(self.results_review)
+        self.cmb_select_review_scenario.setGeometry(QtCore.QRect(130, 20, 201, 25))
+        self.cmb_select_review_scenario.setObjectName(_fromUtf8("cmb_select_review_scenario"))
+        self.lbl_select_review_scenario = QtGui.QLabel(self.results_review)
+        self.lbl_select_review_scenario.setGeometry(QtCore.QRect(10, 20, 121, 19))
+        self.lbl_select_review_scenario.setObjectName(_fromUtf8("lbl_select_review_scenario"))
+        self.btn_review_plot = QtGui.QPushButton(self.results_review)
+        self.btn_review_plot.setGeometry(QtCore.QRect(110, 550, 112, 34))
+        self.btn_review_plot.setObjectName(_fromUtf8("btn_review_plot"))
+        self.lbl_select_review_variable = QtGui.QLabel(self.results_review)
+        self.lbl_select_review_variable.setGeometry(QtCore.QRect(10, 60, 121, 19))
+        self.lbl_select_review_variable.setObjectName(_fromUtf8("lbl_select_review_variable"))
+        self.cmb_select_review_variable = QtGui.QComboBox(self.results_review)
+        self.cmb_select_review_variable.setGeometry(QtCore.QRect(130, 60, 201, 25))
+        self.cmb_select_review_variable.setObjectName(_fromUtf8("cmb_select_review_variable"))
         self.gbx_plot_type = QtGui.QGroupBox(self.results_review)
         self.gbx_plot_type.setGeometry(QtCore.QRect(10, 170, 321, 71))
         self.gbx_plot_type.setObjectName(_fromUtf8("gbx_plot_type"))
@@ -655,27 +587,27 @@ class Ui_frm_SEEMS_main(object):
         self.rdbtn_bar_chart.setGeometry(QtCore.QRect(10, 30, 119, 23))
         self.rdbtn_bar_chart.setObjectName(_fromUtf8("rdbtn_bar_chart"))
         self.rdbtn_line_chart = QtGui.QRadioButton(self.gbx_plot_type)
-        self.rdbtn_line_chart.setGeometry(QtCore.QRect(120, 30, 119, 23))
+        self.rdbtn_line_chart.setGeometry(QtCore.QRect(140, 30, 119, 23))
         self.rdbtn_line_chart.setObjectName(_fromUtf8("rdbtn_line_chart"))
         self.gbx_plot_period = QtGui.QGroupBox(self.results_review)
         self.gbx_plot_period.setGeometry(QtCore.QRect(10, 100, 321, 71))
         self.gbx_plot_period.setObjectName(_fromUtf8("gbx_plot_period"))
-        self.lbl_set_plot_start_year = QtGui.QLabel(self.gbx_plot_period)
-        self.lbl_set_plot_start_year.setGeometry(QtCore.QRect(10, 30, 81, 19))
-        self.lbl_set_plot_start_year.setObjectName(_fromUtf8("lbl_set_plot_start_year"))
-        self.lbl_set_plot_end_year = QtGui.QLabel(self.gbx_plot_period)
-        self.lbl_set_plot_end_year.setGeometry(QtCore.QRect(170, 30, 68, 19))
-        self.lbl_set_plot_end_year.setObjectName(_fromUtf8("lbl_set_plot_end_year"))
-        self.sbx_set_plot_end_year = QtGui.QSpinBox(self.gbx_plot_period)
-        self.sbx_set_plot_end_year.setGeometry(QtCore.QRect(250, 30, 61, 25))
-        self.sbx_set_plot_end_year.setMaximum(3000)
-        self.sbx_set_plot_end_year.setProperty("value", 2016)
-        self.sbx_set_plot_end_year.setObjectName(_fromUtf8("sbx_set_plot_end_year"))
-        self.sbx_set_plot_start_year = QtGui.QSpinBox(self.gbx_plot_period)
-        self.sbx_set_plot_start_year.setGeometry(QtCore.QRect(90, 30, 61, 25))
-        self.sbx_set_plot_start_year.setMaximum(3000)
-        self.sbx_set_plot_start_year.setProperty("value", 2015)
-        self.sbx_set_plot_start_year.setObjectName(_fromUtf8("sbx_set_plot_start_year"))
+        self.lbl_select_review_start_year = QtGui.QLabel(self.gbx_plot_period)
+        self.lbl_select_review_start_year.setGeometry(QtCore.QRect(10, 30, 81, 19))
+        self.lbl_select_review_start_year.setObjectName(_fromUtf8("lbl_select_review_start_year"))
+        self.lbl_select_review_end_year = QtGui.QLabel(self.gbx_plot_period)
+        self.lbl_select_review_end_year.setGeometry(QtCore.QRect(170, 30, 81, 19))
+        self.lbl_select_review_end_year.setObjectName(_fromUtf8("lbl_select_review_end_year"))
+        self.sbx_select_review_end_year = QtGui.QSpinBox(self.gbx_plot_period)
+        self.sbx_select_review_end_year.setGeometry(QtCore.QRect(250, 30, 61, 25))
+        self.sbx_select_review_end_year.setMaximum(3000)
+        self.sbx_select_review_end_year.setProperty("value", 0)
+        self.sbx_select_review_end_year.setObjectName(_fromUtf8("sbx_select_review_end_year"))
+        self.sbx_select_review_start_year = QtGui.QSpinBox(self.gbx_plot_period)
+        self.sbx_select_review_start_year.setGeometry(QtCore.QRect(90, 30, 61, 25))
+        self.sbx_select_review_start_year.setMaximum(3000)
+        self.sbx_select_review_start_year.setProperty("value", 0)
+        self.sbx_select_review_start_year.setObjectName(_fromUtf8("sbx_select_review_start_year"))
         self.tab_controlpanel.addTab(self.results_review, _fromUtf8(""))
 
 
@@ -685,76 +617,81 @@ class Ui_frm_SEEMS_main(object):
         self.gbx_cross_section_ana = QtGui.QGroupBox(self.data_analysis)
         self.gbx_cross_section_ana.setGeometry(QtCore.QRect(10, 20, 321, 261))
         self.gbx_cross_section_ana.setObjectName(_fromUtf8("gbx_cross_section_ana"))
-        self.cmb_select_variable_2 = QtGui.QComboBox(self.gbx_cross_section_ana)
-        self.cmb_select_variable_2.setGeometry(QtCore.QRect(130, 70, 181, 25))
-        self.cmb_select_variable_2.setObjectName(_fromUtf8("cmb_select_variable_2"))
-        self.cmb_select_scenario_2 = QtGui.QComboBox(self.gbx_cross_section_ana)
-        self.cmb_select_scenario_2.setGeometry(QtCore.QRect(130, 30, 181, 25))
-        self.cmb_select_scenario_2.setObjectName(_fromUtf8("cmb_select_scenario_2"))
-        self.lbl_select_variable_label_2 = QtGui.QLabel(self.gbx_cross_section_ana)
-        self.lbl_select_variable_label_2.setGeometry(QtCore.QRect(10, 70, 121, 19))
-        self.lbl_select_variable_label_2.setObjectName(_fromUtf8("lbl_select_variable_label_2"))
-        self.lbl_select_scenario_label_2 = QtGui.QLabel(self.gbx_cross_section_ana)
-        self.lbl_select_scenario_label_2.setGeometry(QtCore.QRect(10, 30, 121, 19))
-        self.lbl_select_scenario_label_2.setObjectName(_fromUtf8("lbl_select_scenario_label_2"))
-        self.lbl_select_year_label = QtGui.QLabel(self.gbx_cross_section_ana)
-        self.lbl_select_year_label.setGeometry(QtCore.QRect(10, 110, 121, 19))
-        self.lbl_select_year_label.setObjectName(_fromUtf8("lbl_select_year_label"))
-        self.sbx_select_year = QtGui.QSpinBox(self.gbx_cross_section_ana)
-        self.sbx_select_year.setGeometry(QtCore.QRect(160, 110, 151, 25))
-        self.sbx_select_year.setMaximum(3000)
-        self.sbx_select_year.setProperty("value", 2015)
-        self.sbx_select_year.setObjectName(_fromUtf8("sbx_select_year"))
+        self.cmb_select_cross_section_analysis_variable = QtGui.QComboBox(self.gbx_cross_section_ana)
+        self.cmb_select_cross_section_analysis_variable.setGeometry(QtCore.QRect(130, 70, 181, 25))
+        self.cmb_select_cross_section_analysis_variable.setObjectName(_fromUtf8("cmb_select_cross_section_analysis_variable"))
+        self.cmb_select_cross_section_analysis_scenario = QtGui.QComboBox(self.gbx_cross_section_ana)
+        self.cmb_select_cross_section_analysis_scenario.setGeometry(QtCore.QRect(130, 30, 181, 25))
+        self.cmb_select_cross_section_analysis_scenario.setObjectName(_fromUtf8("cmb_select_cross_section_analysis_scenario"))
+        self.lbl_select_cross_section_analysis_variable = QtGui.QLabel(self.gbx_cross_section_ana)
+        self.lbl_select_cross_section_analysis_variable.setGeometry(QtCore.QRect(10, 70, 121, 19))
+        self.lbl_select_cross_section_analysis_variable.setObjectName(_fromUtf8("lbl_select_cross_section_analysis_variable"))
+        self.lbl_select_cross_section_analysis_scenario = QtGui.QLabel(self.gbx_cross_section_ana)
+        self.lbl_select_cross_section_analysis_scenario.setGeometry(QtCore.QRect(10, 30, 121, 19))
+        self.lbl_select_cross_section_analysis_scenario.setObjectName(_fromUtf8("lbl_select_cross_section_analysis_scenario"))
+        self.lbl_select_cross_section_analysis_year = QtGui.QLabel(self.gbx_cross_section_ana)
+        self.lbl_select_cross_section_analysis_year.setGeometry(QtCore.QRect(10, 110, 121, 19))
+        self.lbl_select_cross_section_analysis_year.setObjectName(_fromUtf8("lbl_select_cross_section_analysis_year"))
+        self.sbx_select_cross_section_analysis_year = QtGui.QSpinBox(self.gbx_cross_section_ana)
+        self.sbx_select_cross_section_analysis_year.setGeometry(QtCore.QRect(160, 110, 151, 25))
+        self.sbx_select_cross_section_analysis_year.setMaximum(3000)
+        self.sbx_select_cross_section_analysis_year.setProperty("value", 0)
+        self.sbx_select_cross_section_analysis_year.setObjectName(_fromUtf8("sbx_select_cross_section_analysis_year"))
         self.rdbtn_histogram = QtGui.QRadioButton(self.gbx_cross_section_ana)
         self.rdbtn_histogram.setGeometry(QtCore.QRect(10, 160, 119, 23))
         self.rdbtn_histogram.setObjectName(_fromUtf8("rdbtn_histogram"))
-        self.btn_plot_2 = QtGui.QPushButton(self.gbx_cross_section_ana)
-        self.btn_plot_2.setGeometry(QtCore.QRect(100, 220, 112, 34))
-        self.btn_plot_2.setObjectName(_fromUtf8("btn_plot_2"))
+        self.btn_cross_section_analysis_plot = QtGui.QPushButton(self.gbx_cross_section_ana)
+        self.btn_cross_section_analysis_plot.setGeometry(QtCore.QRect(100, 220, 112, 34))
+        self.btn_cross_section_analysis_plot.setObjectName(_fromUtf8("btn_cross_section_analysis_plot"))
         self.gbx_time_series_ana = QtGui.QGroupBox(self.data_analysis)
         self.gbx_time_series_ana.setGeometry(QtCore.QRect(10, 300, 321, 321))
         self.gbx_time_series_ana.setObjectName(_fromUtf8("gbx_time_series_ana"))
-        self.cmb_select_variable_3 = QtGui.QComboBox(self.gbx_time_series_ana)
-        self.cmb_select_variable_3.setGeometry(QtCore.QRect(130, 70, 181, 25))
-        self.cmb_select_variable_3.setObjectName(_fromUtf8("cmb_select_variable_3"))
-        self.cmb_select_scenario_3 = QtGui.QComboBox(self.gbx_time_series_ana)
-        self.cmb_select_scenario_3.setGeometry(QtCore.QRect(130, 30, 181, 25))
-        self.cmb_select_scenario_3.setObjectName(_fromUtf8("cmb_select_scenario_3"))
-        self.lbl_select_variable_label_3 = QtGui.QLabel(self.gbx_time_series_ana)
-        self.lbl_select_variable_label_3.setGeometry(QtCore.QRect(10, 70, 121, 19))
-        self.lbl_select_variable_label_3.setObjectName(_fromUtf8("lbl_select_variable_label_3"))
-        self.lbl_select_scenario_label_3 = QtGui.QLabel(self.gbx_time_series_ana)
-        self.lbl_select_scenario_label_3.setGeometry(QtCore.QRect(10, 30, 121, 19))
-        self.lbl_select_scenario_label_3.setObjectName(_fromUtf8("lbl_select_scenario_label_3"))
-        self.lbl_select_start_year_label = QtGui.QLabel(self.gbx_time_series_ana)
-        self.lbl_select_start_year_label.setGeometry(QtCore.QRect(10, 110, 121, 19))
-        self.lbl_select_start_year_label.setObjectName(_fromUtf8("lbl_select_start_year_label"))
-        self.sbx_select_start_year = QtGui.QSpinBox(self.gbx_time_series_ana)
-        self.sbx_select_start_year.setGeometry(QtCore.QRect(160, 110, 151, 25))
-        self.sbx_select_start_year.setMaximum(3000)
-        self.sbx_select_start_year.setProperty("value", 2015)
-        self.sbx_select_start_year.setObjectName(_fromUtf8("sbx_select_start_year"))
-        self.lbl_select_end_year_label = QtGui.QLabel(self.gbx_time_series_ana)
-        self.lbl_select_end_year_label.setGeometry(QtCore.QRect(10, 140, 121, 19))
-        self.lbl_select_end_year_label.setObjectName(_fromUtf8("lbl_select_end_year_label"))
-        self.sbx_select_end_year = QtGui.QSpinBox(self.gbx_time_series_ana)
-        self.sbx_select_end_year.setGeometry(QtCore.QRect(160, 140, 151, 25))
-        self.sbx_select_end_year.setMaximum(3000)
-        self.sbx_select_end_year.setProperty("value", 2016)
-        self.sbx_select_end_year.setObjectName(_fromUtf8("sbx_select_end_year"))
+        self.cmb_select_time_series_analysis_variable = QtGui.QComboBox(self.gbx_time_series_ana)
+        self.cmb_select_time_series_analysis_variable.setGeometry(QtCore.QRect(130, 70, 181, 25))
+        self.cmb_select_time_series_analysis_variable.setObjectName(_fromUtf8("cmb_select_time_series_analysis_variable"))
+        self.cmb_select_time_series_analysis_scenario = QtGui.QComboBox(self.gbx_time_series_ana)
+        self.cmb_select_time_series_analysis_scenario.setGeometry(QtCore.QRect(130, 30, 181, 25))
+        self.cmb_select_time_series_analysis_scenario.setObjectName(_fromUtf8("cmb_select_time_series_analysis_scenario"))
+        self.lbl_select_time_series_analysis_variable = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_time_series_analysis_variable.setGeometry(QtCore.QRect(10, 70, 121, 19))
+        self.lbl_select_time_series_analysis_variable.setObjectName(_fromUtf8("lbl_select_time_series_analysis_variable"))
+        self.lbl_select_time_series_analysis_scenario = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_time_series_analysis_scenario.setGeometry(QtCore.QRect(10, 30, 121, 19))
+        self.lbl_select_time_series_analysis_scenario.setObjectName(_fromUtf8("lbl_select_time_series_analysis_scenario"))
+        self.lbl_select_time_series_analysis_start_year = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_time_series_analysis_start_year.setGeometry(QtCore.QRect(10, 110, 131, 19))
+        self.lbl_select_time_series_analysis_start_year.setObjectName(_fromUtf8("lbl_select_time_series_analysis_start_year"))
+        self.sbx_select_time_series_analysis_start_year = QtGui.QSpinBox(self.gbx_time_series_ana)
+        self.sbx_select_time_series_analysis_start_year.setGeometry(QtCore.QRect(160, 110, 151, 25))
+        self.sbx_select_time_series_analysis_start_year.setMaximum(3000)
+        self.sbx_select_time_series_analysis_start_year.setProperty("value", 0)
+        self.sbx_select_time_series_analysis_start_year.setObjectName(_fromUtf8("sbx_select_time_series_analysis_start_year"))
+        self.lbl_select_time_series_analysis_end_year = QtGui.QLabel(self.gbx_time_series_ana)
+        self.lbl_select_time_series_analysis_end_year.setGeometry(QtCore.QRect(10, 140, 121, 19))
+        self.lbl_select_time_series_analysis_end_year.setObjectName(_fromUtf8("lbl_select_time_series_analysis_end_year"))
+        self.sbx_select_time_series_analysis_end_year = QtGui.QSpinBox(self.gbx_time_series_ana)
+        self.sbx_select_time_series_analysis_end_year.setGeometry(QtCore.QRect(160, 140, 151, 25))
+        self.sbx_select_time_series_analysis_end_year.setMaximum(3000)
+        self.sbx_select_time_series_analysis_end_year.setProperty("value", 0)
+        self.sbx_select_time_series_analysis_end_year.setObjectName(_fromUtf8("sbx_select_time_series_analysis_end_year"))
         self.rdbtn_stacked_bars_chart = QtGui.QRadioButton(self.gbx_time_series_ana)
         self.rdbtn_stacked_bars_chart.setGeometry(QtCore.QRect(10, 200, 131, 23))
         self.rdbtn_stacked_bars_chart.setObjectName(_fromUtf8("rdbtn_stacked_bars_chart"))
         self.rdbtn_multiple_line_chart = QtGui.QRadioButton(self.gbx_time_series_ana)
         self.rdbtn_multiple_line_chart.setGeometry(QtCore.QRect(160, 200, 131, 23))
         self.rdbtn_multiple_line_chart.setObjectName(_fromUtf8("rdbtn_multiple_line_chart"))
-        self.btn_plot_3 = QtGui.QPushButton(self.gbx_time_series_ana)
-        self.btn_plot_3.setGeometry(QtCore.QRect(100, 280, 112, 34))
-        self.btn_plot_3.setObjectName(_fromUtf8("btn_plot_3"))
+        self.btn_time_series_analysis_plot = QtGui.QPushButton(self.gbx_time_series_ana)
+        self.btn_time_series_analysis_plot.setGeometry(QtCore.QRect(100, 280, 112, 34))
+        self.btn_time_series_analysis_plot.setObjectName(_fromUtf8("btn_time_series_analysis_plot"))
         self.tab_controlpanel.addTab(self.data_analysis, _fromUtf8(""))
 
 
         # Window components
+        self.framePlotArea = QtGui.QFrame(self.centralwidget)
+        self.framePlotArea.setGeometry(QtCore.QRect(390, 20, 661, 651))
+        self.framePlotArea.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.framePlotArea.setFrameShadow(QtGui.QFrame.Raised)
+        self.framePlotArea.setObjectName(_fromUtf8("framePlotArea"))
         frm_SEEMS_main.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(frm_SEEMS_main)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1070, 31))
@@ -770,12 +707,6 @@ class Ui_frm_SEEMS_main(object):
         self.menuFile.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
 
-#         # Test color picker button
-#         self.btn_color = QtGui.QPushButton(self.results_review)
-#         self.btn_color.setGeometry(QtCore.QRect(110, 500, 112, 34))
-#         self.btn_color.setObjectName(_fromUtf8("btn_color"))
-#         self.btn_color.clicked.connect(self.on_btn_color_clicked)
-    
         self.retranslateUi(frm_SEEMS_main)
         self.tab_controlpanel.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(frm_SEEMS_main)
@@ -784,10 +715,6 @@ class Ui_frm_SEEMS_main(object):
         '''
         The following lines in this submodule are developers added codes
         '''
-
-        # Setup the progress bar in the GUI
-        self.prb_progressBar.setMinimum(0)
-        self.prb_progressBar.setMaximum(simulation_depth * 100)        
  
         # Create another QWidget within frm_SEEMS_main to host the matplotlib canvas
         self.canvaswidget = QtGui.QWidget(frm_SEEMS_main)
@@ -799,6 +726,13 @@ class Ui_frm_SEEMS_main(object):
 
         # Create a canvas instance
         self.mc = MplCanvas(self.canvaswidget)
+        
+        # Create a matplotlib toolbar
+        self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)        
+           
+        # Add the canvas and toolbar instances into the VBox Layout
+        self.lyt.addWidget(self.mc)        
+        self.lyt.addWidget(self.mpl_toolbar)        
 
         '''
         #         Another way to create a canvas, without introducing a seperately defined class
@@ -812,82 +746,92 @@ class Ui_frm_SEEMS_main(object):
         #         self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         #         self.mc.updateGeometry()          
         '''
-
-
-        # Create a matplotlib toolbar
-        self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)        
-           
-        # Add the canvas and toolbar instances into the VBox Layout
-        self.lyt.addWidget(self.mc)        
-        self.lyt.addWidget(self.mpl_toolbar)
         
-        # Initiate the results review and data analysis panels
-        refresh_review_panel(self)
-        refresh_analysis_panel(self)
- 
+        # Automatically add a default new scenario name
+        self.add_default_new_scenario_name()
+         
   
         # Events handling 
-        self.btn_plot.clicked.connect(self.on_btn_plot_clicked)
-        self.btn_plot_3.clicked.connect(self.on_btn_plot_3_clicked)
-         
-        self.btn_start_simulation.clicked.connect(self.on_btn_start_simulation_clicked)
+        self.btn_review_plot.clicked.connect(self.btn_review_plot_onclicked)
+        self.btn_time_series_analysis_plot.clicked.connect(self.btn_time_series_plot_onclicked)
+        
+        self.cmb_select_review_scenario.currentIndexChanged.connect(self.cmb_select_scenario_onchange)
+        self.cmb_select_cross_section_analysis_scenario.currentIndexChanged.connect(self.cmb_select_cross_section_analysis_scenario_onchange)
+        self.cmb_select_time_series_analysis_scenario.currentIndexChanged.connect(self.cmb_select_time_series_analysis_scenario_onchange)
+                 
+        self.btn_start_simulation.clicked.connect(self.btn_start_simulation_onclicked)
         
         
-
+        # Initiate the results review and data analysis panels
+        self.refresh_review_panel()
+        self.refresh_analysis_panel()
+        
   
   
     def retranslateUi(self, frm_SEEMS_main):
         frm_SEEMS_main.setWindowTitle(_translate("frm_SEEMS_main", "SEEMS  -  Socio-Economical-Ecological Multipurpose Simulator", None))
         self.btn_start_simulation.setText(_translate("frm_SEEMS_main", "Start Simulation", None))
-        self.lbl_input_scenario_name_label.setText(_translate("frm_SEEMS_main", "Scenario Name:", None))
+        self.lbl_input_scenario_name.setText(_translate("frm_SEEMS_main", "Scenario Name:", None))
         self.gbx_set_simulation_period.setTitle(_translate("frm_SEEMS_main", "Set Simulation Period", None))
         self.lbl_set_simulation_start_year.setText(_translate("frm_SEEMS_main", "Start Year:", None))
         self.lbl_set_simulation_end_year.setText(_translate("frm_SEEMS_main", "End Year:", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.scenarios_setup), _translate("frm_SEEMS_main", "Scenarios Setup", None))
-        self.lbl_select_scenario_label.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
-        self.btn_plot.setText(_translate("frm_SEEMS_main", "Plot", None))
-        self.lbl_select_variable_label.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
+        self.lbl_select_review_scenario.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
+        self.btn_review_plot.setText(_translate("frm_SEEMS_main", "Plot", None))
+        self.lbl_select_review_variable.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
         self.gbx_plot_type.setTitle(_translate("frm_SEEMS_main", "Plot Type", None))
         self.rdbtn_bar_chart.setText(_translate("frm_SEEMS_main", "Bar Chart", None))
         self.rdbtn_line_chart.setText(_translate("frm_SEEMS_main", "Line Chart", None))
         self.gbx_plot_period.setTitle(_translate("frm_SEEMS_main", "Plot Period", None))
-        self.lbl_set_plot_start_year.setText(_translate("frm_SEEMS_main", "Start Year:", None))
-        self.lbl_set_plot_end_year.setText(_translate("frm_SEEMS_main", "End Year:", None))
+        self.lbl_select_review_start_year.setText(_translate("frm_SEEMS_main", "Start Year:", None))
+        self.lbl_select_review_end_year.setText(_translate("frm_SEEMS_main", "End Year:", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.results_review), _translate("frm_SEEMS_main", "Results Review", None))
         self.gbx_cross_section_ana.setTitle(_translate("frm_SEEMS_main", "Cross-section Data Analysis", None))
-        self.lbl_select_variable_label_2.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
-        self.lbl_select_scenario_label_2.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
-        self.lbl_select_year_label.setText(_translate("frm_SEEMS_main", "Select Year:", None))
+        self.lbl_select_cross_section_analysis_variable.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
+        self.lbl_select_cross_section_analysis_scenario.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
+        self.lbl_select_cross_section_analysis_year.setText(_translate("frm_SEEMS_main", "Select Year:", None))
         self.rdbtn_histogram.setText(_translate("frm_SEEMS_main", "Histogram", None))
-        self.btn_plot_2.setText(_translate("frm_SEEMS_main", "Plot", None))
+        self.btn_cross_section_analysis_plot.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.gbx_time_series_ana.setTitle(_translate("frm_SEEMS_main", "Time-series Data Analysis", None))
-        self.lbl_select_variable_label_3.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
-        self.lbl_select_scenario_label_3.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
-        self.lbl_select_start_year_label.setText(_translate("frm_SEEMS_main", "Select Start Year:", None))
-        self.lbl_select_end_year_label.setText(_translate("frm_SEEMS_main", "Select End Year:", None))
+        self.lbl_select_time_series_analysis_variable.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
+        self.lbl_select_time_series_analysis_scenario.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
+        self.lbl_select_time_series_analysis_start_year.setText(_translate("frm_SEEMS_main", "Select Start Year:", None))
+        self.lbl_select_time_series_analysis_end_year.setText(_translate("frm_SEEMS_main", "Select End Year:", None))
         self.rdbtn_stacked_bars_chart.setText(_translate("frm_SEEMS_main", "Stacked Bars", None))
         self.rdbtn_multiple_line_chart.setText(_translate("frm_SEEMS_main", "Multiple Lines", None))
-        self.btn_plot_3.setText(_translate("frm_SEEMS_main", "Plot", None))
+        self.btn_time_series_analysis_plot.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.data_analysis), _translate("frm_SEEMS_main", "Data Analysis", None))
         self.menuFile.setTitle(_translate("frm_SEEMS_main", "Help", None))
-        self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))        
-        
-#         # Test button color picker
-#         self.btn_color.setText(_translate("frm_SEEMS_main", "Color", None))
+        self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))
 
 
-    def on_btn_start_simulation_clicked(self):
+    def btn_start_simulation_onclicked(self):
         
         # Set up the scenario name from the LineEdit box in the GUI
         # Should check for already existing names, otherwise later results will be added to the existing table, causing troubles
 
+        # Get scenario settings from user inputs
         scenario_name = str(self.txt_input_scenario_name.text())
+        start_year = self.sbx_set_simulation_start_year.value()
+        end_year = self.sbx_set_simulation_end_year.value()
+        simulation_depth = end_year - start_year
+
+        # Setup the progress bar in the GUI
+        self.prb_progressBar.setMinimum(0)
+        self.prb_progressBar.setMaximum(simulation_depth * 100)
                   
         # Run the simulation
         create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
                         person_table_name, person_table, land_table_name, land_table, 
                         business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
-                        stat_table_name, stat_table, simulation_depth, start_year, end_year, self)
+                        stat_table_name, stat_table, simulation_depth, start_year, self)
+        
+        # When simulation is done, refresh the default scenario name
+        self.add_default_new_scenario_name()
+
+        # Then refresh the result review control and data analysis tabs
+        self.refresh_review_panel()
+        self.refresh_analysis_panel()
       
         # Show a message box indicating the completion of run.
         msb = QMessageBox()
@@ -897,7 +841,164 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-    def on_btn_plot_3_clicked(self):
+    def add_default_new_scenario_name(self):
+        # Refresh the version_table cursor.
+        version_table = DataAccess.get_table(db, version_table_name)
+        
+        # Get the scenario list.
+        scenario_list = list()
+        for version in version_table:
+            scenario_list.append(str(version[0]))
+        
+        if len(scenario_list) == 0:
+            new_scenario_name = 'a001'
+        else:        
+            new_scenario_name_num = int(max(scenario_list)[1:]) + 1
+
+            if int(new_scenario_name_num/100) != 0: # if the new scenario number is in hundreds
+                new_scenario_name = max(scenario_list)[:1] + str(new_scenario_name_num)
+            elif int(new_scenario_name_num/100) == 0 and int(new_scenario_name_num/10) != 0: # if the new scenario number is in tens
+                new_scenario_name = max(scenario_list)[:1] + '0' + str(new_scenario_name_num)
+            else:
+                new_scenario_name = max(scenario_list)[:1] + '00' + str(new_scenario_name_num)
+        
+        self.txt_input_scenario_name.setText(new_scenario_name)
+
+
+    def cmb_select_scenario_onchange(self):
+        # Refresh the stat_table cursor
+        stat_table = DataAccess.get_table(db, stat_table_name) 
+
+        # Clear current select variable combo box
+        self.cmb_select_review_variable.clear()
+            
+        # Get the variable list and simulation length for the selected scenario        
+        variable_list = list()
+        year_list = list()
+    
+        for record in stat_table:
+            if record[1] == self.cmb_select_review_scenario.currentText():
+                if record[2] not in year_list:
+                    year_list.append(record[2])
+                if record[3] not in variable_list and record[5] == 0:
+                    # Exclude the composite indicators
+                    variable_list.append(record[3])
+        
+                    
+        # add the items to variable combo box
+        self.cmb_select_review_variable.addItems(variable_list)
+        
+        # Reset the plot start and end years display according to the respective scenario's settings.
+        self.sbx_select_review_start_year.setProperty("value", min(year_list))
+        self.sbx_select_review_end_year.setProperty("value", max(year_list))
+
+
+    def cmb_select_cross_section_analysis_scenario_onchange(self):
+        # Refresh the stat_table cursor
+        stat_table = DataAccess.get_table(db, stat_table_name) 
+
+        # Clear current select cross section analysis variable combo box
+        self.cmb_select_cross_section_analysis_variable.clear()
+            
+        # Get the variable list and simulation length for the selected scenario        
+        variable_list = list()
+        year_list = list()
+    
+        for record in stat_table:
+            if record[1] == self.cmb_select_cross_section_analysis_scenario.currentText():
+                if record[2] not in year_list:
+                    year_list.append(record[2])
+                if record[3] not in variable_list and record[5] == 0:
+                    # Exclude the composite indicators
+                    variable_list.append(record[3])
+        
+                    
+        # add the items to variable combo box
+        self.cmb_select_cross_section_analysis_variable.addItems(variable_list)
+        
+        # Reset the cross section year display according to the respective scenario's settings.
+        self.sbx_select_cross_section_analysis_year.setProperty("value", min(year_list))       
+    
+
+    def cmb_select_time_series_analysis_scenario_onchange(self):
+        # Refresh the stat_table cursor
+        stat_table = DataAccess.get_table(db, stat_table_name) 
+
+        # Clear current select time series analysis variable combo box
+        self.cmb_select_time_series_analysis_variable.clear()
+            
+        # Get the variable list and simulation length for the selected scenario        
+        variable_list = list()
+        year_list = list()
+    
+        for record in stat_table:
+            if record[1] == self.cmb_select_time_series_analysis_scenario.currentText():
+                if record[2] not in year_list:
+                    year_list.append(record[2])
+                if record[3] not in variable_list and record[5] == 1:
+                    # Include the composite indicators only
+                    variable_list.append(record[3])
+        
+                    
+        # add the items to variable combo box
+        self.cmb_select_time_series_analysis_variable.addItems(variable_list)
+        
+        # Reset the analysis start and end years display according to the respective scenario's settings.
+        self.sbx_select_time_series_analysis_start_year.setProperty("value", min(year_list))
+        self.sbx_select_time_series_analysis_end_year.setProperty("value", max(year_list))        
+
+
+
+    def btn_review_plot_onclicked(self):
+        '''
+        The Plot button in the 'Results Review' Tag of the Control Panel
+        '''
+
+        # Note that data must be read from the database, rather than lists and dictionaries in the program, 
+        # for users may need to make plots after the iteration (running of main simulation program).
+        
+        # Read the statistics table.        
+        stat_table = DataAccess.get_table(db, stat_table_name)
+        
+        # Define the x_data (time_stamps list) and y_data (series list)
+        time_stamps = list()
+        series = list()
+
+        plot_title = str(self.cmb_select_review_variable.currentText())
+        
+        # Assign values for the variable lists
+        for st in stat_table:            
+            # Look only the records for the current scenario version
+            if st.ScenarioVersion == self.cmb_select_review_scenario.currentText():
+                # Get the plot time range from the spinbox inputs
+                if self.rdbtn_line_chart.isChecked() and self.tab_controlpanel.currentIndex() == 1:
+                    plot_start_year = self.sbx_select_review_start_year.value() + 1
+                else:
+                    plot_start_year = self.sbx_select_review_start_year.value()
+                
+                if st.StatDate >= plot_start_year and st.StatDate <= self.sbx_select_review_end_year.value():                
+                    if st.Variable == str(self.cmb_select_review_variable.currentText()):
+                        time_stamps.append(st.StatDate)
+                        series_name = st.Variable
+                        series.append(st.StatValue)
+                    
+        plot_series_list = [(series_name, series)]            
+
+        # Draw the plot
+        # First, remove any existing canvas contents
+        self.lyt.removeWidget(self.mc)
+        self.lyt.removeWidget(self.mpl_toolbar)
+        
+        # Then create a new canvas instance
+        self.mc = MplCanvas(self.canvaswidget)
+        self.mc.plot('timeseries', time_stamps, plot_series_list, plot_title, self)
+
+
+
+
+
+
+    def btn_time_series_plot_onclicked(self):
         '''
         The Plot button in the 'Data Analysis' Tag of the Control Panel
         '''
@@ -906,7 +1007,7 @@ class Ui_frm_SEEMS_main(object):
         stat_table = DataAccess.get_table(db, stat_table_name)
 
         # Set the plot title
-        plot_title = str(self.cmb_select_variable_3.currentText())
+        plot_title = str(self.cmb_select_time_series_analysis_variable.currentText())
         
         # Define temporary variables
         time_stamps = list()
@@ -925,71 +1026,83 @@ class Ui_frm_SEEMS_main(object):
         total_lodging_employment =  list()
         total_renting_employment = list()
 
+        # Determine the plot time range according to the plot type
+        if self.rdbtn_multiple_line_chart.isChecked() and self.tab_controlpanel.currentIndex() == 2:
+            analysis_start_year = self.sbx_select_time_series_analysis_start_year.value() + 1 # Do not plot "the current year" in a multiple line chart.
+        else:
+            analysis_start_year = self.sbx_select_time_series_analysis_start_year.value()
+
         # Get the series to be plot from the combo box selection
-        if str(self.cmb_select_variable_3.currentText()) == 'Sectors Income Structure':
+        if str(self.cmb_select_time_series_analysis_variable.currentText()) == 'Sectors Income Structure':
         
             # Assign values for the variable lists
             for st in stat_table:            
                 # Look only the records for the current scenario version
-                if st.ScenarioVersion == self.cmb_select_scenario_3.currentText():                                 
-                    if st.Variable == 'Agriculture Income':
-                        time_stamps.append(st.StatDate)                    
-                        total_agriculture_income.append(st.StatValue)
-                        agri_tuple = (st.Variable, total_agriculture_income)
-                    
-                    elif st.Variable == 'Temp Job Income':
-                        total_temp_job_income.append(st.StatValue)
-                        temj_tuple = (st.Variable, total_temp_job_income)
-                    
-                    elif st.Variable == 'Freight Trans Income':
-                        total_freight_trans_income.append(st.StatValue)
-                        frtt_tuple = (st.Variable, total_freight_trans_income)
-                    
-                    elif st.Variable == 'Passenger Trans Income':
-                        total_passenger_trans_income.append(st.StatValue)
-                        pagt_tuple = (st.Variable, total_passenger_trans_income)
-                    
-                    elif st.Variable == 'Lodging Income':
-                        total_lodging_income.append(st.StatValue)
-                        ldgg_tuple = (st.Variable, total_lodging_income)
-                    
-                    elif st.Variable == 'Renting Income':
-                        total_renting_income.append(st.StatValue)
-                        rent_tuple = (st.Variable, total_renting_income)
+                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():
+                                        
+                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
+                                                 
+                        if st.Variable == 'Agriculture Income':
+                            time_stamps.append(st.StatDate)                    
+                            total_agriculture_income.append(st.StatValue)
+                            agri_tuple = (st.Variable, total_agriculture_income)
+                        
+                        elif st.Variable == 'Temp Job Income':
+                            total_temp_job_income.append(st.StatValue)
+                            temj_tuple = (st.Variable, total_temp_job_income)
+                        
+                        elif st.Variable == 'Freight Trans Income':
+                            total_freight_trans_income.append(st.StatValue)
+                            frtt_tuple = (st.Variable, total_freight_trans_income)
+                        
+                        elif st.Variable == 'Passenger Trans Income':
+                            total_passenger_trans_income.append(st.StatValue)
+                            pagt_tuple = (st.Variable, total_passenger_trans_income)
+                        
+                        elif st.Variable == 'Lodging Income':
+                            total_lodging_income.append(st.StatValue)
+                            ldgg_tuple = (st.Variable, total_lodging_income)
+                        
+                        elif st.Variable == 'Renting Income':
+                            total_renting_income.append(st.StatValue)
+                            rent_tuple = (st.Variable, total_renting_income)
             
             plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
 
 
-        elif str(self.cmb_select_variable_3.currentText()) == 'Sectors Employment Structure':
+        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == 'Sectors Employment Structure':
         
             # Assign values for the variable lists
             for st in stat_table:            
                 # Look only the records for the current scenario version
-                if st.ScenarioVersion == self.cmb_select_scenario_3.currentText():                                 
-                    if st.Variable == 'Agriculture Employment Ratio':
-                        time_stamps.append(st.StatDate)                    
-                        total_agriculture_employment.append(st.StatValue)
-                        agri_tuple = (st.Variable, total_agriculture_employment)
+                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():        
                     
-                    elif st.Variable == 'Temp Jobs Employment Ratio':
-                        total_temp_job_employment.append(st.StatValue)
-                        temj_tuple = (st.Variable, total_temp_job_employment)
-                    
-                    elif st.Variable == 'Freight Trans Employment Ratio':
-                        total_freight_trans_employment.append(st.StatValue)
-                        frtt_tuple = (st.Variable, total_freight_trans_employment)
-                    
-                    elif st.Variable == 'Passenger Trans Employment Ratio':
-                        total_passenger_trans_employment.append(st.StatValue)
-                        pagt_tuple = (st.Variable, total_passenger_trans_employment)
-                    
-                    elif st.Variable == 'Lodging Employment Ratio':
-                        total_lodging_employment.append(st.StatValue)
-                        ldgg_tuple = (st.Variable, total_lodging_employment)
-                    
-                    elif st.Variable == 'Renting Employment Ratio':
-                        total_renting_employment.append(st.StatValue)
-                        rent_tuple = (st.Variable, total_renting_employment)
+                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
+                                             
+                        if st.Variable == 'Agriculture Employment Ratio':
+                            time_stamps.append(st.StatDate)                    
+                            total_agriculture_employment.append(st.StatValue)
+                            agri_tuple = (st.Variable, total_agriculture_employment)
+                        
+                        elif st.Variable == 'Temp Jobs Employment Ratio':
+                            total_temp_job_employment.append(st.StatValue)
+                            temj_tuple = (st.Variable, total_temp_job_employment)
+                        
+                        elif st.Variable == 'Freight Trans Employment Ratio':
+                            total_freight_trans_employment.append(st.StatValue)
+                            frtt_tuple = (st.Variable, total_freight_trans_employment)
+                        
+                        elif st.Variable == 'Passenger Trans Employment Ratio':
+                            total_passenger_trans_employment.append(st.StatValue)
+                            pagt_tuple = (st.Variable, total_passenger_trans_employment)
+                        
+                        elif st.Variable == 'Lodging Employment Ratio':
+                            total_lodging_employment.append(st.StatValue)
+                            ldgg_tuple = (st.Variable, total_lodging_employment)
+                        
+                        elif st.Variable == 'Renting Employment Ratio':
+                            total_renting_employment.append(st.StatValue)
+                            rent_tuple = (st.Variable, total_renting_employment)
             
             plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
 
@@ -1007,42 +1120,58 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-    def on_btn_plot_clicked(self):
-        '''
-        The Plot button in the 'Results Review' Tag of the Control Panel
-        '''
-        
-        # Note that data must be read from the database, rather than lists and dictionaries in the program, 
-        # for users may need to make plots after the iteration (running of main simulation program).
-        
-        # Read the statistics table.        
-        stat_table = DataAccess.get_table(db, stat_table_name)
-        
-        # Define the x_data (time_stamps list) and y_data (series list)
-        time_stamps = list()
-        series = list()
 
-        plot_title = str(self.cmb_select_variable.currentText())
+    def refresh_review_panel(self):
+        '''
+        Only refresh the select scenario combo boxes here;
+        Will refresh the select variable combo boxes later when a specific scenario is selected.
+        '''
+            
+        # Refresh the version_table cursor
+        version_table = DataAccess.get_table(db, version_table_name)
+            
+        # Get the scenario list for the select scenario combo boxes in the GUI/Results Review tab to display
+        scenario_list = list()
+        for version in version_table:
+            scenario_list.append(str(version[0]))
         
-        # Assign values for the variable lists
-        for st in stat_table:            
-            # Look only the records for the current scenario version
-            if st.ScenarioVersion == self.cmb_select_scenario.currentText():       
-                if st.Variable == str(self.cmb_select_variable.currentText()):
-                    time_stamps.append(st.StatDate)
-                    series_name = st.Variable
-                    series.append(st.StatValue)
+        # Clear the current select scenario and variable combo boxes
+        self.cmb_select_review_scenario.clear()
+        self.cmb_select_review_variable.clear()
                     
-        plot_series_list = [(series_name, series)]            
-
-        # Draw the plot
-        # First, remove any existing canvas contents
-        self.lyt.removeWidget(self.mc)
-        self.lyt.removeWidget(self.mpl_toolbar)
+        # add the new scenario list to the respective combo box
+        if len(scenario_list) != 0:
+            self.cmb_select_review_scenario.addItems(scenario_list)
+    
+    
+    
+    def refresh_analysis_panel(self):    
+        '''
+        Only refresh the select scenario combo boxes here;
+        Will refresh the select variable combo boxes later when a specific scenario is selected.
+        '''
         
-        # Then create a new canvas instance
-        self.mc = MplCanvas(self.canvaswidget)
-        self.mc.plot('timeseries', time_stamps, plot_series_list, plot_title, self)
+        # Refresh the version_table cursor
+        version_table = DataAccess.get_table(db, version_table_name)
+            
+        # Get the scenario list for the combo boxes in GUI to display
+        scenario_list = list()
+        for version in version_table:
+            scenario_list.append(str(version[0]))
+        
+    
+        # Clear current combo boxes
+        self.cmb_select_cross_section_analysis_scenario.clear()
+        self.cmb_select_cross_section_analysis_variable.clear()
+        self.cmb_select_time_series_analysis_scenario.clear()
+        self.cmb_select_time_series_analysis_variable.clear()
+                    
+        # add the new scenario list to the respective combo box
+        if len(scenario_list) != 0:
+            self.cmb_select_cross_section_analysis_scenario.addItems(scenario_list)
+            self.cmb_select_time_series_analysis_scenario.addItems(scenario_list)
+
+
 
         
 
