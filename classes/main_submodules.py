@@ -816,7 +816,7 @@ class Ui_frm_SEEMS_main(object):
 
         # Create a matplotlib toolbar
         self.mpl_toolbar = NavigationToolbar(self.mc, self.canvaswidget)        
-            
+           
         # Add the canvas and toolbar instances into the VBox Layout
         self.lyt.addWidget(self.mc)        
         self.lyt.addWidget(self.mpl_toolbar)
