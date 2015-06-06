@@ -577,19 +577,22 @@ class Ui_frm_SEEMS_main(object):
     def setupUi(self, frm_SEEMS_main):
            
         '''
-        The followings are PyQt auto-generated codes from the Qt Designer.
+        The followings are mainly PyQt auto-generated codes from the Qt Designer.
+        With some user editions.
         '''
-           
+        
         frm_SEEMS_main.setObjectName(_fromUtf8("frm_SEEMS_main"))
         frm_SEEMS_main.resize(1070, 734)
          
         self.centralwidget = QtGui.QWidget(frm_SEEMS_main)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
-         
+        
+        # Set up the control panel.
         self.tab_controlpanel = QtGui.QTabWidget(self.centralwidget)
         self.tab_controlpanel.setGeometry(QtCore.QRect(10, 10, 351, 661))
         self.tab_controlpanel.setObjectName(_fromUtf8("tab_controlpanel"))
-         
+        
+        # First tab -  Scenarios Setup
         self.scenarios_setup = QtGui.QWidget()
         self.scenarios_setup.setObjectName(_fromUtf8("scenarios_setup"))
         self.prb_progressBar = QtGui.QProgressBar(self.scenarios_setup)
@@ -605,7 +608,29 @@ class Ui_frm_SEEMS_main(object):
         self.txt_input_scenario_name = QtGui.QLineEdit(self.scenarios_setup)
         self.txt_input_scenario_name.setGeometry(QtCore.QRect(140, 490, 191, 25))
         self.txt_input_scenario_name.setObjectName(_fromUtf8("txt_input_scenario_name"))
+        self.gbx_set_simulation_period = QtGui.QGroupBox(self.scenarios_setup)
+        self.gbx_set_simulation_period.setGeometry(QtCore.QRect(10, 10, 321, 71))
+        self.gbx_set_simulation_period.setObjectName(_fromUtf8("gbx_set_simulation_period"))
+        self.lbl_set_simulation_start_year = QtGui.QLabel(self.gbx_set_simulation_period)
+        self.lbl_set_simulation_start_year.setGeometry(QtCore.QRect(10, 30, 81, 19))
+        self.lbl_set_simulation_start_year.setObjectName(_fromUtf8("lbl_set_simulation_start_year"))
+        self.lbl_set_simulation_end_year = QtGui.QLabel(self.gbx_set_simulation_period)
+        self.lbl_set_simulation_end_year.setGeometry(QtCore.QRect(170, 30, 68, 19))
+        self.lbl_set_simulation_end_year.setObjectName(_fromUtf8("lbl_set_simulation_end_year"))
+        self.sbx_set_simulation_end_year = QtGui.QSpinBox(self.gbx_set_simulation_period)
+        self.sbx_set_simulation_end_year.setGeometry(QtCore.QRect(250, 30, 61, 25))
+        self.sbx_set_simulation_end_year.setMaximum(3000)
+        self.sbx_set_simulation_end_year.setProperty("value", 2016)
+        self.sbx_set_simulation_end_year.setObjectName(_fromUtf8("sbx_set_simulation_end_year"))
+        self.sbx_set_simulation_start_year = QtGui.QSpinBox(self.gbx_set_simulation_period)
+        self.sbx_set_simulation_start_year.setGeometry(QtCore.QRect(90, 30, 61, 25))
+        self.sbx_set_simulation_start_year.setMaximum(3000)
+        self.sbx_set_simulation_start_year.setProperty("value", 2015)
+        self.sbx_set_simulation_start_year.setObjectName(_fromUtf8("sbx_set_simulation_start_year"))
         self.tab_controlpanel.addTab(self.scenarios_setup, _fromUtf8(""))
+
+
+        # Second tab - Results Review
         self.results_review = QtGui.QWidget()
         self.results_review.setObjectName(_fromUtf8("results_review"))
         self.cmb_select_scenario = QtGui.QComboBox(self.results_review)
@@ -623,9 +648,8 @@ class Ui_frm_SEEMS_main(object):
         self.cmb_select_variable = QtGui.QComboBox(self.results_review)
         self.cmb_select_variable.setGeometry(QtCore.QRect(130, 60, 201, 25))
         self.cmb_select_variable.setObjectName(_fromUtf8("cmb_select_variable"))
-
         self.gbx_plot_type = QtGui.QGroupBox(self.results_review)
-        self.gbx_plot_type.setGeometry(QtCore.QRect(10, 270, 321, 71))
+        self.gbx_plot_type.setGeometry(QtCore.QRect(10, 170, 321, 71))
         self.gbx_plot_type.setObjectName(_fromUtf8("gbx_plot_type"))
         self.rdbtn_bar_chart = QtGui.QRadioButton(self.gbx_plot_type)
         self.rdbtn_bar_chart.setGeometry(QtCore.QRect(10, 30, 119, 23))
@@ -634,33 +658,32 @@ class Ui_frm_SEEMS_main(object):
         self.rdbtn_line_chart.setGeometry(QtCore.QRect(120, 30, 119, 23))
         self.rdbtn_line_chart.setObjectName(_fromUtf8("rdbtn_line_chart"))
         self.gbx_plot_period = QtGui.QGroupBox(self.results_review)
-        self.gbx_plot_period.setGeometry(QtCore.QRect(10, 100, 321, 151))
+        self.gbx_plot_period.setGeometry(QtCore.QRect(10, 100, 321, 71))
         self.gbx_plot_period.setObjectName(_fromUtf8("gbx_plot_period"))
-        self.horizontalSlider = QtGui.QSlider(self.gbx_plot_period)
-        self.horizontalSlider.setGeometry(QtCore.QRect(10, 60, 301, 22))
-        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider.setObjectName(_fromUtf8("horizontalSlider"))
-        self.horizontalSlider_2 = QtGui.QSlider(self.gbx_plot_period)
-        self.horizontalSlider_2.setGeometry(QtCore.QRect(10, 120, 301, 22))
-        self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider_2.setObjectName(_fromUtf8("horizontalSlider_2"))
-        self.lbl_start_year = QtGui.QLabel(self.gbx_plot_period)
-        self.lbl_start_year.setGeometry(QtCore.QRect(10, 30, 68, 19))
-        self.lbl_start_year.setObjectName(_fromUtf8("lbl_start_year"))
-        self.lbl_end_year = QtGui.QLabel(self.gbx_plot_period)
-        self.lbl_end_year.setGeometry(QtCore.QRect(10, 90, 68, 19))
-        self.lbl_end_year.setObjectName(_fromUtf8("lbl_end_year"))
-        
+        self.lbl_set_plot_start_year = QtGui.QLabel(self.gbx_plot_period)
+        self.lbl_set_plot_start_year.setGeometry(QtCore.QRect(10, 30, 81, 19))
+        self.lbl_set_plot_start_year.setObjectName(_fromUtf8("lbl_set_plot_start_year"))
+        self.lbl_set_plot_end_year = QtGui.QLabel(self.gbx_plot_period)
+        self.lbl_set_plot_end_year.setGeometry(QtCore.QRect(170, 30, 68, 19))
+        self.lbl_set_plot_end_year.setObjectName(_fromUtf8("lbl_set_plot_end_year"))
+        self.sbx_set_plot_end_year = QtGui.QSpinBox(self.gbx_plot_period)
+        self.sbx_set_plot_end_year.setGeometry(QtCore.QRect(250, 30, 61, 25))
+        self.sbx_set_plot_end_year.setMaximum(3000)
+        self.sbx_set_plot_end_year.setProperty("value", 2016)
+        self.sbx_set_plot_end_year.setObjectName(_fromUtf8("sbx_set_plot_end_year"))
+        self.sbx_set_plot_start_year = QtGui.QSpinBox(self.gbx_plot_period)
+        self.sbx_set_plot_start_year.setGeometry(QtCore.QRect(90, 30, 61, 25))
+        self.sbx_set_plot_start_year.setMaximum(3000)
+        self.sbx_set_plot_start_year.setProperty("value", 2015)
+        self.sbx_set_plot_start_year.setObjectName(_fromUtf8("sbx_set_plot_start_year"))
         self.tab_controlpanel.addTab(self.results_review, _fromUtf8(""))
 
 
+        # Third tab - Data Analysis
         self.data_analysis = QtGui.QWidget()
         self.data_analysis.setObjectName(_fromUtf8("data_analysis"))
-        self.btn_plot_2 = QtGui.QPushButton(self.data_analysis)
-        self.btn_plot_2.setGeometry(QtCore.QRect(110, 580, 112, 34))
-        self.btn_plot_2.setObjectName(_fromUtf8("btn_plot_2"))
         self.gbx_cross_section_ana = QtGui.QGroupBox(self.data_analysis)
-        self.gbx_cross_section_ana.setGeometry(QtCore.QRect(10, 20, 321, 211))
+        self.gbx_cross_section_ana.setGeometry(QtCore.QRect(10, 20, 321, 261))
         self.gbx_cross_section_ana.setObjectName(_fromUtf8("gbx_cross_section_ana"))
         self.cmb_select_variable_2 = QtGui.QComboBox(self.gbx_cross_section_ana)
         self.cmb_select_variable_2.setGeometry(QtCore.QRect(130, 70, 181, 25))
@@ -677,14 +700,19 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_select_year_label = QtGui.QLabel(self.gbx_cross_section_ana)
         self.lbl_select_year_label.setGeometry(QtCore.QRect(10, 110, 121, 19))
         self.lbl_select_year_label.setObjectName(_fromUtf8("lbl_select_year_label"))
-        self.sbx_select_year_spinbox = QtGui.QSpinBox(self.gbx_cross_section_ana)
-        self.sbx_select_year_spinbox.setGeometry(QtCore.QRect(160, 110, 151, 25))
-        self.sbx_select_year_spinbox.setObjectName(_fromUtf8("sbx_select_year_spinbox"))
+        self.sbx_select_year = QtGui.QSpinBox(self.gbx_cross_section_ana)
+        self.sbx_select_year.setGeometry(QtCore.QRect(160, 110, 151, 25))
+        self.sbx_select_year.setMaximum(3000)
+        self.sbx_select_year.setProperty("value", 2015)
+        self.sbx_select_year.setObjectName(_fromUtf8("sbx_select_year"))
         self.rdbtn_histogram = QtGui.QRadioButton(self.gbx_cross_section_ana)
         self.rdbtn_histogram.setGeometry(QtCore.QRect(10, 160, 119, 23))
         self.rdbtn_histogram.setObjectName(_fromUtf8("rdbtn_histogram"))
+        self.btn_plot_2 = QtGui.QPushButton(self.gbx_cross_section_ana)
+        self.btn_plot_2.setGeometry(QtCore.QRect(100, 220, 112, 34))
+        self.btn_plot_2.setObjectName(_fromUtf8("btn_plot_2"))
         self.gbx_time_series_ana = QtGui.QGroupBox(self.data_analysis)
-        self.gbx_time_series_ana.setGeometry(QtCore.QRect(10, 250, 321, 291))
+        self.gbx_time_series_ana.setGeometry(QtCore.QRect(10, 300, 321, 321))
         self.gbx_time_series_ana.setObjectName(_fromUtf8("gbx_time_series_ana"))
         self.cmb_select_variable_3 = QtGui.QComboBox(self.gbx_time_series_ana)
         self.cmb_select_variable_3.setGeometry(QtCore.QRect(130, 70, 181, 25))
@@ -701,27 +729,33 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_select_start_year_label = QtGui.QLabel(self.gbx_time_series_ana)
         self.lbl_select_start_year_label.setGeometry(QtCore.QRect(10, 110, 121, 19))
         self.lbl_select_start_year_label.setObjectName(_fromUtf8("lbl_select_start_year_label"))
-        self.sbx_select_year_spinbox_2 = QtGui.QSpinBox(self.gbx_time_series_ana)
-        self.sbx_select_year_spinbox_2.setGeometry(QtCore.QRect(160, 110, 151, 25))
-        self.sbx_select_year_spinbox_2.setObjectName(_fromUtf8("sbx_select_year_spinbox_2"))
+        self.sbx_select_start_year = QtGui.QSpinBox(self.gbx_time_series_ana)
+        self.sbx_select_start_year.setGeometry(QtCore.QRect(160, 110, 151, 25))
+        self.sbx_select_start_year.setMaximum(3000)
+        self.sbx_select_start_year.setProperty("value", 2015)
+        self.sbx_select_start_year.setObjectName(_fromUtf8("sbx_select_start_year"))
         self.lbl_select_end_year_label = QtGui.QLabel(self.gbx_time_series_ana)
         self.lbl_select_end_year_label.setGeometry(QtCore.QRect(10, 140, 121, 19))
         self.lbl_select_end_year_label.setObjectName(_fromUtf8("lbl_select_end_year_label"))
-        self.sbx_select_year_spinbox_3 = QtGui.QSpinBox(self.gbx_time_series_ana)
-        self.sbx_select_year_spinbox_3.setGeometry(QtCore.QRect(160, 140, 151, 25))
-        self.sbx_select_year_spinbox_3.setObjectName(_fromUtf8("sbx_select_year_spinbox_3"))
+        self.sbx_select_end_year = QtGui.QSpinBox(self.gbx_time_series_ana)
+        self.sbx_select_end_year.setGeometry(QtCore.QRect(160, 140, 151, 25))
+        self.sbx_select_end_year.setMaximum(3000)
+        self.sbx_select_end_year.setProperty("value", 2016)
+        self.sbx_select_end_year.setObjectName(_fromUtf8("sbx_select_end_year"))
         self.rdbtn_stacked_bars_chart = QtGui.QRadioButton(self.gbx_time_series_ana)
-        self.rdbtn_stacked_bars_chart.setGeometry(QtCore.QRect(10, 200, 121, 23))
+        self.rdbtn_stacked_bars_chart.setGeometry(QtCore.QRect(10, 200, 131, 23))
         self.rdbtn_stacked_bars_chart.setObjectName(_fromUtf8("rdbtn_stacked_bars_chart"))
         self.rdbtn_multiple_line_chart = QtGui.QRadioButton(self.gbx_time_series_ana)
         self.rdbtn_multiple_line_chart.setGeometry(QtCore.QRect(160, 200, 131, 23))
         self.rdbtn_multiple_line_chart.setObjectName(_fromUtf8("rdbtn_multiple_line_chart"))
+        self.btn_plot_3 = QtGui.QPushButton(self.gbx_time_series_ana)
+        self.btn_plot_3.setGeometry(QtCore.QRect(100, 280, 112, 34))
+        self.btn_plot_3.setObjectName(_fromUtf8("btn_plot_3"))
         self.tab_controlpanel.addTab(self.data_analysis, _fromUtf8(""))
 
 
-
+        # Window components
         frm_SEEMS_main.setCentralWidget(self.centralwidget)
-         
         self.menubar = QtGui.QMenuBar(frm_SEEMS_main)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1070, 31))
         self.menubar.setObjectName(_fromUtf8("menubar"))
@@ -732,7 +766,7 @@ class Ui_frm_SEEMS_main(object):
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         frm_SEEMS_main.setStatusBar(self.statusbar)
         self.actionAbout = QtGui.QAction(frm_SEEMS_main)
-        self.actionAbout.setObjectName(_fromUtf8("actionAbout"))                
+        self.actionAbout.setObjectName(_fromUtf8("actionAbout"))
         self.menuFile.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
 
@@ -794,7 +828,7 @@ class Ui_frm_SEEMS_main(object):
   
         # Events handling 
         self.btn_plot.clicked.connect(self.on_btn_plot_clicked)
-        self.btn_plot_2.clicked.connect(self.on_btn_plot_2_clicked)
+        self.btn_plot_3.clicked.connect(self.on_btn_plot_3_clicked)
          
         self.btn_start_simulation.clicked.connect(self.on_btn_start_simulation_clicked)
         
@@ -806,8 +840,10 @@ class Ui_frm_SEEMS_main(object):
         frm_SEEMS_main.setWindowTitle(_translate("frm_SEEMS_main", "SEEMS  -  Socio-Economical-Ecological Multipurpose Simulator", None))
         self.btn_start_simulation.setText(_translate("frm_SEEMS_main", "Start Simulation", None))
         self.lbl_input_scenario_name_label.setText(_translate("frm_SEEMS_main", "Scenario Name:", None))
+        self.gbx_set_simulation_period.setTitle(_translate("frm_SEEMS_main", "Set Simulation Period", None))
+        self.lbl_set_simulation_start_year.setText(_translate("frm_SEEMS_main", "Start Year:", None))
+        self.lbl_set_simulation_end_year.setText(_translate("frm_SEEMS_main", "End Year:", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.scenarios_setup), _translate("frm_SEEMS_main", "Scenarios Setup", None))
-
         self.lbl_select_scenario_label.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
         self.btn_plot.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.lbl_select_variable_label.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
@@ -815,16 +851,15 @@ class Ui_frm_SEEMS_main(object):
         self.rdbtn_bar_chart.setText(_translate("frm_SEEMS_main", "Bar Chart", None))
         self.rdbtn_line_chart.setText(_translate("frm_SEEMS_main", "Line Chart", None))
         self.gbx_plot_period.setTitle(_translate("frm_SEEMS_main", "Plot Period", None))
-        self.lbl_start_year.setText(_translate("frm_SEEMS_main", "Start Year", None))
-        self.lbl_end_year.setText(_translate("frm_SEEMS_main", "End Year", None))
+        self.lbl_set_plot_start_year.setText(_translate("frm_SEEMS_main", "Start Year:", None))
+        self.lbl_set_plot_end_year.setText(_translate("frm_SEEMS_main", "End Year:", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.results_review), _translate("frm_SEEMS_main", "Results Review", None))
-
-        self.btn_plot_2.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.gbx_cross_section_ana.setTitle(_translate("frm_SEEMS_main", "Cross-section Data Analysis", None))
         self.lbl_select_variable_label_2.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
         self.lbl_select_scenario_label_2.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
         self.lbl_select_year_label.setText(_translate("frm_SEEMS_main", "Select Year:", None))
         self.rdbtn_histogram.setText(_translate("frm_SEEMS_main", "Histogram", None))
+        self.btn_plot_2.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.gbx_time_series_ana.setTitle(_translate("frm_SEEMS_main", "Time-series Data Analysis", None))
         self.lbl_select_variable_label_3.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
         self.lbl_select_scenario_label_3.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
@@ -832,12 +867,10 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_select_end_year_label.setText(_translate("frm_SEEMS_main", "Select End Year:", None))
         self.rdbtn_stacked_bars_chart.setText(_translate("frm_SEEMS_main", "Stacked Bars", None))
         self.rdbtn_multiple_line_chart.setText(_translate("frm_SEEMS_main", "Multiple Lines", None))
+        self.btn_plot_3.setText(_translate("frm_SEEMS_main", "Plot", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.data_analysis), _translate("frm_SEEMS_main", "Data Analysis", None))
-        
         self.menuFile.setTitle(_translate("frm_SEEMS_main", "Help", None))
-        self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))
-
-        
+        self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))        
         
 #         # Test button color picker
 #         self.btn_color.setText(_translate("frm_SEEMS_main", "Color", None))
@@ -864,7 +897,7 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-    def on_btn_plot_2_clicked(self):
+    def on_btn_plot_3_clicked(self):
         '''
         The Plot button in the 'Data Analysis' Tag of the Control Panel
         '''
