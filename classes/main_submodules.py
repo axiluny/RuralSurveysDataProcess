@@ -123,57 +123,131 @@ def step_go(database, society_instance, start_year, end_year, iteration_count, s
 
 
 def add_stat_results(society_instance, scenario_name):
-    
-    society_instance.stat_dict = dict()
 
+    # Reset the statistics dictionary
+    society_instance.stat_dict = dict()
+    
+    '''
+    Single variables
+    '''
     # Total population
     pp = statistics.StatClass()
     statistics.StatClass.get_population_count(pp, society_instance, scenario_name)
-    
+     
     # Household count
     hh = statistics.StatClass()
     statistics.StatClass.get_household_count(hh, society_instance, scenario_name)
-    
+     
     # Dissolved household count
     dhh = statistics.StatClass()
     statistics.StatClass.get_dissolved_household_count(dhh, society_instance, scenario_name)
-        
+    
+    # Total net savings
+    tns = statistics.StatClass()
+    statistics.StatClass.get_total_net_savings(tns, society_instance, scenario_name)
+    
     # Total cash savings
     tc = statistics.StatClass()
     statistics.StatClass.get_total_cash_savings(tc, society_instance, scenario_name)
-    
+     
     # Total debt
     tb = statistics.StatClass()
     statistics.StatClass.get_total_debt(tb, society_instance, scenario_name)    
+     
+    # Gross annual income
+    gai = statistics.StatClass()
+    statistics.StatClass.get_gross_annual_income(gai, society_instance, scenario_name)
+    
+    # Gross business revenues
+    gbr = statistics.StatClass()
+    statistics.StatClass.get_gross_business_revenues(gbr, society_instance, scenario_name)
+    
+    # Gross Compensational Revenues
+    gcr = statistics.StatClass()
+    statistics.StatClass.get_gross_compensational_revenues(gcr, society_instance, scenario_name)
+    
+    # Annual income per person
+    aipp = statistics.StatClass()
+    statistics.StatClass.get_annual_income_per_person(aipp, society_instance, scenario_name)
+    
+    # Annual income per household
+    aiph = statistics.StatClass()
+    statistics.StatClass.get_annual_income_per_household(aiph, society_instance, scenario_name)
+    
+    # Trucks count
+    trk = statistics.StatClass()
+    statistics.StatClass.get_trucks_count(trk, society_instance, scenario_name)
+    
+    # Minibuses count
+    mnb = statistics.StatClass()
+    statistics.StatClass.get_minibuses_count(mnb, society_instance, scenario_name)
     
     # Total agriculture income
     agi = statistics.StatClass()
     statistics.StatClass.get_total_agriculture_income(agi, society_instance, scenario_name)
-    
+     
     # Total temporary job income
     tji = statistics.StatClass()
     statistics.StatClass.get_total_tempjob_income(tji, society_instance, scenario_name)
-    
+     
     # Total freight transportation income
     fti = statistics.StatClass()
     statistics.StatClass.get_total_freighttrans_income(fti, society_instance, scenario_name)
-    
+     
     # Total passenger transportation income
     pti = statistics.StatClass()
     statistics.StatClass.get_total_passengertrans_income(pti, society_instance, scenario_name)
-    
+     
     # Total lodging income
     lgi = statistics.StatClass()
     statistics.StatClass.get_total_lodging_income(lgi, society_instance, scenario_name)
-        
+         
     # Total renting income
     rti = statistics.StatClass()
-    statistics.StatClass.get_total_renting_income(rti, society_instance, scenario_name)
+    statistics.StatClass.get_total_renting_income(rti, society_instance, scenario_name)    
     
+    # Agriculture Employment Ratio
+    ager = statistics.StatClass()
+    statistics.StatClass.get_agriculture_employment_ratio(ager, society_instance, scenario_name)
+    
+    # Temporary Jobs Employment Ratio
+    tjer = statistics.StatClass()
+    statistics.StatClass.get_tempjob_employment_ratio(tjer, society_instance, scenario_name)
+    
+    # Freight transportation employment ratio
+    fter = statistics.StatClass()
+    statistics.StatClass.get_freighttrans_employment_ratio(fter, society_instance, scenario_name)
+    
+    # Passenger transportation employment ratio
+    pter = statistics.StatClass()
+    statistics.StatClass.get_passengertrans_employment_ratio(pter, society_instance, scenario_name)
+    
+    # Lodging employment ratio
+    lger = statistics.StatClass()
+    statistics.StatClass.get_lodging_employment_ratio(lger, society_instance, scenario_name)
+    
+    # Renting employment ratio
+    rter = statistics.StatClass()
+    statistics.StatClass.get_renting_employment_ratio(rter, society_instance, scenario_name)
+    
+    # Total farmland area
+    tfa = statistics.StatClass()
+    statistics.StatClass.get_total_farmland_area(tfa, society_instance, scenario_name)
+    
+    # Total abandoned farmland area
+    tafa = statistics.StatClass()
+    statistics.StatClass.get_abandoned_farmland_area(tafa, society_instance, scenario_name)
+    
+    '''
+    Composite indicators
+    '''
     # Sectors income structure
     sis = statistics.StatClass()
     statistics.StatClass.get_sectors_income_structure(sis, society_instance, scenario_name)
 
+    # Sectors employment structure
+    ses = statistics.StatClass()
+    statistics.StatClass.get_sectors_employment_structure(ses, society_instance, scenario_name)
     
     
     
@@ -795,7 +869,7 @@ class Ui_frm_SEEMS_main(object):
         The Plot button in the 'Data Analysis' Tag of the Control Panel
         '''
         
-        # Read the statistics table and make the lists for plotting charts        
+        # Read the statistics table.   
         stat_table = DataAccess.get_table(db, stat_table_name)
 
         # Set the plot title
@@ -810,42 +884,83 @@ class Ui_frm_SEEMS_main(object):
         total_passenger_trans_income = list()
         total_lodging_income =  list()
         total_renting_income = list()
-
+        
+        total_agriculture_employment = list()
+        total_temp_job_employment = list()
+        total_freight_trans_employment = list()
+        total_passenger_trans_employment = list()
+        total_lodging_employment =  list()
+        total_renting_employment = list()
 
         # Get the series to be plot from the combo box selection
-        if str(self.cmb_select_variable_3.currentText()) == 'Sectors_Income_Structure':
+        if str(self.cmb_select_variable_3.currentText()) == 'Sectors Income Structure':
         
             # Assign values for the variable lists
             for st in stat_table:            
                 # Look only the records for the current scenario version
                 if st.ScenarioVersion == self.cmb_select_scenario_3.currentText():                                 
-                    if st.Variable == 'Total_Agriculture_Income':
+                    if st.Variable == 'Agriculture Income':
                         time_stamps.append(st.StatDate)                    
                         total_agriculture_income.append(st.StatValue)
                         agri_tuple = (st.Variable, total_agriculture_income)
                     
-                    elif st.Variable == 'Total_Temp_Job_Income':
+                    elif st.Variable == 'Temp Job Income':
                         total_temp_job_income.append(st.StatValue)
                         temj_tuple = (st.Variable, total_temp_job_income)
                     
-                    elif st.Variable == 'Total_Freight_Trans_Income':
+                    elif st.Variable == 'Freight Trans Income':
                         total_freight_trans_income.append(st.StatValue)
                         frtt_tuple = (st.Variable, total_freight_trans_income)
                     
-                    elif st.Variable == 'Total_Passenger_Trans_Income':
+                    elif st.Variable == 'Passenger Trans Income':
                         total_passenger_trans_income.append(st.StatValue)
                         pagt_tuple = (st.Variable, total_passenger_trans_income)
                     
-                    elif st.Variable == 'Total_Lodging_Income':
+                    elif st.Variable == 'Lodging Income':
                         total_lodging_income.append(st.StatValue)
                         ldgg_tuple = (st.Variable, total_lodging_income)
                     
-                    elif st.Variable == 'Total_Renting_Income':
+                    elif st.Variable == 'Renting Income':
                         total_renting_income.append(st.StatValue)
                         rent_tuple = (st.Variable, total_renting_income)
             
             plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
 
+
+        elif str(self.cmb_select_variable_3.currentText()) == 'Sectors Employment Structure':
+        
+            # Assign values for the variable lists
+            for st in stat_table:            
+                # Look only the records for the current scenario version
+                if st.ScenarioVersion == self.cmb_select_scenario_3.currentText():                                 
+                    if st.Variable == 'Agriculture Employment Ratio':
+                        time_stamps.append(st.StatDate)                    
+                        total_agriculture_employment.append(st.StatValue)
+                        agri_tuple = (st.Variable, total_agriculture_employment)
+                    
+                    elif st.Variable == 'Temp Jobs Employment Ratio':
+                        total_temp_job_employment.append(st.StatValue)
+                        temj_tuple = (st.Variable, total_temp_job_employment)
+                    
+                    elif st.Variable == 'Freight Trans Employment Ratio':
+                        total_freight_trans_employment.append(st.StatValue)
+                        frtt_tuple = (st.Variable, total_freight_trans_employment)
+                    
+                    elif st.Variable == 'Passenger Trans Employment Ratio':
+                        total_passenger_trans_employment.append(st.StatValue)
+                        pagt_tuple = (st.Variable, total_passenger_trans_employment)
+                    
+                    elif st.Variable == 'Lodging Employment Ratio':
+                        total_lodging_employment.append(st.StatValue)
+                        ldgg_tuple = (st.Variable, total_lodging_employment)
+                    
+                    elif st.Variable == 'Renting Employment Ratio':
+                        total_renting_employment.append(st.StatValue)
+                        rent_tuple = (st.Variable, total_renting_employment)
+            
+            plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
+
+            
 
         # Draw the plot
         # First, remove any existing canvas contents
@@ -867,7 +982,7 @@ class Ui_frm_SEEMS_main(object):
         # Note that data must be read from the database, rather than lists and dictionaries in the program, 
         # for users may need to make plots after the iteration (running of main simulation program).
         
-        # Read the statistics table and make the lists for plotting charts        
+        # Read the statistics table.        
         stat_table = DataAccess.get_table(db, stat_table_name)
         
         # Define the x_data (time_stamps list) and y_data (series list)

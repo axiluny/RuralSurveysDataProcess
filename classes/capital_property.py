@@ -90,6 +90,8 @@ class CapitalProperty(object):
         self.lending_income = float()
         self.renting_income = float()
         
+        self.total_business_income = float()
+        
     
     
     
@@ -127,6 +129,8 @@ class CapitalProperty(object):
         self.private_business_income = 0
         self.lending_income = 0
         self.renting_income = 0        
+        
+        self.total_business_income = 0
         
     
     def update_labors(self, hh):
@@ -184,14 +188,13 @@ class CapitalProperty(object):
         return value
     
     
-    def get_total_income(self):
+    def get_total_business_income(self):
         
-        # Need to elaborate
-        total_income = self.agriculture_income + self.temp_job_income + self.freight_trans_income \
+        total_business_income = self.agriculture_income + self.temp_job_income + self.freight_trans_income \
                      + self.passenger_trans_income + self.lodging_income + self.private_business_income \
                      + self.lending_income + self.renting_income
         
-        return total_income
+        return total_business_income
     
     
     def merge_capital_properties(self, soc, out_HID, in_HID):
@@ -251,9 +254,7 @@ class CapitalProperty(object):
         hh.LendingIncome = self.lending_income
         hh.RentingIncome = self.renting_income
         
-        hh.AnnualTotalIncome = self.agriculture_income + self.temp_job_income + self.freight_trans_income \
-                             + self.passenger_trans_income + self.lodging_income + self.private_business_income \
-                             + self.lending_income + self.renting_income + hh.AnnualCompensation
+        hh.AnnualTotalIncome = self.total_business_income + hh.AnnualCompensation
         
         # hh.AnnualCompensation is assigned in the policy class        
         

@@ -95,6 +95,11 @@ class Household(object):
         
         # Define a switch variable indicating whether the household is dissolved in the current year
         self.is_dissolved_this_year = False
+        
+        
+        # Temporary codes
+        self.AnnualTotalIncome = 0
+        self.AnnualCompensation = 0
   
 
 

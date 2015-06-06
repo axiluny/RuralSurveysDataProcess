@@ -133,6 +133,7 @@ class BusinessSector(object):
             
             new_capital.labor_cost += max_farm * spec_labor_cost / 365
             new_capital.agriculture_income += revenue
+            new_capital.total_business_income += revenue
             new_capital.cash += revenue
             
             
@@ -159,6 +160,7 @@ class BusinessSector(object):
             
             new_capital.labor_cost += self.LaborCost * max_labor / 365
             new_capital.temp_job_income += revenue
+            new_capital.total_business_income += revenue
             new_capital.cash += revenue
 
 
@@ -220,6 +222,7 @@ class BusinessSector(object):
             new_capital.av_truck = self.plus(new_capital.truck - max_vehicle)
             
             new_capital.freight_trans_income += revenue
+            new_capital.total_business_income += revenue
             new_capital.cash += revenue
                     
 
@@ -281,6 +284,7 @@ class BusinessSector(object):
             new_capital.av_minibus = self.plus(new_capital.minibus - max_vehicle)
             
             new_capital.passenger_trans_income += revenue
+            new_capital.total_business_income += revenue
             new_capital.cash += revenue
 
   
@@ -345,6 +349,7 @@ class BusinessSector(object):
             new_capital.av_house_rooms = self.plus(new_capital.av_house_rooms - lodging_rooms)
             
             new_capital.lodging_income += revenue
+            new_capital.total_business_income += revenue
             new_capital.cash += revenue            
                         
                         
@@ -397,6 +402,7 @@ class BusinessSector(object):
             # Update household's capital properties            
             new_capital.av_house_rooms = 0
             new_capital.renting_income += revenue
+            new_capital.total_business_income += revenue
             new_capital.cash += revenue 
 
 
