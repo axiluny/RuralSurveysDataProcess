@@ -164,8 +164,8 @@ class Household(object):
 
 
     
-    def household_capital_properties_update(self):
-        self.own_capital_properties.refresh(self)
+#     def household_capital_properties_update(self):
+#         self.own_capital_properties.refresh(self)
     
     
     
@@ -230,8 +230,84 @@ class Household(object):
 
 
 
+    def household_policy_decision(self, policy_dict, business_sector_dict, model_parameters):
+        
+        hyp_capital_1 = copy.deepcopy(self.own_capital_properties)
+        hyp_capital_2 = copy.deepcopy(self.own_capital_properties)
+        
+        
+        # First, run the business and get the hypothetical household capital properties condition when no OPTIONAL policy programs apply.
+        # Note that the household's capital properties have been updated in the application process of the programs
+        for PolicyType in policy_dict:
+            if policy_dict[PolicyType].IsCompulsory == 1: # Only consider the compulsory programs
+                hyp_capital_1 = Policy.apply_policy_terms(policy_dict[PolicyType], hyp_capital_1, model_parameters)
+                self.own_policy_programs.append(policy_dict[PolicyType])
 
-    def household_business_revenue(self, business_sector_dict, risk_effective, model_parameters):
+        # Get all compensational revenues
+        compensation_1 = hyp_capital_1.cash - self.own_capital_properties.cash
+                
+        # Do the business based on hyp_capital_1
+        hyp_capital_1 = self.household_business_revenue(hyp_capital_1, business_sector_dict, False, model_parameters)           
+        
+        # Get the total household revenues in this occasion
+        revenue_1 = hyp_capital_1.get_total_business_income() + compensation_1
+
+        
+        # Second, get the hypothetical household capital properties condition when ALL policy programs are applied
+        # In this project's case, this means including an OPTIONAL program: the farmland to forest program
+        for PolicyType in policy_dict:
+            hyp_capital_2 = Policy.apply_policy_terms(policy_dict[PolicyType], hyp_capital_2, model_parameters)
+
+        
+        # Get all compensational revenues
+        compensation_2 = hyp_capital_2.cash - self.own_capital_properties.cash
+        
+        # Do the business based on hyp_capital_2
+        hyp_capital_2 = self.household_business_revenue(hyp_capital_2, business_sector_dict, False, model_parameters)
+        
+        # Get the total household revenues in this occasion        
+        revenue_2 = hyp_capital_2.get_total_business_income() + compensation_2
+        
+        
+        # Make the decision
+        '''
+        self.hh_preference_type:
+        1 - Max Labor, Min Risk;
+        2 - Min Labor, Min Risk;
+        3 - Max Labor, Max Risk;
+        4 - Min Labor, Max Risk;
+        '''
+        if self.hh_preference_type == 1 or self.hh_preference_type == 3: # Prefers Labor
+            if revenue_2 > revenue_1:
+                # Then join in the programs
+                for PolicyType in policy_dict:
+                    if policy_dict[PolicyType].IsCompulsory == 0: # Add the optional programs into household's own programs dictionary
+                        self.own_policy_programs.append(policy_dict[PolicyType])
+                        
+        else: # Prefers Leisure
+            if compensation_2 > self.get_min_living_cost(model_parameters):
+                # If all compensational revenues, including those from participation in the optional programs,
+                # is higher than the household's minimum living cost,
+                # Then join in the programs
+                for PolicyType in policy_dict:
+                    if policy_dict[PolicyType].IsCompulsory == 0: # Add the optional programs into household's own programs dictionary
+                        self.own_policy_programs.append(policy_dict[PolicyType])
+        
+        # When the decision is made, 
+        # Apply the policies to get the renewed household's own capital properties condition
+        # to get prepared for the "real world" run.
+        self.household_apply_policy(model_parameters)
+
+
+    def household_apply_policy(self, model_parameters):
+        # Update the household's own capital properties conditions according to the policy decisions
+        # and also get compensational revenues (done in the policy class)
+        for program in self.own_policy_programs:
+            self.own_capital_properties = Policy.apply_policy_terms(program, self.own_capital_properties, model_parameters)
+
+
+
+    def household_business_revenue(self, hh_capital, business_sector_dict, risk_effective, model_parameters):
         '''
         The process of a household doing business.
         business_sector_dict: all business sectors. i.e. society.business_sector_dict.
@@ -239,11 +315,13 @@ class Household(object):
         risk_effective - whether the random risk factor takes effect in the calculation. True - real world; False: hypothetical.
         '''
         
-        self.get_available_business(self.own_capital_properties, business_sector_dict)
+        self.get_available_business(hh_capital, business_sector_dict)
         
-        self.get_rank_available_business(self.own_capital_properties, self.own_av_business_sectors, model_parameters)
+        self.get_rank_available_business(hh_capital, self.own_av_business_sectors, model_parameters)
         
-        self.do_business(self.own_capital_properties, self.own_av_business_sectors, risk_effective, model_parameters)
+        hh_capital = self.do_business(hh_capital, self.own_av_business_sectors, risk_effective, model_parameters)
+        
+        return hh_capital
 
 
 
@@ -382,7 +460,7 @@ class Household(object):
         '''
         risk_effective - whether the random risk factor takes effect in the calculation. True - real world; False: hypothetical.        
         '''
-        c_revenue = self.get_compensational_revenues()
+        c_revenue = self.AnnualCompensation
         min_living_cost = self.get_min_living_cost(model_parameters)
         
         # Reset the houosehold's current sector list
@@ -395,10 +473,11 @@ class Household(object):
             '''
             
             for sector in self.own_av_business_sectors:
-                self.own_capital_properties = BusinessSector.calculate_business_revenue(sector, self.own_capital_properties, self.hh_risk_type, risk_effective, model_parameters)
+                hh_capital = BusinessSector.calculate_business_revenue(sector, hh_capital, 
+                                                            self.hh_risk_type, risk_effective, model_parameters)
                 self.own_current_sectors.append(sector)
                 
-                if self.own_capital_properties.av_labor <= 0:
+                if hh_capital.av_labor <= 0:
                     # Exit condition: household running out of its labor resource
                     break
             
@@ -408,18 +487,19 @@ class Household(object):
             2 - Min Labor, Min Risk; 4 - Min Labor, Max Risk.
             '''                     
             
-            old_cash = self.own_capital_properties.cash
+            old_cash = hh_capital.cash
             
             for sector in self.own_av_business_sectors:               
-                if self.own_capital_properties.cash - old_cash + c_revenue >= min_living_cost:
+                if hh_capital.cash - old_cash + c_revenue >= min_living_cost:
                     # Exit condition: this year's income >= minimal living cost
                     break 
                 
                 else:
-                    self.own_capital_properties = BusinessSector.calculate_business_revenue(sector, self.own_capital_properties, self.hh_risk_type, risk_effective, model_parameters)
+                    hh_capital = BusinessSector.calculate_business_revenue(sector, 
+                            hh_capital, self.hh_risk_type, risk_effective, model_parameters)
                     self.own_current_sectors.append(sector)
                                                   
-                
+        return hh_capital        
         
 
 
@@ -457,14 +537,6 @@ class Household(object):
         # Finally, update the household's capital properties from the Capital Property Class
         self.own_capital_properties.update_household_capital_properties(self)
     
-            
-    
-    def get_compensational_revenues(self):
-        
-        # Temporary codes
-        self.AnnualCompensation = 0
-        
-        return 0
     
     
     def get_min_living_cost(self, model_parameters):
@@ -543,8 +615,5 @@ class Household(object):
 
 
 
-    def household_policy_decision(self):
-        
-        # When the decision is made, refresh the household's own capital properties
-        self.own_capital_properties.refresh(self)
+
     

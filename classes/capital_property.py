@@ -91,6 +91,7 @@ class CapitalProperty(object):
         self.renting_income = float()
         
         self.total_business_income = float()
+        self.compensational_revenues = float()
         
     
     
@@ -131,6 +132,7 @@ class CapitalProperty(object):
         self.renting_income = 0        
         
         self.total_business_income = 0
+        self.compensational_revenues = 0
         
     
     def update_labors(self, hh):
@@ -254,7 +256,8 @@ class CapitalProperty(object):
         hh.LendingIncome = self.lending_income
         hh.RentingIncome = self.renting_income
         
-        hh.AnnualTotalIncome = self.total_business_income + hh.AnnualCompensation
+        hh.AnnualCompensation = self.compensational_revenues        
+        hh.AnnualTotalIncome = self.total_business_income + self.compensational_revenues
         
         # hh.AnnualCompensation is assigned in the policy class        
         

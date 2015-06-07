@@ -55,7 +55,8 @@ class Society(object):
         self.hh_dict = dict()        
         # Add household instances to hh_dict
         for hh in hh_table:
-            hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table, self.model_parameters_dict)
+            hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table, 
+                                self.model_parameters_dict)
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
         
         
@@ -143,10 +144,13 @@ class Society(object):
             self.hh_dict[HID].housedhold_categorization()
             
             # Determine which policy program to participate in
-            self.hh_dict[HID].household_policy_decision()
+            self.hh_dict[HID].household_policy_decision(self.policy_dict, self.business_sector_dict, self.model_parameters_dict)
         
             # Do the business
-            self.hh_dict[HID].household_business_revenue(self.business_sector_dict, True, self.model_parameters_dict)
+            # The second parameter, risk_effective = True, indicating it is a "real world" run this time,
+            # as opposed to the two "hypothetical" runs in the previous step, the policy decision step,
+            # when risk_effective = False. i.e. random factors don't take effect in households' economy decision-making process.
+            self.hh_dict[HID].own_capital_properties = self.hh_dict[HID].household_business_revenue(self.hh_dict[HID].own_capital_properties, self.business_sector_dict, True, self.model_parameters_dict)
             
             # Household's final accounting for the year
             self.hh_dict[HID].household_final_accounting(self.model_parameters_dict)
