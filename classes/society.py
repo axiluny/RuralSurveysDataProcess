@@ -121,10 +121,10 @@ class Society(object):
         self.marriage()
           
         self.child_birth()
-         
+        
+        
         self.household_capital_property_update()
-        
-        
+                
         self.household_economy()
         
         

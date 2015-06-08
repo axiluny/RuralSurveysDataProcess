@@ -63,11 +63,21 @@ class DataAccess(object):
 
     
 
-    def insert_table(self, order):
+    def insert_record_to_table(self, order):
         '''
         Insert a new record to a table in the database by an order, similar as "create_table"
         '''
         self.cursor.execute(order)
+    
+    
+    def delete_record_from_table(self, order):
+        self.cursor.execute(order)
+    
+    
+        
+    def drop_table(self, order):
+        self.cursor.execute(order)
+
     
     
     def db_commit(self):

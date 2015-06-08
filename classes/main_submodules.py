@@ -74,6 +74,9 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
 
     # Set up an initial value (1%) when clicked so that the user knows it's running.
     refresh_progress_bar(simulation_depth, gui)
+
+    # Insert a record in the VersionTable
+    refresh_version_table(db, scenario_name, start_year, simulation_depth)
     
     # Initialize the society class: create society, household, person, etc instances
     soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
@@ -87,10 +90,7 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
 
         # Set value for the progress bar
         refresh_progress_bar((iteration_count + 1) * 100, gui)
-        
-    
-    # When the simulation is successfully completed, insert a record in the VersionTable
-    refresh_version_table(db, scenario_name, start_year, simulation_depth)
+
 
 
 
@@ -137,6 +137,22 @@ def add_stat_results(society_instance, scenario_name):
     # Dissolved household count
     dhh = statistics.StatClass()
     statistics.StatClass.get_dissolved_household_count(dhh, society_instance, scenario_name)
+    
+    # Type 1 households count - Prefers labor/risk aversion
+    ty1h = statistics.StatClass()
+    statistics.StatClass.get_pref_labor_risk_aversion_hh_count(ty1h, society_instance, scenario_name)
+    
+    # Type 2 households count - Prefers leisure/risk aversion
+    ty2h = statistics.StatClass()
+    statistics.StatClass.get_pref_leisure_risk_aversion_hh_count(ty2h, society_instance, scenario_name)
+    
+    # Type 3 households count - Prefers labor/risk appetite
+    ty3h = statistics.StatClass()
+    statistics.StatClass.get_pref_labor_risk_appetite_hh_count(ty3h, society_instance, scenario_name)
+    
+    # Type 4 households count - Prefers leisure/risk appetite
+    ty4h = statistics.StatClass()
+    statistics.StatClass.get_pref_leisure_risk_appetite_hh_count(ty4h, society_instance, scenario_name)
     
     # Total net savings
     tns = statistics.StatClass()
@@ -234,6 +250,10 @@ def add_stat_results(society_instance, scenario_name):
     tafa = statistics.StatClass()
     statistics.StatClass.get_abandoned_farmland_area(tafa, society_instance, scenario_name)
     
+    # Total Farmland to Forest Area
+    tftfa = statistics.StatClass()
+    statistics.StatClass.get_farmland_to_forest_area(tftfa, society_instance, scenario_name)
+    
     '''
     Composite indicators
     '''
@@ -245,13 +265,17 @@ def add_stat_results(society_instance, scenario_name):
     ses = statistics.StatClass()
     statistics.StatClass.get_sectors_employment_structure(ses, society_instance, scenario_name)
     
+    # Household preference type structure
+    hpts = statistics.StatClass()
+    statistics.StatClass.get_household_preference_type_structures(hpts, society_instance, scenario_name)
+    
     
     
 def save_results_to_db(database, society_instance, scenario_name):
     
     # Determine household, people,and land table names
     # Format: Scenario_name + household/people/land
-    new_hh_table_name = scenario_name + '_household'
+    new_hh_table_name = scenario_name + '_households'
     new_pp_table_name = scenario_name + '_persons'
     new_land_table_name = scenario_name + '_land'
     
@@ -292,7 +316,7 @@ def save_results_to_db(database, society_instance, scenario_name):
             new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
             # Insert one household record
             insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
-            DataAccess.insert_table(database, insert_table_order)
+            DataAccess.insert_record_to_table(database, insert_table_order)
         DataAccess.db_commit(database)  
  
      
@@ -312,7 +336,7 @@ def save_results_to_db(database, society_instance, scenario_name):
             new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
             # Insert one household record
             insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
-            DataAccess.insert_table(database, insert_table_order)
+            DataAccess.insert_record_to_table(database, insert_table_order)
         DataAccess.db_commit(database)        
 
 
@@ -353,7 +377,7 @@ def save_results_to_db(database, society_instance, scenario_name):
                 new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
                 # Insert one person record
                 insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-                DataAccess.insert_table(database, insert_table_order)
+                DataAccess.insert_record_to_table(database, insert_table_order)
             DataAccess.db_commit(database)  
  
      
@@ -374,7 +398,7 @@ def save_results_to_db(database, society_instance, scenario_name):
                 new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
                 # Insert one person record
                 insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-                DataAccess.insert_table(database, insert_table_order)
+                DataAccess.insert_record_to_table(database, insert_table_order)
             DataAccess.db_commit(database)  
 
 
@@ -416,7 +440,7 @@ def save_results_to_db(database, society_instance, scenario_name):
             new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
             # Insert one land parcel record
             insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
-            DataAccess.insert_table(database, insert_table_order)
+            DataAccess.insert_record_to_table(database, insert_table_order)
         DataAccess.db_commit(database)  
  
      
@@ -436,7 +460,7 @@ def save_results_to_db(database, society_instance, scenario_name):
             new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
             # Insert one land parcel record
             insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
-            DataAccess.insert_table(database, insert_table_order)
+            DataAccess.insert_record_to_table(database, insert_table_order)
         DataAccess.db_commit(database)        
 
 
@@ -460,11 +484,39 @@ def save_results_to_db(database, society_instance, scenario_name):
         stat_record_content = stat_record_content[0:len(stat_record_content)-1] + ')'
         # Insert one household record
         insert_table_order = "insert into " + stat_table_name + ' values ' + stat_record_content.replace('None','Null') +';'
-        DataAccess.insert_table(database, insert_table_order)
+        DataAccess.insert_record_to_table(database, insert_table_order)
     DataAccess.db_commit(database)           
 
 
 
+def remove_scenario_version_from_database(version_name, database, gui):
+    '''
+    Remove a scenario version from the VersionTable;
+    Also remove all the statistics records related to this scenario version in the StatTable;
+    Also drop the households, persons, and land tables related to this scenario version in the database.
+    '''
+
+    # Delete the scenario version's record from the VersionTable
+    delete_version_record_order = "delete from " + version_table_name + " where ScenarioName = '" + version_name + "'"
+    DataAccess.delete_record_from_table(database, delete_version_record_order)
+    DataAccess.db_commit(database)
+
+
+    # Delete the related statistics from the StatTable 
+    delete_stat_record_order = "delete from " + stat_table_name + " where ScenarioVersion = '" + version_name + "'"
+    DataAccess.delete_record_from_table(database, delete_stat_record_order)
+    DataAccess.db_commit(database)    
+    
+    
+    # Drop the tables
+    drop_hh_table_order = 'drop table ' + version_name + '_households'
+    DataAccess.drop_table(database, drop_hh_table_order)
+    drop_pp_table_order = 'drop table ' + version_name + '_persons'
+    DataAccess.drop_table(database, drop_pp_table_order)
+    drop_land_table_order = 'drop table ' + version_name + '_land'
+    DataAccess.drop_table(database, drop_land_table_order)
+    
+    DataAccess.db_commit(database)
 
 
 def refresh_progress_bar(progress, gui):
@@ -474,7 +526,7 @@ def refresh_progress_bar(progress, gui):
 
 def refresh_version_table(database, scenario_name, start_year, simulation_depth):
     order = "insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' + str(start_year + simulation_depth) +");"
-    DataAccess.insert_table(database, order)
+    DataAccess.insert_record_to_table(database, order)
     DataAccess.db_commit(database)
     
     
@@ -807,37 +859,68 @@ class Ui_frm_SEEMS_main(object):
 
     def btn_start_simulation_onclicked(self):
         
-        # Set up the scenario name from the LineEdit box in the GUI
-        # Should check for already existing names, otherwise later results will be added to the existing table, causing troubles
-
         # Get scenario settings from user inputs
         scenario_name = str(self.txt_input_scenario_name.text())
         start_year = self.sbx_set_simulation_start_year.value()
         end_year = self.sbx_set_simulation_end_year.value()
         simulation_depth = end_year - start_year
 
-        # Setup the progress bar in the GUI
-        self.prb_progressBar.setMinimum(0)
-        self.prb_progressBar.setMaximum(simulation_depth * 100)
-                  
-        # Run the simulation
-        create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
-                        person_table_name, person_table, land_table_name, land_table, 
-                        business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
-                        stat_table_name, stat_table, simulation_depth, start_year, self)
-        
-        # When simulation is done, refresh the default scenario name
-        self.add_default_new_scenario_name()
 
-        # Then refresh the result review control and data analysis tabs
-        self.refresh_review_panel()
-        self.refresh_analysis_panel()
-      
-        # Show a message box indicating the completion of run.
-        msb = QMessageBox()
-        msb.setText('The Simulation is Complete!        ')
-        msb.setWindowTitle('SEEMS Run')
-        msb.exec_()
+        # Check for already existing names first.
+        version_table = DataAccess.get_table(db, version_table_name)        
+        # Get the scenario list.
+        scenario_list = list()
+        for version in version_table:
+            scenario_list.append(str(version[0]))
+        
+        if scenario_name in scenario_list:
+            # Show an Error Message
+            msb = QMessageBox()
+            msb.setText('The Scenario name has been taken. Make a new one.       ')
+            msb.setWindowTitle('SEEMS Run')
+            msb.exec_()
+        
+        else:
+            # Run the simulation.
+
+            # Setup the progress bar in the GUI
+            self.prb_progressBar.setMinimum(0)
+            self.prb_progressBar.setMaximum(simulation_depth * 100)
+                      
+            # Run the simulation
+            try:
+                create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
+                                person_table_name, person_table, land_table_name, land_table, 
+                                business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
+                                stat_table_name, stat_table, simulation_depth, start_year, self)
+    
+                # When simulation is done, refresh the default scenario name
+                self.add_default_new_scenario_name()
+        
+                # Then refresh the result review control and data analysis tabs
+                self.refresh_review_panel()
+                self.refresh_analysis_panel()
+              
+                # Show a message box indicating the completion of run.
+                msb = QMessageBox()
+                msb.setText('The Simulation is Complete!        ')
+                msb.setWindowTitle('SEEMS Run')
+                msb.exec_()
+            
+            except:
+                # If the run is unsuccessful, revert to the starting point by deleting any tables or records
+                # that had been inserted to the database.
+                # And display an error message.
+                remove_scenario_version_from_database(scenario_name, db, self)
+                
+                
+                # Show an Error Message
+                msb = QMessageBox()
+                msb.setText('The Simulation is Unsuccessful. Check Codes.        ')
+                msb.setWindowTitle('SEEMS Run')
+                msb.exec_()
+            
+
 
 
 
@@ -884,6 +967,8 @@ class Ui_frm_SEEMS_main(object):
                     # Exclude the composite indicators
                     variable_list.append(record[3])
         
+        # Sort the variables list
+        variable_list.sort()
                     
         # add the items to variable combo box
         self.cmb_select_review_variable.addItems(variable_list)
@@ -911,7 +996,9 @@ class Ui_frm_SEEMS_main(object):
                 if record[3] not in variable_list and record[5] == 0:
                     # Exclude the composite indicators
                     variable_list.append(record[3])
-        
+
+        # Sort the variables list
+        variable_list.sort()        
                     
         # add the items to variable combo box
         self.cmb_select_cross_section_analysis_variable.addItems(variable_list)
@@ -938,7 +1025,9 @@ class Ui_frm_SEEMS_main(object):
                 if record[3] not in variable_list and record[5] == 1:
                     # Include the composite indicators only
                     variable_list.append(record[3])
-        
+
+        # Sort the variables list
+        variable_list.sort()        
                     
         # add the items to variable combo box
         self.cmb_select_time_series_analysis_variable.addItems(variable_list)
@@ -1025,6 +1114,11 @@ class Ui_frm_SEEMS_main(object):
         total_passenger_trans_employment = list()
         total_lodging_employment =  list()
         total_renting_employment = list()
+        
+        hh_type1_list = list()
+        hh_type2_list = list()
+        hh_type3_list = list()
+        hh_type4_list = list()
 
         # Determine the plot time range according to the plot type
         if self.rdbtn_multiple_line_chart.isChecked() and self.tab_controlpanel.currentIndex() == 2:
@@ -1033,7 +1127,7 @@ class Ui_frm_SEEMS_main(object):
             analysis_start_year = self.sbx_select_time_series_analysis_start_year.value()
 
         # Get the series to be plot from the combo box selection
-        if str(self.cmb_select_time_series_analysis_variable.currentText()) == 'Sectors Income Structure':
+        if str(self.cmb_select_time_series_analysis_variable.currentText()) == '1 Total Income by Sectors':
         
             # Assign values for the variable lists
             for st in stat_table:            
@@ -1042,35 +1136,35 @@ class Ui_frm_SEEMS_main(object):
                                         
                     if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
                                                  
-                        if st.Variable == 'Agriculture Income':
+                        if st.Variable == 'IV-01 Total Agriculture Income':
                             time_stamps.append(st.StatDate)                    
                             total_agriculture_income.append(st.StatValue)
                             agri_tuple = (st.Variable, total_agriculture_income)
                         
-                        elif st.Variable == 'Temp Job Income':
+                        elif st.Variable == 'IV-02 Total Temp Job Income':
                             total_temp_job_income.append(st.StatValue)
                             temj_tuple = (st.Variable, total_temp_job_income)
                         
-                        elif st.Variable == 'Freight Trans Income':
+                        elif st.Variable == 'IV-03 Total Freight Trans Income':
                             total_freight_trans_income.append(st.StatValue)
                             frtt_tuple = (st.Variable, total_freight_trans_income)
                         
-                        elif st.Variable == 'Passenger Trans Income':
+                        elif st.Variable == 'IV-04 Total Passenger Trans Income':
                             total_passenger_trans_income.append(st.StatValue)
                             pagt_tuple = (st.Variable, total_passenger_trans_income)
                         
-                        elif st.Variable == 'Lodging Income':
+                        elif st.Variable == 'IV-05 Total Lodging Income':
                             total_lodging_income.append(st.StatValue)
                             ldgg_tuple = (st.Variable, total_lodging_income)
                         
-                        elif st.Variable == 'Renting Income':
+                        elif st.Variable == 'IV-06 Total Renting Income':
                             total_renting_income.append(st.StatValue)
                             rent_tuple = (st.Variable, total_renting_income)
             
             plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
 
 
-        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == 'Sectors Employment Structure':
+        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == '2 Employment by Sectors':
         
             # Assign values for the variable lists
             for st in stat_table:            
@@ -1079,32 +1173,61 @@ class Ui_frm_SEEMS_main(object):
                     
                     if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
                                              
-                        if st.Variable == 'Agriculture Employment Ratio':
+                        if st.Variable == 'IV-07 Agriculture Employment Ratio':
                             time_stamps.append(st.StatDate)                    
                             total_agriculture_employment.append(st.StatValue)
                             agri_tuple = (st.Variable, total_agriculture_employment)
                         
-                        elif st.Variable == 'Temp Jobs Employment Ratio':
+                        elif st.Variable == 'IV-08 Temp Jobs Employment Ratio':
                             total_temp_job_employment.append(st.StatValue)
                             temj_tuple = (st.Variable, total_temp_job_employment)
                         
-                        elif st.Variable == 'Freight Trans Employment Ratio':
+                        elif st.Variable == 'IV-09 Freight Trans Employment Ratio':
                             total_freight_trans_employment.append(st.StatValue)
                             frtt_tuple = (st.Variable, total_freight_trans_employment)
                         
-                        elif st.Variable == 'Passenger Trans Employment Ratio':
+                        elif st.Variable == 'IV-10 Passenger Trans Employment Ratio':
                             total_passenger_trans_employment.append(st.StatValue)
                             pagt_tuple = (st.Variable, total_passenger_trans_employment)
                         
-                        elif st.Variable == 'Lodging Employment Ratio':
+                        elif st.Variable == 'IV-11 Lodging Employment Ratio':
                             total_lodging_employment.append(st.StatValue)
                             ldgg_tuple = (st.Variable, total_lodging_employment)
                         
-                        elif st.Variable == 'Renting Employment Ratio':
+                        elif st.Variable == 'IV-12 Renting Employment Ratio':
                             total_renting_employment.append(st.StatValue)
                             rent_tuple = (st.Variable, total_renting_employment)
             
             plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
+
+
+        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == '3 Household Preference Types':
+        
+            # Assign values for the variable lists
+            for st in stat_table:            
+                # Look only the records for the current scenario version
+                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():        
+                    
+                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
+                                             
+                        if st.Variable == 'II-01 Pref Labor_Risk Aversion HH Count':
+                            time_stamps.append(st.StatDate)                    
+                            hh_type1_list.append(st.StatValue)
+                            hh_type1_tuple = (st.Variable, hh_type1_list)
+                        
+                        elif st.Variable == 'II-02 Pref Leisure_Risk Aversion HH Count':
+                            hh_type2_list.append(st.StatValue)
+                            hh_type2_tuple = (st.Variable, hh_type2_list)
+                        
+                        elif st.Variable == 'II-03 Pref Labor_Risk Appetite HH Count':
+                            hh_type3_list.append(st.StatValue)
+                            hh_type3_tuple = (st.Variable, hh_type3_list)
+                        
+                        elif st.Variable == 'II-04 Pref Leisure_Risk Appetite HH Count':
+                            hh_type4_list.append(st.StatValue)
+                            hh_type4_tuple = (st.Variable, hh_type4_list)
+            
+            plot_series_list = [hh_type1_tuple, hh_type2_tuple, hh_type3_tuple, hh_type4_tuple]
 
             
 
@@ -1132,16 +1255,21 @@ class Ui_frm_SEEMS_main(object):
             
         # Get the scenario list for the select scenario combo boxes in the GUI/Results Review tab to display
         scenario_list = list()
-        for version in version_table:
-            scenario_list.append(str(version[0]))
         
-        # Clear the current select scenario and variable combo boxes
-        self.cmb_select_review_scenario.clear()
-        self.cmb_select_review_variable.clear()
+        # Get the current scenario list in the select review scenario combo box
+        existing_scenarios = [self.cmb_select_review_scenario.itemText(i) for i in range(self.cmb_select_review_scenario.count())]
+        
+        # Add the newly created scenario version to the select review scenario combo box
+        for version in version_table:
+            if version[0] not in existing_scenarios:
+                scenario_list.append(str(version[0]))
+        
                     
         # add the new scenario list to the respective combo box
         if len(scenario_list) != 0:
             self.cmb_select_review_scenario.addItems(scenario_list)
+            # The addItems action will automatically trigger the 'onChange' event of the combo box 
+            # and call the respective event handling submodule to refresh the select variable combo box
     
     
     
@@ -1159,12 +1287,14 @@ class Ui_frm_SEEMS_main(object):
         for version in version_table:
             scenario_list.append(str(version[0]))
         
-    
-        # Clear current combo boxes
-        self.cmb_select_cross_section_analysis_scenario.clear()
-        self.cmb_select_cross_section_analysis_variable.clear()
-        self.cmb_select_time_series_analysis_scenario.clear()
-        self.cmb_select_time_series_analysis_variable.clear()
+        # Get the current scenario list in the select review scenario combo box
+        existing_scenarios = [self.cmb_select_review_scenario.itemText(i) for i in range(self.cmb_select_review_scenario.count())]
+        
+        # Add the newly created scenario version to the select review scenario combo box
+        for version in version_table:
+            if version[0] not in existing_scenarios:
+                scenario_list.append(str(version[0]))
+
                     
         # add the new scenario list to the respective combo box
         if len(scenario_list) != 0:

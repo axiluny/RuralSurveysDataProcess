@@ -30,9 +30,10 @@ class Policy(object):
         
         
         if self.PolicyType == 'FarmToForest_After':
-            new_hh_capital.farm_to_forest = hh_capital.farmland
-            new_hh_capital.farmland = 0
-            new_hh_capital.av_farmland = 0
+            if new_hh_capital.farm_to_forest == 0: # Never joined in the program
+                new_hh_capital.farm_to_forest = hh_capital.farmland
+                new_hh_capital.farmland = 0
+                new_hh_capital.av_farmland = 0
             
             revenue = new_hh_capital.farm_to_forest * self.CompensateStandard
             new_hh_capital.cash += revenue
