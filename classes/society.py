@@ -60,18 +60,20 @@ class Society(object):
             self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
         
         
-        # Initialize the land instances;
-        # And create a list to store them
-        self.land_list = list()
-        for land_parcel in land_table:
-            self.land_list.append(Land(land_parcel, self.land_var_list, self.current_year)) 
+        # Initialize the land instances, and create a land dictionary to store all the land parcels
+        # Note that the land parcels here do not necessarily belong to any household. i.e. land_parcel.HID could be "None".
+        self.land_dict = dict()
+        for land in land_table:
+            land_parcel = Land(land, self.land_var_list, self.current_year)
+            self.land_dict[land_parcel.OBJECTID_1] = land_parcel
         
-        # Then add the land parcels to their respective household's land properties list
-        for land in self.land_list:
+        # Then allocate the parcels with an HID to the respective household's own_capital_properties.land_properties_list.
+        for OBJECTID_1 in self.land_dict:
             for HID in self.hh_dict:
-                if land.HID == HID:
-                    self.hh_dict[HID].own_capital_properties.land_properties_list.append(land)
-        
+                if self.land_dict[OBJECTID_1].HID == HID:
+                    self.hh_dict[HID].own_capital_properties.land_properties_list.append(self.land_dict[OBJECTID_1])
+
+       
         
         # Initialize the business sector instances;
         # And create a dictionary to store them, indexed by sector name.
@@ -158,8 +160,21 @@ class Society(object):
     
     
     def land_update(self):
-        for land_parcel in self.land_list:
-            land_parcel.land_cover_succession(self.current_year)
+        
+        # Deal with the reverted farmland first
+        for HID in self.hh_dict:
+            for land_parcel in self.hh_dict[HID].own_capital_properties.land_properties_list:
+                if land_parcel.IsG2G_this_year == True:
+                    self.hh_dict[HID].own_capital_properties.land_properties_list.remove(land_parcel)
+                        
+                # And change the attributes of the same land parcel in society.land_dict
+                self.land_dict[land_parcel.OBJECTID_1].IsG2G = 1
+                self.land_dict[land_parcel.OBJECTID_1].SStartyear = self.current_year
+                self.land_dict[land_parcel.OBJECTID_1].HID = ''
+        
+        # Then simulate the natural land cover succession process
+        for OBJECTID_1 in self.land_dict:
+            self.land_dict[OBJECTID_1].land_cover_succession(self.current_year, self.model_parameters_dict)
             
                
             

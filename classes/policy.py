@@ -5,6 +5,7 @@ Created on May 30, 2015
 '''
 
 import copy
+import land
 
 class Policy(object):
     '''
@@ -34,18 +35,35 @@ class Policy(object):
                 new_hh_capital.farm_to_forest = hh_capital.farmland
                 new_hh_capital.farmland = 0
                 new_hh_capital.av_farmland = 0
+                
+                for land_parcel in new_hh_capital.land_properties_list:
+                    if land_parcel.LandCover == 'Cultivate':
+                        # Mark it as a reverted parcel this year
+                        land_parcel.IsG2G_this_year = True
+
             
             revenue = new_hh_capital.farm_to_forest * self.CompensateStandard
             new_hh_capital.cash += revenue
             new_hh_capital.compensational_revenues += revenue
             
             
+            
         elif self.PolicyType == 'FarmToForest_Before':
-            pass
+            revenue = new_hh_capital.pre_ftof * self.CompensateStandard
+            new_hh_capital.cash += revenue
+            new_hh_capital.compensational_revenues += revenue            
+ 
+ 
         elif self.PolicyType == 'FarmToBamboo_Before':
-            pass
+            revenue = new_hh_capital.pre_ftob * self.CompensateStandard
+            new_hh_capital.cash += revenue
+            new_hh_capital.compensational_revenues += revenue   
+             
+             
         elif self.PolicyType == 'ForestProtection':
-            pass
+            revenue = new_hh_capital.is_tianbao * self.CompensateStandard
+            new_hh_capital.cash += revenue
+            new_hh_capital.compensational_revenues += revenue   
         
         
         return new_hh_capital

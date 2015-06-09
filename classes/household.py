@@ -309,6 +309,16 @@ class Household(object):
             # Apply the policies to get the renewed household's own capital properties condition
             # to get prepared for the "real world" run.
             self.household_apply_policy(model_parameters)
+            
+#             # If the household joins in the farmland to forest program this year, 
+#             # remove the land parcels in their own_capital_properties.land_properties_list,
+#             # and mark these farmland parcels' succession start year as this year.
+#             for program in self.own_policy_programs:
+#                 if program.PolicyType == 'FarmToForest_After':
+#                     for farmland_parcel in self.own_capital_properties.land_properties_list:
+#                         farmland_parcel.is_ftof = 1
+#                         farmland_parcel.succession_start_year = self.StatDate
+#                         self.own_capital_properties.land_properties_list.remove(farmland_parcel)
 
 
     def household_apply_policy(self, model_parameters):
@@ -316,6 +326,7 @@ class Household(object):
         # and also get compensational revenues (done in the policy class)
         for program in self.own_policy_programs:
             self.own_capital_properties = Policy.apply_policy_terms(program, self.own_capital_properties, model_parameters)
+
 
 
 

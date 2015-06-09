@@ -25,7 +25,8 @@ class CapitalProperty(object):
         
         
         # Land properties
-        self.land_properties_list = list() # Define an empty list here; fill land parcels in it later in the society class
+        # Define an empty list here; fill land parcels in from society.land_dict later in the society class
+        self.land_properties_list = list()
         
         self.farmland = hh.FarmlandArea
         self.homestead = hh.Homestead
@@ -217,9 +218,9 @@ class CapitalProperty(object):
             
             else:
                 # Deal with the land properties
-                for land in soc.hh_dict[out_HID].own_capital_properties.land_properties_list:
-                    soc.hh_dict[in_HID].own_capital_properties.land_properties_list.append(land)
-                    soc.hh_dict[out_HID].own_capital_properties.land_properties_list.remove(land)
+                for land_parcel in soc.hh_dict[out_HID].own_capital_properties.land_properties_list:
+                    soc.hh_dict[in_HID].own_capital_properties.land_properties_list.append(land_parcel)
+                    soc.hh_dict[out_HID].own_capital_properties.land_properties_list.remove(land_parcel)
         
         
 
@@ -261,7 +262,9 @@ class CapitalProperty(object):
         
         # hh.AnnualCompensation is assigned in the policy class        
         
-        # Policy-related land changes
+        # Land
         hh.AbandonedFarmlandArea = self.av_farmland # available farmland at the end of each simulation circle is considered "abandoned"
+        
+        # Policy-related land changes
         
         

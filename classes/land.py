@@ -23,24 +23,38 @@ class Land(object):
         self.StatDate = current_year
         
         # Define the variables related to vegetation succession.
-        self.succession_start_year = int()
-        self.succession_length = int() # The time length of vegetation succession.
+        self.succession_length = 0 # The time length of vegetation succession.
     
+        # Define a switch indicating whether the land parcel, if it is farmland, is reverted to forest beginning this year
+        self.IsG2G_this_year = False
+        
     
-    def land_cover_succession(self, current_year):
+    def land_cover_succession(self, current_year, model_parameters):
         
         # Determine the length of vegetation succession
-        self.succession_length = current_year - self.succession_start_year
+        self.succession_length = current_year - self.SStartyear
         
-        if self.LandCover == 'Cultivate':
-            pass
+        if self.LandCover == 'Cultivate' and self.IsG2G == 1:
+            if self.succession_length == int(model_parameters['CultivatedSuccessionYear']):
+                self.LandCover = 'Grass'
+                self.SStartyear = current_year
+                   
+        
         elif self.LandCover == 'Construction':
-            pass
-        elif self.LandCover == 'Grass':
-            pass
-        elif self.LandCover == 'Shrubbery':
+            # Do nothing to construction land
             pass
         
+        
+        elif self.LandCover == 'Grass':
+            if self.succession_length == int(model_parameters['GrassSuccessionYear']):
+                self.LandCover = 'Shrubbery'
+                self.SStartYear = current_year
+                
+        
+        elif self.LandCover == 'Shrubbery':
+            if self.succession_length == int(model_parameters['ShrubberySuccessionYear']):
+                self.LandCover = 'Mingled'
+                self.SStartYear = current_year
         
         
         

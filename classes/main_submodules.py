@@ -254,6 +254,24 @@ def add_stat_results(society_instance, scenario_name):
     tftfa = statistics.StatClass()
     statistics.StatClass.get_farmland_to_forest_area(tftfa, society_instance, scenario_name)
     
+    # Total construction land area
+    tcla = statistics.StatClass()
+    statistics.StatClass.get_total_construction_land_area(tcla, society_instance, scenario_name)
+    
+    # Total grassland area
+    tgla = statistics.StatClass()
+    statistics.StatClass.get_total_grassland_area(tgla, society_instance, scenario_name)
+    
+    # Total shrubbery land area
+    tsla = statistics.StatClass()
+    statistics.StatClass.get_total_shrubbery_area(tsla, society_instance, scenario_name)
+    
+    # Total mingled forest area
+    tmfa = statistics.StatClass()
+    statistics.StatClass.get_total_mingled_forest_area(tmfa, society_instance, scenario_name)
+    
+    
+    
     '''
     Composite indicators
     '''
@@ -268,6 +286,10 @@ def add_stat_results(society_instance, scenario_name):
     # Household preference type structure
     hpts = statistics.StatClass()
     statistics.StatClass.get_household_preference_type_structures(hpts, society_instance, scenario_name)
+    
+    # Land-use/Land cover structure
+    lulcs = statistics.StatClass()
+    statistics.StatClass.get_landuse_landcover_structures(lulcs, society_instance, scenario_name)
     
     
     
@@ -427,15 +449,15 @@ def save_results_to_db(database, society_instance, scenario_name):
 
         # Then insert all land parcels into the new table
         # InsertContent = ''
-        for land_parcel in society_instance.land_list:
+        for OBJECTID_1 in society_instance.land_dict:
             # Make the insert values for this land parcel
             new_land_record_content = '('
             for var in society_instance.land_var_list:
                 # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(land_parcel, var[0]) != None: 
-                    new_land_record_content += '\''+ unicode(getattr(land_parcel, var[0]))+ '\','
+                if var[2] == 'VARCHAR' and getattr(society_instance.land_dict[OBJECTID_1], var[0]) != None: 
+                    new_land_record_content += '\''+ unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ '\','
                 else:
-                    new_land_record_content += unicode(getattr(land_parcel, var[0]))+ ','
+                    new_land_record_content += unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ ','
             # Change the ending comma to a closing parenthesis
             new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
             # Insert one land parcel record
@@ -447,15 +469,15 @@ def save_results_to_db(database, society_instance, scenario_name):
     else:
         # Just insert all land parcels into the new table
         # InsertContent = ''
-        for land_parcel in society_instance.land_list:
+        for OBJECTID_1 in society_instance.land_dict:
             # Make the insert values for this household
             new_land_record_content = '('
             for var in society_instance.land_var_list:
                 # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(land_parcel, var[0]) != None: 
-                    new_land_record_content += '\''+ unicode(getattr(land_parcel, var[0]))+ '\','
+                if var[2] == 'VARCHAR' and getattr(society_instance.land_dict[OBJECTID_1], var[0]) != None: 
+                    new_land_record_content += '\''+ unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ '\','
                 else:
-                    new_land_record_content += unicode(getattr(land_parcel, var[0]))+ ','
+                    new_land_record_content += unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ ','
             # Change the ending comma to a closing parenthesis
             new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
             # Insert one land parcel record
@@ -912,8 +934,8 @@ class Ui_frm_SEEMS_main(object):
                 # that had been inserted to the database.
                 # And display an error message.
                 remove_scenario_version_from_database(scenario_name, db, self)
-                
-                
+                 
+                 
                 # Show an Error Message
                 msb = QMessageBox()
                 msb.setText('The Simulation is Unsuccessful. Check Codes.        ')
@@ -1119,6 +1141,12 @@ class Ui_frm_SEEMS_main(object):
         hh_type2_list = list()
         hh_type3_list = list()
         hh_type4_list = list()
+        
+        farmland_area_list = list()
+        construction_land_area_list = list()
+        grassland_area_list = list()
+        shrubbery_area_list = list()
+        mingled_forest_area_list = list()
 
         # Determine the plot time range according to the plot type
         if self.rdbtn_multiple_line_chart.isChecked() and self.tab_controlpanel.currentIndex() == 2:
@@ -1229,6 +1257,38 @@ class Ui_frm_SEEMS_main(object):
             
             plot_series_list = [hh_type1_tuple, hh_type2_tuple, hh_type3_tuple, hh_type4_tuple]
 
+
+        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == '4 Land-use/Land Cover Structure':
+        
+            # Assign values for the variable lists
+            for st in stat_table:            
+                # Look only the records for the current scenario version
+                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():        
+                    
+                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
+                                             
+                        if st.Variable == 'V-01 Total Farmland Area':
+                            time_stamps.append(st.StatDate)                    
+                            farmland_area_list.append(st.StatValue)
+                            farmland_tuple = (st.Variable, farmland_area_list)
+                        
+                        elif st.Variable == 'V-04 Total Construction Land Area':
+                            construction_land_area_list.append(st.StatValue)
+                            construction_tuple = (st.Variable, construction_land_area_list)
+                        
+                        elif st.Variable == 'V-05 Total Grassland Area':
+                            grassland_area_list.append(st.StatValue)
+                            grassland_tuple = (st.Variable, grassland_area_list)
+                        
+                        elif st.Variable == 'V-06 Total Shrubbery Area':
+                            shrubbery_area_list.append(st.StatValue)
+                            shrubbery_tuple = (st.Variable, shrubbery_area_list)
+
+                        elif st.Variable == 'V-07 Total Mingled Forest Area':
+                            mingled_forest_area_list.append(st.StatValue)
+                            forest_tuple = (st.Variable, mingled_forest_area_list)
+            
+            plot_series_list = [farmland_tuple, construction_tuple, grassland_tuple, shrubbery_tuple, forest_tuple]
             
 
         # Draw the plot
@@ -1259,11 +1319,10 @@ class Ui_frm_SEEMS_main(object):
         # Get the current scenario list in the select review scenario combo box
         existing_scenarios = [self.cmb_select_review_scenario.itemText(i) for i in range(self.cmb_select_review_scenario.count())]
         
-        # Add the newly created scenario version to the select review scenario combo box
+        # Add the newly created scenario version to scenario_list
         for version in version_table:
             if version[0] not in existing_scenarios:
-                scenario_list.append(str(version[0]))
-        
+                scenario_list.append(str(version[0]))        
                     
         # add the new scenario list to the respective combo box
         if len(scenario_list) != 0:
@@ -1284,19 +1343,16 @@ class Ui_frm_SEEMS_main(object):
             
         # Get the scenario list for the combo boxes in GUI to display
         scenario_list = list()
-        for version in version_table:
-            scenario_list.append(str(version[0]))
         
-        # Get the current scenario list in the select review scenario combo box
-        existing_scenarios = [self.cmb_select_review_scenario.itemText(i) for i in range(self.cmb_select_review_scenario.count())]
+        # Get the current scenario list in the combo box
+        existing_scenarios = [self.cmb_select_time_series_analysis_scenario.itemText(i) for i in range(self.cmb_select_time_series_analysis_scenario.count())]
         
-        # Add the newly created scenario version to the select review scenario combo box
+        # Add the newly created scenario version to scenario_list
         for version in version_table:
             if version[0] not in existing_scenarios:
                 scenario_list.append(str(version[0]))
-
                     
-        # add the new scenario list to the respective combo box
+        # add the scenario_list to the respective combo box
         if len(scenario_list) != 0:
             self.cmb_select_cross_section_analysis_scenario.addItems(scenario_list)
             self.cmb_select_time_series_analysis_scenario.addItems(scenario_list)

@@ -699,12 +699,20 @@ class StatClass(object):
     def get_total_farmland_area(self, society_instance, scenario_name):
         
         farmland_area = 0
-        
+
         # Get the statistics
-        for HID in society_instance.hh_dict:
-            if society_instance.hh_dict[HID].is_exist == 1:
-                
-                farmland_area += society_instance.hh_dict[HID].own_capital_properties.farmland
+        for OBJECTID_1 in society_instance.land_dict:
+            if society_instance.land_dict[OBJECTID_1].LandCover == 'Cultivate':
+                farmland_area += society_instance.land_dict[OBJECTID_1].Shape_Area        
+        
+        
+        '''
+        Another way: get the farmland area household by household
+        '''
+#         for HID in society_instance.hh_dict:
+#             if society_instance.hh_dict[HID].is_exist == 1:
+#                 
+#                 farmland_area += society_instance.hh_dict[HID].own_capital_properties.farmland
                          
         # Add the statistics
         self.ScenarioVersion = scenario_name
@@ -755,6 +763,86 @@ class StatClass(object):
                  
         society_instance.stat_dict[self.StatID] = self    
     
+    
+
+    def get_total_construction_land_area(self, society_instance, scenario_name):
+        
+        construction_area = 0
+        
+        # Get the statistics
+        for OBJECTID_1 in society_instance.land_dict:
+            if society_instance.land_dict[OBJECTID_1].LandCover == 'Construction':
+                construction_area += society_instance.land_dict[OBJECTID_1].Shape_Area     
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'V-04 Total Construction Land Area'
+        self.StatValue = construction_area
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        society_instance.stat_dict[self.StatID] = self         
+
+
+    def get_total_grassland_area(self, society_instance, scenario_name):
+        
+        grassland_area = 0
+        
+        # Get the statistics
+        for OBJECTID_1 in society_instance.land_dict:
+            if society_instance.land_dict[OBJECTID_1].LandCover == 'Grass':
+                grassland_area += society_instance.land_dict[OBJECTID_1].Shape_Area     
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'V-05 Total Grassland Area'
+        self.StatValue = grassland_area
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        society_instance.stat_dict[self.StatID] = self       
+    
+
+    def get_total_shrubbery_area(self, society_instance, scenario_name):
+        
+        shrubbery_area = 0
+        
+        # Get the statistics
+        for OBJECTID_1 in society_instance.land_dict:
+            if society_instance.land_dict[OBJECTID_1].LandCover == 'Shrubbery':
+                shrubbery_area += society_instance.land_dict[OBJECTID_1].Shape_Area     
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'V-06 Total Shrubbery Area'
+        self.StatValue = shrubbery_area
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        society_instance.stat_dict[self.StatID] = self  
+
+
+    def get_total_mingled_forest_area(self, society_instance, scenario_name):
+        
+        mingled_forest_area = 0
+        
+        # Get the statistics
+        for OBJECTID_1 in society_instance.land_dict:
+            if society_instance.land_dict[OBJECTID_1].LandCover == 'Mingled':
+                mingled_forest_area += society_instance.land_dict[OBJECTID_1].Shape_Area   
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'V-07 Total Mingled Forest Area'
+        self.StatValue = mingled_forest_area
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        society_instance.stat_dict[self.StatID] = self  
 
     '''
     Composite Indicators
@@ -799,7 +887,20 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self         
         
         
+   
+    def get_landuse_landcover_structures(self, society_instance, scenario_name):
+        
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year
+        self.Variable = '4 Land-use/Land Cover Structure'
+        self.StatValue = 0
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.CompositeIndicator = 1 # Make it a composite indicator
+
+        society_instance.stat_dict[self.StatID] = self       
         
         
         
+                
            
