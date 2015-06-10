@@ -16,9 +16,8 @@ class Person(object):
         '''
         Construct the person class from the person table in the DB, and then add some other user-defined attributes.
 
-        record indicates a record in the person table in the DB.
-        
-        VarList is the variable (or field) list of the person table in the DB   
+        record - a record in the person table in the DB.        
+        VarList - the variable (or field) list of the person table in the DB   
         VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}   
         '''       
 

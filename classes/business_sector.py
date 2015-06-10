@@ -10,15 +10,19 @@ import random
 
 class BusinessSector(object):
     '''
-    The business sectors class
+    This is the business sectors class.
+    It deals with the basic properties of business sectors in which the households engage,
+    and determine whether a household can enter a sector, and calculate the revenues and costs in doing so.
     '''
 
 
     def __init__(self, record, VarList):
         '''
-        This is the business sectors class.
-        It deals with the basic properties of business sectors in which the households engage,
-        and determine whether a household can enter a sector, and calculate the revenues and costs in doing so.
+        Construct the business sectors class from the business sector table in the DB, and then add some other user-defined attributes.
+
+        record - a record in the business sector table in the DB.       
+        VarList - the variable (or field) list of the business sector table in the DB   
+        VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}  
         '''
         
         # Set the attributes (var) and their values (record) from the business sector table in the DB.                

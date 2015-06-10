@@ -15,7 +15,8 @@ class CapitalProperty(object):
 
     def __init__(self, hh, model_parameters):
         '''
-        hh = an instance of the household class.
+        Construct the capital property class from attributes of a household instance hh.
+        hh - an instance of the household class.
         '''
         
         # Monetary assets and liabilities

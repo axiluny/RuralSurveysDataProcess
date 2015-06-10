@@ -23,9 +23,8 @@ class Household(object):
         '''
         Construct the household class from the household table in the DB, and then add some other user-defined attributes.
 
-        record indicates a record in the household table in the DB.
-        
-        VarList is the variable (or field) list of the household table in the DB   
+        record - a record in the household table in the DB.       
+        VarList - the variable (or field) list of the household table in the DB   
         VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}
         
         Also initialize the household's own person instances here from the person table in the DB.
@@ -95,13 +94,7 @@ class Household(object):
         
         # Define a switch variable indicating whether the household is dissolved in the current year
         self.is_dissolved_this_year = False
-        
-        
-#         # Temporary codes
-#         self.AnnualTotalIncome = 0
-#         self.AnnualCompensation = 0
   
-
 
     
     def household_demographic_update(self, current_year, model_parameters):

@@ -71,11 +71,17 @@ class DataAccess(object):
     
     
     def delete_record_from_table(self, order):
+        '''
+        Delete a record from a table in the database by an order, similar as "create_table"
+        '''
         self.cursor.execute(order)
     
     
         
     def drop_table(self, order):
+        '''
+        Drop a table in the database by an order, similar as "create_table"
+        '''
         self.cursor.execute(order)
 
     

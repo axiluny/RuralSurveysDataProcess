@@ -19,6 +19,8 @@ class StatClass(object):
         self.StatDate = int()
         self.Variable = ''
         self.StatValue = float()
+        self.StatUnit = ''
+        
         self.CompositeIndicator = 0
         # Indicates whether the statistics item is a composite indicator, such as 'Income Structure among Sectors'
         # 0 - No; 1 - Yes.
@@ -53,6 +55,7 @@ class StatClass(object):
         self.StatDate = society_instanceiety_instance.current_year 
         self.Variable = 'I-01 Population'
         self.StatValue = pp_ct
+        self.StatUnit = 'Persons'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instanceiety_instance.stat_dict[self.StatID] = self
@@ -75,6 +78,7 @@ class StatClass(object):
         self.StatDate = society_instanceiety_instance.current_year 
         self.Variable = 'I-02 Existing Household'
         self.StatValue = hh_ct
+        self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instanceiety_instance.stat_dict[self.StatID] = self
@@ -96,6 +100,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'I-03 Dissolved Household'
         self.StatValue = dhh_ct
+        self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self    
@@ -120,6 +125,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'II-01 Pref Labor_Risk Aversion HH Count'
         self.StatValue = tpye_1_hh_ct
+        self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self          
@@ -141,6 +147,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'II-02 Pref Leisure_Risk Aversion HH Count'
         self.StatValue = tpye_2_hh_ct
+        self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self              
@@ -162,6 +169,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'II-03 Pref Labor_Risk Appetite HH Count'
         self.StatValue = tpye_3_hh_ct
+        self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self     
@@ -183,6 +191,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'II-04 Pref Leisure_Risk Appetite HH Count'
         self.StatValue = tpye_4_hh_ct
+        self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self 
@@ -208,6 +217,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-01 Total Household Net Savings'
         self.StatValue = total_net_savings
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self 
@@ -229,6 +239,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-02 Total Household Cash Reserve'
         self.StatValue = total_cash_savings
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self      
@@ -250,6 +261,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-03 Total Household Debt'
         self.StatValue = total_debt
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -272,6 +284,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-04 Gross Annual Household Income'
         self.StatValue = gross_annual_income
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self        
@@ -292,6 +305,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-05 Gross Annual Household Business Revenues'
         self.StatValue = gross_business_revenues
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self       
@@ -312,6 +326,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-06 Gross Annual Household Compensational Revenues'
         self.StatValue = gross_compensational_revenues
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -338,6 +353,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-07 Annual Income per Person'
         self.StatValue = gross_annual_income / pp_ct
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self  
@@ -362,6 +378,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-08 Annual Income per Household'
         self.StatValue = gross_annual_income / hh_ct
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self  
@@ -382,6 +399,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-09 Trucks Count'
         self.StatValue = trucks_count
+        self.StatUnit = 'Trucks'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self      
@@ -402,6 +420,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'III-10 Minibuses Count'
         self.StatValue = minibuses_count
+        self.StatUnit = 'Mini-buses'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self     
@@ -426,6 +445,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-01 Total Agriculture Income'
         self.StatValue = total_agriculture_income
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self   
@@ -447,6 +467,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-02 Total Temp Job Income'
         self.StatValue = total_tempjob_income
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self   
@@ -468,6 +489,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-03 Total Freight Trans Income'
         self.StatValue = total_freighttrans_income
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self   
@@ -489,6 +511,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-04 Total Passenger Trans Income'
         self.StatValue = total_passengertrans_income
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self  
@@ -511,6 +534,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-05 Total Lodging Income'
         self.StatValue = total_lodging_income
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self          
@@ -537,6 +561,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-06 Total Renting Income'
         self.StatValue = total_renting_income
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self          
@@ -561,7 +586,8 @@ class StatClass(object):
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-07 Agriculture Employment Ratio'
-        self.StatValue = float(agriculture_employment) / float(hh_ct)
+        self.StatValue = float(agriculture_employment * 100) / float(hh_ct)
+        self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -586,7 +612,8 @@ class StatClass(object):
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-08 Temp Jobs Employment Ratio'
-        self.StatValue = float(tempjob_employment) / float(hh_ct)
+        self.StatValue = float(tempjob_employment * 100) / float(hh_ct)
+        self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -611,7 +638,8 @@ class StatClass(object):
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-09 Freight Trans Employment Ratio'
-        self.StatValue = float(freighttrans_employment) / float(hh_ct)
+        self.StatValue = float(freighttrans_employment * 100) / float(hh_ct)
+        self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -636,7 +664,8 @@ class StatClass(object):
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-10 Passenger Trans Employment Ratio'
-        self.StatValue = float(passengertrans_employment) / float(hh_ct)
+        self.StatValue = float(passengertrans_employment * 100) / float(hh_ct)
+        self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self        
@@ -661,7 +690,8 @@ class StatClass(object):
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-11 Lodging Employment Ratio'
-        self.StatValue = float(lodging_employment) / float(hh_ct)
+        self.StatValue = float(lodging_employment * 100) / float(hh_ct)
+        self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -686,7 +716,8 @@ class StatClass(object):
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
         self.Variable = 'IV-12 Renting Employment Ratio'
-        self.StatValue = float(renting_employment) / float(hh_ct)
+        self.StatValue = float(renting_employment * 100) / float(hh_ct)
+        self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -719,6 +750,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'V-01 Total Farmland Area'
         self.StatValue = farmland_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -739,6 +771,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'V-02 Total Abandoned Farmland Area'
         self.StatValue = abandoned_farmland_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self
@@ -759,6 +792,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'V-03 Total Farmland to Forest Area'
         self.StatValue = farmland_to_forest_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self    
@@ -780,6 +814,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'V-04 Total Construction Land Area'
         self.StatValue = construction_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self         
@@ -800,6 +835,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'V-05 Total Grassland Area'
         self.StatValue = grassland_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self       
@@ -820,6 +856,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'V-06 Total Shrubbery Area'
         self.StatValue = shrubbery_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self  
@@ -840,6 +877,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year 
         self.Variable = 'V-07 Total Mingled Forest Area'
         self.StatValue = mingled_forest_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
         society_instance.stat_dict[self.StatID] = self  
@@ -854,6 +892,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year
         self.Variable = '1 Total Income by Sectors'
         self.StatValue = 0
+        self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.CompositeIndicator = 1 # Make it a composite indicator
@@ -867,6 +906,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year
         self.Variable = '2 Employment by Sectors'
         self.StatValue = 0
+        self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.CompositeIndicator = 1 # Make it a composite indicator
@@ -880,6 +920,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year
         self.Variable = '3 Household Preference Types'
         self.StatValue = 0
+        self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.CompositeIndicator = 1 # Make it a composite indicator
@@ -894,6 +935,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year
         self.Variable = '4 Land-use/Land Cover Structure'
         self.StatValue = 0
+        self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.CompositeIndicator = 1 # Make it a composite indicator

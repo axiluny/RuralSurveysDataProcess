@@ -69,9 +69,21 @@ class Society(object):
         
         # Then allocate the parcels with an HID to the respective household's own_capital_properties.land_properties_list.
         for OBJECTID_1 in self.land_dict:
-            for HID in self.hh_dict:
+            for HID in self.hh_dict:                
                 if self.land_dict[OBJECTID_1].HID == HID:
                     self.hh_dict[HID].own_capital_properties.land_properties_list.append(self.land_dict[OBJECTID_1])
+                    
+                    
+#                     '''
+#                     Temporary codes for getting household's total farm and homestead areas from shapes
+#                     '''
+#                      
+#                     if self.land_dict[OBJECTID_1].LandCover == 'Cultivate':
+#                         self.hh_dict[HID].FarmAreaFromShape += float(self.land_dict[OBJECTID_1].Shape_Area)
+#                     elif self.land_dict[OBJECTID_1].LandCover == 'Construction':
+#                         self.hh_dict[HID].HomesteadAreaFromShape += float(self.land_dict[OBJECTID_1].Shape_Area)
+
+
 
        
         
@@ -116,22 +128,22 @@ class Society(object):
         
         # Update the current year tag
         self.current_year = start_year + iteration_count + 1
-                     
+                      
         # Then do the followings step by step
         self.agents_update()
-         
-        self.marriage()
           
+        self.marriage()
+           
         self.child_birth()
-        
-        
+         
+         
         self.household_capital_property_update()
-                
+                 
         self.household_economy()
-        
-        
+         
+         
         self.land_update()
-        
+         
         # Debugging code
         print self.count2, self.count1, self.count
         
@@ -160,18 +172,18 @@ class Society(object):
     
     
     def land_update(self):
-        
+            
         # Deal with the reverted farmland first
         for HID in self.hh_dict:
             for land_parcel in self.hh_dict[HID].own_capital_properties.land_properties_list:
                 if land_parcel.IsG2G_this_year == True:
                     self.hh_dict[HID].own_capital_properties.land_properties_list.remove(land_parcel)
-                        
+                         
                 # And change the attributes of the same land parcel in society.land_dict
                 self.land_dict[land_parcel.OBJECTID_1].IsG2G = 1
                 self.land_dict[land_parcel.OBJECTID_1].SStartyear = self.current_year
                 self.land_dict[land_parcel.OBJECTID_1].HID = ''
-        
+         
         # Then simulate the natural land cover succession process
         for OBJECTID_1 in self.land_dict:
             self.land_dict[OBJECTID_1].land_cover_succession(self.current_year, self.model_parameters_dict)

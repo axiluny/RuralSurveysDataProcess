@@ -5,17 +5,21 @@ Created on May 30, 2015
 '''
 
 import copy
-import land
 
 class Policy(object):
     '''
-    The Policy Class
+    The Policy Class deals with the policy programs and their behaviors (mainly referring to modifying households'
+    capital property conditions.
     '''
 
 
     def __init__(self, record, VarList):
         '''
-        This is the policy class
+        Construct the person policy from the policy table in the DB.
+
+        record - a record in the policy table in the DB.
+        VarList - the variable (or field) list of the policy table in the DB.
+        VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}   
         '''        
         # Set the attributes (var) and their values (record) from the policy programs table in the DB.                
         for var in VarList:
@@ -24,7 +28,13 @@ class Policy(object):
     
     
     def apply_policy_terms(self, hh_capital, model_parameters):
-        
+        '''
+        Apply the policy terms and thereby modify the household's capital property conditions accordingly.
+        hh_capital - the household's capital properties (a capital_property class instance).
+        model_parameters: global model parameters dictionary.
+        '''
+
+        # Make a copy of the hh_capital parameter        
         new_hh_capital = copy.deepcopy(hh_capital)
         
         revenue = float()
@@ -65,6 +75,15 @@ class Policy(object):
             new_hh_capital.cash += revenue
             new_hh_capital.compensational_revenues += revenue   
         
+        
+            '''
+            The following two programs involved transfers between households, rather than those from the government to households
+            '''
+        elif self.PolicyType == 'FarmToHomestead_Before':
+            pass
+        
+        elif self.PolicyType == 'TakeInFarmToHomestead_Before':
+            pass
         
         return new_hh_capital
         

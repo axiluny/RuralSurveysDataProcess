@@ -12,6 +12,11 @@ class Land(object):
 
     def __init__(self, record, VarList, current_year):
         '''
+        Construct the land class from the land table in the DB, and then add some other user-defined attributes.
+
+        record - a record in the land table in the DB.       
+        VarList - the variable (or field) list of the land table in the DB   
+        VarList = {paramName1: paramOrder1, paramName2: paramOrder2, ...}   
         
         '''
         
@@ -29,7 +34,12 @@ class Land(object):
         self.IsG2G_this_year = False
         
     
+    
+    
     def land_cover_succession(self, current_year, model_parameters):
+        '''
+        The natural succession process of land cover.
+        '''
         
         # Determine the length of vegetation succession
         self.succession_length = current_year - self.SStartyear
@@ -40,10 +50,10 @@ class Land(object):
                 self.SStartyear = current_year
                    
         
-        elif self.LandCover == 'Construction':
-            # Do nothing to construction land
-            pass
-        
+        elif self.LandCover == 'Construction' and self.IsC2G == 1:
+            if self.succession_length == int(model_parameters['ConstructionSuccessionYear']):
+                self.LandCover = 'Grass'
+                self.SStartyear = current_year        
         
         elif self.LandCover == 'Grass':
             if self.succession_length == int(model_parameters['GrassSuccessionYear']):
