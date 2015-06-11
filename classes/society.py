@@ -13,6 +13,7 @@ from capital_property import *
 from land import *
 from business_sector import *
 from policy import Policy
+from energy import *
 
 
 class Society(object):
@@ -107,10 +108,10 @@ class Society(object):
         self.stat_dict = dict()
         
         
-        # Counters for debugging
-        self.count = 0
-        self.count1 = 0
-        self.count2 = 0
+#         # Counters for debugging
+#         self.count = 0
+#         self.count1 = 0
+#         self.count2 = 0
         
         
     
@@ -129,23 +130,27 @@ class Society(object):
         # Update the current year tag
         self.current_year = start_year + iteration_count + 1
                       
-        # Then do the followings step by step
+        # Household and personal demographics
         self.agents_update()
           
         self.marriage()
            
         self.child_birth()
-         
-         
+        
+        # Update household capital property conditions
         self.household_capital_property_update()
-                 
+        
+        # Households' economic activities simulation; including policy-related decision-making.
         self.household_economy()
          
-         
+        # The land sub-model.
         self.land_update()
+        
+        # The energy (and carbon, and habitat) sub-model.
+        self.energy_update()
          
-        # Debugging code
-        print self.count2, self.count1, self.count
+#         # Debugging code
+#         print self.count2, self.count1, self.count
         
 
 
@@ -170,6 +175,14 @@ class Society(object):
             self.hh_dict[HID].household_final_accounting(self.model_parameters_dict)
 
     
+    
+    def energy_update(self):
+        '''
+        To be elaborated.
+        '''
+        for HID in self.hh_dict:
+            Energy.annual_energy_step_go(self.hh_dict[HID].energy, self.hh_dict[HID], self.model_parameters_dict)
+            
     
     def land_update(self):
             
@@ -565,8 +578,8 @@ class Society(object):
                 # Transfer household properties
                 CapitalProperty.merge_capital_properties(self.hh_dict[ori_hid].own_capital_properties, self, ori_hid, HID)
                 
-                # Debugging codes
-                self.count2 += 1
+#                 # Debugging codes
+#                 self.count2 += 1
             
                         
         
@@ -587,7 +600,7 @@ class Society(object):
                 
         # Deal with household properties that were left behind
         self.legacy(HID)
-        self.count1 += 1
+#         self.count1 += 1
 
 
 
@@ -710,8 +723,8 @@ class Society(object):
             
             CapitalProperty.merge_capital_properties(self.hh_dict[HID].own_capital_properties, self, HID, heir.HID)
             
-            # Debugging codes
-            self.count += 1
+#             # Debugging codes
+#             self.count += 1
             
         else: # Confiscate the legacy
             '''

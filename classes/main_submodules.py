@@ -61,6 +61,21 @@ version_table = DataAccess.get_table(db, version_table_name)
 
 
 
+# Make a dictionary of composite statistics indicators
+composite_indicators_dict = {'1 Total Income by Sectors': ['IV-01 Total Agriculture Income', 'IV-02 Total Temp Job Income', 
+                                'IV-03 Total Freight Trans Income', 'IV-04 Total Passenger Trans Income',
+                                'IV-05 Total Lodging Income', 'IV-06 Total Renting Income'], 
+                             '2 Employment by Sectors': ['IV-07 Agriculture Employment Ratio', 'IV-08 Temp Jobs Employment Ratio',
+                                'IV-09 Freight Trans Employment Ratio', 'IV-10 Passenger Trans Employment Ratio',
+                                'IV-11 Lodging Employment Ratio', 'IV-12 Renting Employment Ratio'], 
+                             '3 Household Preference Types': ['II-01 Pref Labor_Risk Aversion HH Count', 'II-02 Pref Leisure_Risk Aversion HH Count',
+                                'II-03 Pref Labor_Risk Appetite HH Count', 'II-04 Pref Leisure_Risk Appetite HH Count'], 
+                             '4 Land-use/Land Cover Structure': ['V-01 Total Farmland Area', 'V-04 Total Construction Land Area',
+                                'V-05 Total Grassland Area', 'V-06 Total Shrubbery Area', 'V-07 Total Mingled Forest Area']}
+
+
+
+
 '''
 user created main submodules 
 '''
@@ -945,15 +960,16 @@ class Ui_frm_SEEMS_main(object):
          
   
         # Events handling 
-        self.btn_review_plot.clicked.connect(self.btn_review_plot_onclicked)
-        self.btn_time_series_analysis_plot.clicked.connect(self.btn_time_series_plot_onclicked)
+        self.btn_review_plot.clicked.connect(self.btn_review_plot_onclick)
+        self.btn_time_series_analysis_plot.clicked.connect(self.btn_time_series_plot_onclick)
         
         self.cmb_select_review_scenario.currentIndexChanged.connect(self.cmb_select_scenario_onchange)
         self.cmb_select_cross_section_analysis_scenario.currentIndexChanged.connect(self.cmb_select_cross_section_analysis_scenario_onchange)
         self.cmb_select_time_series_analysis_scenario.currentIndexChanged.connect(self.cmb_select_time_series_analysis_scenario_onchange)
                  
-        self.btn_start_simulation.clicked.connect(self.btn_start_simulation_onclicked)
+        self.btn_start_simulation.clicked.connect(self.btn_start_simulation_onclick)
         
+        self.actionAbout.triggered.connect(self.action_menu_help_about)
         
         # Initiate the results review and data analysis panels
         self.refresh_review_panel()
@@ -1002,7 +1018,7 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-    def btn_start_simulation_onclicked(self):
+    def btn_start_simulation_onclick(self):
         
         # Get scenario settings from user inputs
         scenario_name = str(self.txt_input_scenario_name.text())
@@ -1034,6 +1050,9 @@ class Ui_frm_SEEMS_main(object):
                       
             # Run the simulation
 #             try:
+            self.statusbar.showMessage('Running simulation...')
+
+
             create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
                             person_table_name, person_table, land_table_name, land_table, 
                             business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
@@ -1045,6 +1064,9 @@ class Ui_frm_SEEMS_main(object):
             # Then refresh the result review control and data analysis tabs
             self.refresh_review_panel()
             self.refresh_analysis_panel()
+            
+            # Refresh the status bar
+            self.statusbar.showMessage('Simulation complete')
           
             # Show a message box indicating the completion of run.
             msb = QMessageBox()
@@ -1057,8 +1079,11 @@ class Ui_frm_SEEMS_main(object):
 #                 # that had been inserted to the database.
 #                 # And display an error message.
 #                 remove_scenario_version_from_database(scenario_name, db, self)
-#                  
-#                  
+#                 
+#                 # Refresh the status bar
+#                 self.statusbar.showMessage('Simulation failed')
+#                   
+#                   
 #                 # Show an Error Message
 #                 msb = QMessageBox()
 #                 msb.setText('The Simulation is Unsuccessful. Check Codes.        ')
@@ -1184,7 +1209,7 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-    def btn_review_plot_onclicked(self):
+    def btn_review_plot_onclick(self):
         '''
         The Plot button in the 'Results Review' Tag of the Control Panel
         '''
@@ -1195,31 +1220,52 @@ class Ui_frm_SEEMS_main(object):
         # Read the statistics table.        
         stat_table = DataAccess.get_table(db, stat_table_name)
         
-        # Define the x_data (time_stamps list) and y_data (series list)
-        time_stamps = list()
-        series = list()
-
-        plot_title = str(self.cmb_select_review_variable.currentText())
-        y_unit = ''
+        # Get the plot title
+        plot_title = str(self.cmb_select_review_variable.currentText())        
         
-        # Assign values for the variable lists
+        # Define x and y axes units
+        x_unit = 'Year'
+        y_unit = ''
+
+        # Define the plot series list       
+        plot_series_list = list()
+        
+        # Assign values for the variable lists        
+        # Define a list containing the (x, y) data points (in the form of tuples)
+        plot_xy_tuple_list = list()                
+
         for st in stat_table:            
             # Look only the records for the current scenario version
             if st.ScenarioVersion == self.cmb_select_review_scenario.currentText():
-                # Get the plot time range from the spinbox inputs
-                if self.rdbtn_line_chart.isChecked() and self.tab_controlpanel.currentIndex() == 1:
-                    plot_start_year = self.sbx_select_review_start_year.value() + 1
-                else:
-                    plot_start_year = self.sbx_select_review_start_year.value()
-                
-                if st.StatDate >= plot_start_year and st.StatDate <= self.sbx_select_review_end_year.value():                
-                    if st.Variable == str(self.cmb_select_review_variable.currentText()):
-                        time_stamps.append(st.StatDate)
-                        series_name = st.Variable
-                        y_unit = st.StatUnit
-                        series.append(st.StatValue)
+                # Find the variable
+                if st.Variable == str(self.cmb_select_review_variable.currentText()):    
+                    series_name = st.Variable
+                    y_unit = st.StatUnit
                     
-        plot_series_list = [(series_name, series)]            
+                    # Determine the plot time range according to the plot type
+                    # For line plots, skip the first year (the starting point).
+                    if self.rdbtn_line_chart.isChecked() and self.tab_controlpanel.currentIndex() == 1:
+                        plot_start_year = self.sbx_select_review_start_year.value() + 1
+                    else:
+                        plot_start_year = self.sbx_select_review_start_year.value()
+                    
+                    # Assign values for the variable
+                    if st.StatDate >= plot_start_year and st.StatDate <= self.sbx_select_review_end_year.value():                
+                        plot_xy_tuple_list.append((st.StatDate, st.StatValue))
+
+        # Sort the list by the order of the x dimension
+        plot_xy_tuple_list.sort()
+        
+        # Make the x and y data for inputting to the plot submodule
+        x_data = list()
+        y_data_temp = list()
+        
+        for j in range(len(plot_xy_tuple_list)):
+            x_data.append(plot_xy_tuple_list[j][0])
+            y_data_temp.append(plot_xy_tuple_list[j][1])
+        
+        y_data = (series_name, y_data_temp)
+        plot_series_list.append(y_data)
 
         # Draw the plot
         # First, remove any existing canvas contents
@@ -1228,14 +1274,14 @@ class Ui_frm_SEEMS_main(object):
         
         # Then create a new canvas instance
         self.mc = MplCanvas(self.canvaswidget)
-        self.mc.plot('timeseries', time_stamps, plot_series_list, plot_title, y_unit, self)
+        self.mc.plot('timeseries', plot_title, x_data, plot_series_list, x_unit, y_unit, self)
 
 
 
 
 
 
-    def btn_time_series_plot_onclicked(self):
+    def btn_time_series_plot_onclick(self):
         '''
         The Plot button in the 'Data Analysis' Tag of the Control Panel
         '''
@@ -1243,39 +1289,15 @@ class Ui_frm_SEEMS_main(object):
         # Read the statistics table.   
         stat_table = DataAccess.get_table(db, stat_table_name)
 
-        # Set the plot title
+        # Get the plot title
         plot_title = str(self.cmb_select_time_series_analysis_variable.currentText())
         
-        # Define the y axis unit
+        # Define the x and y axes unit
+        x_unit = 'Year'
         y_unit = ''
         
-        # Define temporary variables
-        time_stamps = list()
-                
-        total_agriculture_income = list()
-        total_temp_job_income = list()
-        total_freight_trans_income = list()
-        total_passenger_trans_income = list()
-        total_lodging_income =  list()
-        total_renting_income = list()
-        
-        total_agriculture_employment = list()
-        total_temp_job_employment = list()
-        total_freight_trans_employment = list()
-        total_passenger_trans_employment = list()
-        total_lodging_employment =  list()
-        total_renting_employment = list()
-        
-        hh_type1_list = list()
-        hh_type2_list = list()
-        hh_type3_list = list()
-        hh_type4_list = list()
-        
-        farmland_area_list = list()
-        construction_land_area_list = list()
-        grassland_area_list = list()
-        shrubbery_area_list = list()
-        mingled_forest_area_list = list()
+        # Define the plot series list       
+        plot_series_list = list()
 
         # Determine the plot time range according to the plot type
         # For line plots, skip the first year (the starting point).
@@ -1284,150 +1306,37 @@ class Ui_frm_SEEMS_main(object):
         else:
             analysis_start_year = self.sbx_select_time_series_analysis_start_year.value()
 
-        # Get the series to be plot from the combo box selection
-        if str(self.cmb_select_time_series_analysis_variable.currentText()) == '1 Total Income by Sectors':
-            
-            y_unit = 'Yuan (RMB)'
         
-            # Assign values for the variable lists
-            for st in stat_table:            
-                # Look only the records for the current scenario version
-                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():
-                                        
-                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
-                                                 
-                        if st.Variable == 'IV-01 Total Agriculture Income':
-                            time_stamps.append(st.StatDate)                    
-                            total_agriculture_income.append(st.StatValue)
-                            agri_tuple = (st.Variable, total_agriculture_income)
-                        
-                        elif st.Variable == 'IV-02 Total Temp Job Income':
-                            total_temp_job_income.append(st.StatValue)
-                            temj_tuple = (st.Variable, total_temp_job_income)
-                        
-                        elif st.Variable == 'IV-03 Total Freight Trans Income':
-                            total_freight_trans_income.append(st.StatValue)
-                            frtt_tuple = (st.Variable, total_freight_trans_income)
-                        
-                        elif st.Variable == 'IV-04 Total Passenger Trans Income':
-                            total_passenger_trans_income.append(st.StatValue)
-                            pagt_tuple = (st.Variable, total_passenger_trans_income)
-                        
-                        elif st.Variable == 'IV-05 Total Lodging Income':
-                            total_lodging_income.append(st.StatValue)
-                            ldgg_tuple = (st.Variable, total_lodging_income)
-                        
-                        elif st.Variable == 'IV-06 Total Renting Income':
-                            total_renting_income.append(st.StatValue)
-                            rent_tuple = (st.Variable, total_renting_income)
-            
-            plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
-
-
-        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == '2 Employment by Sectors':
-            
-            y_unit = 'Employment Percent'
         
-            # Assign values for the variable lists
-            for st in stat_table:            
-                # Look only the records for the current scenario version
-                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():        
-                    
-                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
-                                             
-                        if st.Variable == 'IV-07 Agriculture Employment Ratio':
-                            time_stamps.append(st.StatDate)                    
-                            total_agriculture_employment.append(st.StatValue)
-                            agri_tuple = (st.Variable, total_agriculture_employment)
+        # Make the plot series list
+        for indicator in composite_indicators_dict:
+            if self.cmb_select_time_series_analysis_variable.currentText() == indicator: 
+                if self.cmb_select_time_series_analysis_variable.currentText() == indicator:
+                    for variable in composite_indicators_dict[indicator]:     
+                        plot_xy_tuple_list = list()
                         
-                        elif st.Variable == 'IV-08 Temp Jobs Employment Ratio':
-                            total_temp_job_employment.append(st.StatValue)
-                            temj_tuple = (st.Variable, total_temp_job_employment)
+                        for st in stat_table:
+                            # Find the currently selected scenario
+                            if st.Variable == variable \
+                            and st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText() \
+                            and st.StatDate >= analysis_start_year \
+                            and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                          
+                                
+                                plot_xy_tuple_list.append((st.StatDate, st.StatValue))
+                                
+                        plot_xy_tuple_list.sort()        
+                
+                        # Make the x and y data for inputting to the plot submodule
+                        x_data = list()
+                        y_data_temp = list()
                         
-                        elif st.Variable == 'IV-09 Freight Trans Employment Ratio':
-                            total_freight_trans_employment.append(st.StatValue)
-                            frtt_tuple = (st.Variable, total_freight_trans_employment)
+                        for j in range(len(plot_xy_tuple_list)):
+                            x_data.append(plot_xy_tuple_list[j][0])
+                            y_data_temp.append(plot_xy_tuple_list[j][1])
                         
-                        elif st.Variable == 'IV-10 Passenger Trans Employment Ratio':
-                            total_passenger_trans_employment.append(st.StatValue)
-                            pagt_tuple = (st.Variable, total_passenger_trans_employment)
+                        y_data = (variable, y_data_temp)
                         
-                        elif st.Variable == 'IV-11 Lodging Employment Ratio':
-                            total_lodging_employment.append(st.StatValue)
-                            ldgg_tuple = (st.Variable, total_lodging_employment)
-                        
-                        elif st.Variable == 'IV-12 Renting Employment Ratio':
-                            total_renting_employment.append(st.StatValue)
-                            rent_tuple = (st.Variable, total_renting_employment)
-            
-            plot_series_list = [agri_tuple, temj_tuple, frtt_tuple, pagt_tuple, ldgg_tuple, rent_tuple]
-
-
-        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == '3 Household Preference Types':
-            
-            y_unit = 'Households'
-        
-            # Assign values for the variable lists
-            for st in stat_table:            
-                # Look only the records for the current scenario version
-                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():        
-                    
-                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
-                                             
-                        if st.Variable == 'II-01 Pref Labor_Risk Aversion HH Count':
-                            time_stamps.append(st.StatDate)                    
-                            hh_type1_list.append(st.StatValue)
-                            hh_type1_tuple = (st.Variable, hh_type1_list)
-                        
-                        elif st.Variable == 'II-02 Pref Leisure_Risk Aversion HH Count':
-                            hh_type2_list.append(st.StatValue)
-                            hh_type2_tuple = (st.Variable, hh_type2_list)
-                        
-                        elif st.Variable == 'II-03 Pref Labor_Risk Appetite HH Count':
-                            hh_type3_list.append(st.StatValue)
-                            hh_type3_tuple = (st.Variable, hh_type3_list)
-                        
-                        elif st.Variable == 'II-04 Pref Leisure_Risk Appetite HH Count':
-                            hh_type4_list.append(st.StatValue)
-                            hh_type4_tuple = (st.Variable, hh_type4_list)
-            
-            plot_series_list = [hh_type1_tuple, hh_type2_tuple, hh_type3_tuple, hh_type4_tuple]
-
-
-        elif str(self.cmb_select_time_series_analysis_variable.currentText()) == '4 Land-use/Land Cover Structure':
-            
-            y_unit = 'Land Area/Chinese Acres (1 CA = 0.067 Hectare)'
-        
-            # Assign values for the variable lists
-            for st in stat_table:            
-                # Look only the records for the current scenario version
-                if st.ScenarioVersion == self.cmb_select_time_series_analysis_scenario.currentText():        
-                    
-                    if st.StatDate >= analysis_start_year and st.StatDate <= self.sbx_select_time_series_analysis_end_year.value():                
-                                             
-                        if st.Variable == 'V-01 Total Farmland Area':
-                            time_stamps.append(st.StatDate)                    
-                            farmland_area_list.append(st.StatValue)
-                            farmland_tuple = (st.Variable, farmland_area_list)
-                        
-                        elif st.Variable == 'V-04 Total Construction Land Area':
-                            construction_land_area_list.append(st.StatValue)
-                            construction_tuple = (st.Variable, construction_land_area_list)
-                        
-                        elif st.Variable == 'V-05 Total Grassland Area':
-                            grassland_area_list.append(st.StatValue)
-                            grassland_tuple = (st.Variable, grassland_area_list)
-                        
-                        elif st.Variable == 'V-06 Total Shrubbery Area':
-                            shrubbery_area_list.append(st.StatValue)
-                            shrubbery_tuple = (st.Variable, shrubbery_area_list)
-
-                        elif st.Variable == 'V-07 Total Mingled Forest Area':
-                            mingled_forest_area_list.append(st.StatValue)
-                            forest_tuple = (st.Variable, mingled_forest_area_list)
-            
-            plot_series_list = [farmland_tuple, construction_tuple, grassland_tuple, shrubbery_tuple, forest_tuple]
-            
+                        plot_series_list.append(y_data)
 
         # Draw the plot
         # First, remove any existing canvas contents
@@ -1436,10 +1345,8 @@ class Ui_frm_SEEMS_main(object):
         
         # Then create a new canvas instance
         self.mc = MplCanvas(self.canvaswidget)
-        self.mc.plot('timeseries', time_stamps, plot_series_list, plot_title, y_unit, self)
-
-
-
+        self.mc.plot('timeseries', plot_title, x_data, plot_series_list, x_unit, y_unit, self)
+        
 
 
     def refresh_review_panel(self):
@@ -1497,8 +1404,46 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-        
+    def action_menu_help_about(self):
+        help_about_dialog = QtGui.QDialog()
+        help_about_dialog_ui = Ui_SEEMS_help_about()
+        help_about_dialog_ui.setupUi(help_about_dialog)
+        help_about_dialog.show()
+        help_about_dialog.exec_()
 
+
+
+
+class Ui_SEEMS_help_about(object):
+    def setupUi(self, SEEMS_help_about):
+        SEEMS_help_about.setObjectName(_fromUtf8("SEEMS_help_about"))
+        SEEMS_help_about.resize(475, 300)
+        self.btn_OK = QtGui.QPushButton(SEEMS_help_about)
+        self.btn_OK.setGeometry(QtCore.QRect(180, 250, 112, 34))
+        self.btn_OK.setObjectName(_fromUtf8("btn_OK"))
+        self.lbl_SEEMS_about = QtGui.QLabel(SEEMS_help_about)
+        self.lbl_SEEMS_about.setGeometry(QtCore.QRect(10, 30, 451, 201))
+        self.lbl_SEEMS_about.setObjectName(_fromUtf8("lbl_SEEMS_about"))
+
+        self.retranslateUi(SEEMS_help_about)
+        QtCore.QMetaObject.connectSlotsByName(SEEMS_help_about)
+        
+        '''
+        Event handling
+        '''
+#         self.btn_OK.clicked.connect(self.btn_OK_onclicked)
+        self.btn_OK.clicked.connect(SEEMS_help_about.close)
+
+
+    def retranslateUi(self, SEEMS_help_about):
+        SEEMS_help_about.setWindowTitle(_translate("SEEMS_help_about", "SEEMS - About", None))
+        self.btn_OK.setText(_translate("SEEMS_help_about", "OK", None))
+        self.lbl_SEEMS_about.setText(_translate("SEEMS_help_about", 
+            "<html><head/><body><p align=\"center\">SEEMS - Socio-Econ-Ecosystem Multipurpose Simulator</p> \
+            <p align=\"center\">v 0.9.0</p><p align=\"center\">Created by Liyan Xu and Hongmou Zhang</p> \
+            <p align=\"center\">@MIT</p><p align=\"center\">2015.6.9</p></body></html>", None))
+    
+    
     
 
 class MplCanvas(FigureCanvas):
@@ -1516,84 +1461,90 @@ class MplCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
 
-    def plot(self, data_type, x_data, y_data, plot_title, y_unit, gui):
+    def plot(self, data_type, plot_title, x_data, y_data, x_unit, y_unit, gui):
         '''
         Make a plot.
         
-        data_type = crosssection/timeseries
+        data_type = 'crosssection' / 'timeseries'
+        plot_title - the title of the plot.
+        
         x_data: a simple list of numbers
         y_data: a list of tuples; each tuple is in the form of (series_name, [series_data_list]).
-        plot_title: the title of the plot.
-        
+
+        x_unit - unit of the x axis
+        y_unit - unit of the y axis       
         '''
+        
+
 
         if data_type == 'timeseries':
 
             # Determine the chart type
             if gui.rdbtn_bar_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 1 \
             or gui.rdbtn_stacked_bars_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 2:                
+
                 for i in range(len(y_data)):
                     if i == 0:
                         accu_series= numpy.subtract(y_data[i][1], y_data[i][1]) 
                     else:
                         accu_series= numpy.add(accu_series, y_data[i - 1][1]) 
-                    
+                      
                     self.axes.bar(x_data, y_data[i][1], bottom = accu_series, color = numpy.random.rand(3,1), label = y_data[i][0])                        
-                
+                              
                 # Set plot title
                 self.axes.set_title(plot_title)
-
+ 
                 # Set the x and y axes labels
-                self.axes.set_xlabel('Year')
-                self.axes.set_ylabel(str(y_unit))                
+                self.axes.set_xlabel(str(x_unit))
+                self.axes.set_ylabel(str(y_unit))
 
 #                 # Set the x and y axes ticks
 #                 self.axes.set_xticklabels(time_stamps)
-        
+         
                 # Set the legend and position the legend below the chart area                
                 # Shrink current axis's height by 20% on the bottom
                 box = self.axes.get_position()
                 self.axes.set_position([box.x0, box.y0 + box.height * 0.2, box.width, box.height * 0.8])                
                 # Put a legend below the x axis
                 self.axes.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=True, ncol=2)
-
+                
                 
             elif gui.rdbtn_line_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 1 \
             or gui.rdbtn_multiple_line_chart.isChecked() and gui.tab_controlpanel.currentIndex() == 2:
                 for i in range(len(y_data)):                    
                     self.axes.plot(x_data, y_data[i][1], color = numpy.random.rand(3,1), label = y_data[i][0])                        
-                            
+                             
                 # Set plot title
                 self.axes.set_title(plot_title)
-
+ 
                 # Set the x and y axes labels
-                self.axes.set_xlabel('Year')
-#                 self.axes.set_ylabel('Income/RMB')                
-        
+                self.axes.set_xlabel(str(x_unit))
+                self.axes.set_ylabel(str(y_unit))             
+         
                 # Set the legend and position the legend below the chart area                
                 # Shrink current axis's height by 20% on the bottom
                 box = self.axes.get_position()
                 self.axes.set_position([box.x0, box.y0 + box.height * 0.2, box.width, box.height * 0.8])                
                 # Put a legend below the x axis
                 self.axes.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=True, ncol=2)
-
-                 
+ 
+                  
             else: # Bar chart by default
                 for i in range(len(y_data)):
                     if i == 0:
                         accu_series= numpy.subtract(y_data[i][1], y_data[i][1]) 
                     else:
                         accu_series= numpy.add(accu_series, y_data[i - 1][1]) 
-                     
+                      
                     self.axes.bar(x_data, y_data[i][1], bottom = accu_series, color = numpy.random.rand(3,1), label = y_data[i][0])                        
-                             
+                              
                 # Set plot title
                 self.axes.set_title(plot_title)
-
+ 
                 # Set the x and y axes labels
-                self.axes.set_xlabel('Year')
-#                 self.axes.set_ylabel('Income/RMB')
-        
+                self.axes.set_xlabel(str(x_unit))
+                self.axes.set_ylabel(str(y_unit))
+         
                 # Set the legend and position the legend below the chart area                
                 # Shrink current axis's height by 20% on the bottom
                 box = self.axes.get_position()

@@ -21,11 +21,10 @@ class StatClass(object):
         self.StatValue = float()
         self.StatUnit = ''
         
+        # Properties for composite indicators
         self.CompositeIndicator = 0
         # Indicates whether the statistics item is a composite indicator, such as 'Income Structure among Sectors'
-        # 0 - No; 1 - Yes.
-        # 0 by default.
-    
+        # 0 - No; 1 - Yes. 0 by default.
     
         
         
@@ -892,7 +891,7 @@ class StatClass(object):
         self.StatDate = society_instance.current_year
         self.Variable = '1 Total Income by Sectors'
         self.StatValue = 0
-        self.StatUnit = ''
+        self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.CompositeIndicator = 1 # Make it a composite indicator

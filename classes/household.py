@@ -12,6 +12,7 @@ from data_access import DataAccess
 from capital_property import CapitalProperty
 from business_sector import *
 from policy import *
+from energy import *
 
 class Household(object):
     '''
@@ -56,7 +57,7 @@ class Household(object):
         
 
         
-        # Initialize the household's capital properties instance
+        # Initialize the household's capital properties class instance
         self.own_capital_properties = CapitalProperty(self, model_parameters)
         
         # Define an empty list of available business sectors,
@@ -95,6 +96,10 @@ class Household(object):
         # Define a switch variable indicating whether the household is dissolved in the current year
         self.is_dissolved_this_year = False
   
+
+
+        # Initialize the household's energy class instance
+        self.energy = Energy()
 
     
     def household_demographic_update(self, current_year, model_parameters):
@@ -312,6 +317,8 @@ class Household(object):
 #                         farmland_parcel.is_ftof = 1
 #                         farmland_parcel.succession_start_year = self.StatDate
 #                         self.own_capital_properties.land_properties_list.remove(farmland_parcel)
+
+
 
 
     def household_apply_policy(self, model_parameters):
