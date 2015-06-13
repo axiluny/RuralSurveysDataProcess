@@ -13,7 +13,7 @@ class CapitalProperty(object):
     '''
 
 
-    def __init__(self, hh, model_parameters):
+    def __init__(self, hh, land_dict, model_parameters):
         '''
         Construct the capital property class from attributes of a household instance hh.
         hh - an instance of the household class.
@@ -26,12 +26,31 @@ class CapitalProperty(object):
         
         
         # Land properties
-        # Define an empty list here; fill land parcels in from society.land_dict later in the society class
+        # Define the list of land parcels (instances of the land class) of the household
         self.land_properties_list = list()
+
+        # And then fill it with records in the land_dict (society_instance.land_dict)
+        for OBJECTID_1 in land_dict:              
+            if land_dict[OBJECTID_1].HID == hh.HID:
+                self.land_properties_list.append(land_dict[OBJECTID_1])
+                    
+        # Get the household's numerical land properties from the list
+        self.farmland = 0
+        self.homestead = 0
         
-        self.farmland = hh.FarmlandArea
+        for land_parcel in self.land_properties_list:
+            if land_parcel.LandCover == 'Cultivate':
+                self.farmland += (float(land_parcel.Shape_Area) / float(666.7))
+#             elif land_parcel.LandCover== 'Construction':
+#                 self.homestead += land_parcel.Shape_Area / 666.7
+                '''
+                Before the homestead shape problems in the database is solved,
+                just use hh.Homestead as source of household homestead data,
+                rather than getting it from the land properties list
+                '''       
+        # Other land properties of the household, mainly real-estate properties
         self.homestead = hh.Homestead
-        self.house_area = hh.HouseArea        
+        self.house_area = hh.HouseArea
         self.house_rooms = int(self.house_area / float(model_parameters['RoomArea'])) # buildings in numbers of rooms; 30 m^2 per room
                 
         self.location_type = hh.LocType # Location terrain types: 1 - hilly; 0 - plain.
@@ -110,6 +129,9 @@ class CapitalProperty(object):
         self.update_labors(hh)
         
         # Reset available factors
+        for land_parcel in self.land_properties_list:
+            land_parcel.actual_farming = False
+        
         self.av_farmland = self.farmland
         self.av_homestead = self.homestead
         self.av_house_rooms = (self.house_area - self.homestead) / 30
@@ -237,8 +259,8 @@ class CapitalProperty(object):
         
         
         # Land properties        
-        hh.FarmlandArea = self.farmland # Need to elaborate
-        hh.HouseArea = self.house_area    
+        hh.FarmlandArea = self.farmland
+        hh.HouseArea = self.house_area
         hh.Homestead = self.homestead
          
         hh.LocType = self.location_type

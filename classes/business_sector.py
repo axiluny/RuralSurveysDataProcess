@@ -117,10 +117,24 @@ class BusinessSector(object):
             else: # plain
                 spec_labor_cost = self.LaborCost - 8
             
-            # Find the maximum farm land area cultivatable as permitted by the household's available labor.
-            max_farm = (new_capital.av_labor * 365) / spec_labor_cost            
-            if max_farm > new_capital.av_farmland:
+            # Find the theoretical maximum farm land area cultivatable as permitted by the household's available labor.
+            theoretical_max_farm = (new_capital.av_labor * 365) / spec_labor_cost
+            
+            # Then determine the actual maximum farm-able land area (smallest land area unit is the land parcel)
+            max_farm = 0
+                       
+            if theoretical_max_farm > new_capital.av_farmland:
                 max_farm = new_capital.av_farmland
+                for land_parcel in new_capital.land_properties_list:
+                    land_parcel.actual_farming = True
+            else:
+                for land_parcel in new_capital.land_properties_list:
+                    max_farm += land_parcel.Shape_Area / 666.7
+                    land_parcel.actual_farming = True
+                    
+                    if max_farm > theoretical_max_farm:
+                        max_farm = max_farm - land_parcel.Shape_Area / 666.7
+                        land_parcel.actual_farming = False
             
             # Calculate the revenue.
             if risk_effective == True:

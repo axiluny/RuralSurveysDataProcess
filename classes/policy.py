@@ -58,22 +58,22 @@ class Policy(object):
             
             
             
-        elif self.PolicyType == 'FarmToForest_Before':
-            revenue = new_hh_capital.pre_ftof * self.CompensateStandard
-            new_hh_capital.cash += revenue
-            new_hh_capital.compensational_revenues += revenue            
- 
- 
-        elif self.PolicyType == 'FarmToBamboo_Before':
-            revenue = new_hh_capital.pre_ftob * self.CompensateStandard
-            new_hh_capital.cash += revenue
-            new_hh_capital.compensational_revenues += revenue   
-             
-             
-        elif self.PolicyType == 'ForestProtection':
-            revenue = new_hh_capital.is_tianbao * self.CompensateStandard
-            new_hh_capital.cash += revenue
-            new_hh_capital.compensational_revenues += revenue   
+#         elif self.PolicyType == 'FarmToForest_Before':
+#             revenue = new_hh_capital.pre_ftof * self.CompensateStandard
+#             new_hh_capital.cash += revenue
+#             new_hh_capital.compensational_revenues += revenue            
+#  
+#  
+#         elif self.PolicyType == 'FarmToBamboo_Before':
+#             revenue = new_hh_capital.pre_ftob * self.CompensateStandard
+#             new_hh_capital.cash += revenue
+#             new_hh_capital.compensational_revenues += revenue   
+#              
+#              
+#         elif self.PolicyType == 'ForestProtection':
+#             revenue = new_hh_capital.is_tianbao * self.CompensateStandard
+#             new_hh_capital.cash += revenue
+#             new_hh_capital.compensational_revenues += revenue   
         
         
             '''

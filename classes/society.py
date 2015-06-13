@@ -51,42 +51,23 @@ class Society(object):
         self.stat_var_list = DataAccess.get_var_list(db, stat_table_name)
 
 
-        # Initialize the household instances;
-        # And create a dictionary to store them, indexed by HID.
-        self.hh_dict = dict()        
-        # Add household instances to hh_dict
-        for hh in hh_table:
-            hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table, 
-                                self.model_parameters_dict)
-            self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
-        
-        
         # Initialize the land instances, and create a land dictionary to store all the land parcels
         # Note that the land parcels here do not necessarily belong to any household. i.e. land_parcel.HID could be "None".
         self.land_dict = dict()
         for land in land_table:
             land_parcel = Land(land, self.land_var_list, self.current_year)
             self.land_dict[land_parcel.OBJECTID_1] = land_parcel
-        
-        # Then allocate the parcels with an HID to the respective household's own_capital_properties.land_properties_list.
-        for OBJECTID_1 in self.land_dict:
-            for HID in self.hh_dict:                
-                if self.land_dict[OBJECTID_1].HID == HID:
-                    self.hh_dict[HID].own_capital_properties.land_properties_list.append(self.land_dict[OBJECTID_1])
-                    
-                    
-#                     '''
-#                     Temporary codes for getting household's total farm and homestead areas from shapes
-#                     '''
-#                      
-#                     if self.land_dict[OBJECTID_1].LandCover == 'Cultivate':
-#                         self.hh_dict[HID].FarmAreaFromShape += float(self.land_dict[OBJECTID_1].Shape_Area)
-#                     elif self.land_dict[OBJECTID_1].LandCover == 'Construction':
-#                         self.hh_dict[HID].HomesteadAreaFromShape += float(self.land_dict[OBJECTID_1].Shape_Area)
 
 
+        # Initialize the household instances (household capital property and land class instances are initialized at the initialization of household class);
+        # And create a dictionary to store them, indexed by HID.
+        self.hh_dict = dict()        
+        # Add household instances to hh_dict
+        for hh in hh_table:
+            hh_temp = Household(hh, self.hh_var_list, self.current_year, db, pp_table_name, pp_table, 
+                                self.land_dict, self.model_parameters_dict)
+            self.hh_dict[hh_temp.HID] = hh_temp # Indexed by HID
 
-       
         
         # Initialize the business sector instances;
         # And create a dictionary to store them, indexed by sector name.
@@ -185,17 +166,19 @@ class Society(object):
             
     
     def land_update(self):
-            
+
         # Deal with the reverted farmland first
         for HID in self.hh_dict:
             for land_parcel in self.hh_dict[HID].own_capital_properties.land_properties_list:
                 if land_parcel.IsG2G_this_year == True:
                     self.hh_dict[HID].own_capital_properties.land_properties_list.remove(land_parcel)
-                         
-                # And change the attributes of the same land parcel in society.land_dict
-                self.land_dict[land_parcel.OBJECTID_1].IsG2G = 1
-                self.land_dict[land_parcel.OBJECTID_1].SStartyear = self.current_year
-                self.land_dict[land_parcel.OBJECTID_1].HID = ''
+                          
+                    # And change the attributes of the same land parcel in society.land_dict
+                    self.land_dict[land_parcel.OBJECTID_1].IsG2G = 1
+                    self.land_dict[land_parcel.OBJECTID_1].SStartyear = self.current_year
+                    self.land_dict[land_parcel.OBJECTID_1].HID = ''
+                    self.land_dict[land_parcel.OBJECTID_1].IsG2G_this_year = False
+
          
         # Then simulate the natural land cover succession process
         for OBJECTID_1 in self.land_dict:

@@ -27,6 +27,9 @@ class Land(object):
         # Set the current time stamp
         self.StatDate = current_year
         
+        # Define the variable indicating if the land is actually farmed
+        self.actual_farming = False
+        
         # Define the variables related to vegetation succession.
         self.succession_length = 0 # The time length of vegetation succession.
     

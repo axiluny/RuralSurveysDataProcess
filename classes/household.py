@@ -20,7 +20,7 @@ class Household(object):
     '''
     
     
-    def __init__(self, record, VarList, current_year, db, pp_table_name, pp_table, model_parameters):
+    def __init__(self, record, VarList, current_year, db, pp_table_name, pp_table, land_dict, model_parameters):
         '''
         Construct the household class from the household table in the DB, and then add some other user-defined attributes.
 
@@ -58,7 +58,7 @@ class Household(object):
 
         
         # Initialize the household's capital properties class instance
-        self.own_capital_properties = CapitalProperty(self, model_parameters)
+        self.own_capital_properties = CapitalProperty(self, land_dict, model_parameters)
         
         # Define an empty list of available business sectors,
         # and another empty list of the business sectors that the household is in in the current year
@@ -100,12 +100,15 @@ class Household(object):
 
         # Initialize the household's energy class instance
         self.energy = Energy()
+        
 
     
     def household_demographic_update(self, current_year, model_parameters):
         '''
         Annual demographic updates of the household.
         '''
+        
+        
         
         # Update the current time stamp
         self.StatDate = current_year
@@ -292,6 +295,7 @@ class Household(object):
                     for PolicyType in policy_dict:
                         if policy_dict[PolicyType].IsCompulsory == 0: # Add the optional programs into household's own programs dictionary
                             self.own_policy_programs.append(policy_dict[PolicyType])
+
                             
             else: # Prefers Leisure
                 if compensation_2 > self.get_min_living_cost(model_parameters):
@@ -301,6 +305,7 @@ class Household(object):
                     for PolicyType in policy_dict:
                         if policy_dict[PolicyType].IsCompulsory == 0: # Add the optional programs into household's own programs dictionary
                             self.own_policy_programs.append(policy_dict[PolicyType])
+
             
             
             # When the decision is made, 
