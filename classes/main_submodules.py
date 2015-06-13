@@ -41,13 +41,9 @@ policy_table_name = 'PolicyTable'
 stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
-# # Rounds of iteration (years)
-# simulation_depth = 5
-#  
-# # Starting and ending year of simulation
-# start_year = 2015
-# end_year = 2030
-
+ 
+greetings_image_path = 'C:\WolongRun\GIS_output\wolong_landuse.png'
+map_image_path = 'C:\WolongRun\GIS_output\wolong_landuse.png'
  
 # Get the working database
 db = DataAccess(dbname, dbdriver)
@@ -915,13 +911,13 @@ class Ui_frm_SEEMS_main(object):
         self.cmb_select_map_scenario.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContentsOnFirstShow)
         self.cmb_select_map_scenario.setObjectName(_fromUtf8("cmb_select_map_scenario"))
         self.formLayout_10.setWidget(0, QtGui.QFormLayout.FieldRole, self.cmb_select_map_scenario)
-        self.lbl_select_map_theme = QtGui.QLabel(self.gpb_map_settings)
-        self.lbl_select_map_theme.setObjectName(_fromUtf8("lbl_select_map_theme"))
-        self.formLayout_10.setWidget(1, QtGui.QFormLayout.LabelRole, self.lbl_select_map_theme)
-        self.cmb_select_map_theme = QtGui.QComboBox(self.gpb_map_settings)
-        self.cmb_select_map_theme.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContentsOnFirstShow)
-        self.cmb_select_map_theme.setObjectName(_fromUtf8("cmb_select_map_theme"))
-        self.formLayout_10.setWidget(1, QtGui.QFormLayout.FieldRole, self.cmb_select_map_theme)
+        self.lbl_select_map_layer = QtGui.QLabel(self.gpb_map_settings)
+        self.lbl_select_map_layer.setObjectName(_fromUtf8("lbl_select_map_layer"))
+        self.formLayout_10.setWidget(1, QtGui.QFormLayout.LabelRole, self.lbl_select_map_layer)
+        self.cmb_select_map_layer = QtGui.QComboBox(self.gpb_map_settings)
+        self.cmb_select_map_layer.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContentsOnFirstShow)
+        self.cmb_select_map_layer.setObjectName(_fromUtf8("cmb_select_map_layer"))
+        self.formLayout_10.setWidget(1, QtGui.QFormLayout.FieldRole, self.cmb_select_map_layer)
         self.verticalLayout_8.addLayout(self.formLayout_10)
         self.gridLayout = QtGui.QGridLayout()
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
@@ -934,9 +930,32 @@ class Ui_frm_SEEMS_main(object):
         self.sld_select_map_year.setTickPosition(QtGui.QSlider.TicksBelow)
         self.sld_select_map_year.setObjectName(_fromUtf8("sld_select_map_year"))
         self.verticalLayout_8.addWidget(self.sld_select_map_year)
+        self.horizontalLayout_5 = QtGui.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
+        self.lbl_map_start_year = QtGui.QLabel(self.gpb_map_settings)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lbl_map_start_year.sizePolicy().hasHeightForWidth())
+        self.lbl_map_start_year.setSizePolicy(sizePolicy)
+        self.lbl_map_start_year.setText(_fromUtf8(""))
+        self.lbl_map_start_year.setObjectName(_fromUtf8("lbl_map_start_year"))
+        self.horizontalLayout_5.addWidget(self.lbl_map_start_year)
+        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_5.addItem(spacerItem3)
+        self.lbl_map_end_year = QtGui.QLabel(self.gpb_map_settings)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lbl_map_end_year.sizePolicy().hasHeightForWidth())
+        self.lbl_map_end_year.setSizePolicy(sizePolicy)
+        self.lbl_map_end_year.setText(_fromUtf8(""))
+        self.lbl_map_end_year.setObjectName(_fromUtf8("lbl_map_end_year"))
+        self.horizontalLayout_5.addWidget(self.lbl_map_end_year)
+        self.verticalLayout_8.addLayout(self.horizontalLayout_5)
         self.verticalLayout_4.addWidget(self.gpb_map_settings)
-        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout_4.addItem(spacerItem3)
+        spacerItem4 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem4)
         self.btn_show_map = QtGui.QPushButton(self.gbx_map_container)
         self.btn_show_map.setObjectName(_fromUtf8("btn_show_map"))
         self.verticalLayout_4.addWidget(self.btn_show_map)
@@ -950,6 +969,7 @@ class Ui_frm_SEEMS_main(object):
         self.map_display_widget.setObjectName(_fromUtf8("map_display_widget"))
         self.horizontalLayout_6.addWidget(self.map_display_widget)
         self.tab_controlpanel.addTab(self.results_maps, _fromUtf8(""))
+
         
         # Add the control panel widget            
         self.horizontalLayout.addWidget(self.tab_controlpanel)
@@ -977,40 +997,24 @@ class Ui_frm_SEEMS_main(object):
     
         '''
         The following lines in this submodule are developers added codes
-        '''
-        
-        # Add a toolbar for image display controls
-        action_zoom_in = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomIn.png'), 'Zoom In', frm_SEEMS_main)
-#         action_zoom_in.triggered.connect()
-        
-        action_zoom_out = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomOut.png'), 'Zoom Out', frm_SEEMS_main)
-        action_zoom_fit_window = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomFit.png'), 'Zoom Fit Window', frm_SEEMS_main)
-        
-        self.toolbar = frm_SEEMS_main.addToolBar('Test')
-        self.toolbar.addAction(action_zoom_in)
-        self.toolbar.addAction(action_zoom_out)
-        self.toolbar.addAction(action_zoom_fit_window)
-        
-        
-        
+        '''        
         # Display a greetings image in the first tab (scenarios manager)
-        self.display_image(widget = self.greetings_widget, path = 'C:\WolongRun\GIS_output\wolong_landuse.png')
+        # Create a QVBoxLayout within the widget for embedding
+        self.greeting_lyt = QtGui.QVBoxLayout(self.greetings_widget)        
+        # Call ImageViewer class to display the image
+        greetings_imgage = ImageViewer(widget=self.greetings_widget, layout=self.greeting_lyt, image_path=greetings_image_path, scalable=False)
+        
+        
+        # Display a map in the results - maps tab's map drawing area
+        self.map_layout = QtGui.QVBoxLayout(self.map_display_widget)
+        self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=map_image_path, scalable=True)
+                
+        # Add a toolbar for map display controls
+        self.add_toolbar(frm_SEEMS_main)
         
         # Display a plot space in the second tab (results - charts)
         self.make_plot_space(widget = self.canvas_widget)   
 
-        '''
-        #         Another way to create a canvas, without introducing a seperately defined matplotlib canvas class
-        #         # create a canvas
-        #         fig = Figure()        
-        #         self.mc = FigureCanvas(fig)
-        # 
-        #         self.mc.axes = fig.add_subplot(111)
-        #         self.mc.axes.hold(True) 
-        # 
-        #         self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        #         self.mc.updateGeometry()          
-        '''
         
         # Automatically add a default new scenario name at initiation
         self.add_default_new_scenario_name()
@@ -1030,7 +1034,7 @@ class Ui_frm_SEEMS_main(object):
         
         
         # Results review - charts
-        self.cmb_select_review_scenario.currentIndexChanged.connect(self.cmb_select_scenario_onchange)
+        self.cmb_select_review_scenario.currentIndexChanged.connect(self.cmb_select_review_scenario_onchange)
 
         self.rbt_single_variable_time_series.toggled.connect(self.rbt_single_variable_time_series_ontoggled)
         self.rbt_single_variable_cross_section.toggled.connect(self.rbt_single_variable_cross_section_ontoggled)
@@ -1046,8 +1050,6 @@ class Ui_frm_SEEMS_main(object):
         # Other window components
         self.actionAbout.triggered.connect(self.action_menu_help_about)
         
-        
-
         
   
   
@@ -1083,7 +1085,7 @@ class Ui_frm_SEEMS_main(object):
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.results_charts), _translate("frm_SEEMS_main", "Results - Charts", None))
         self.gpb_map_settings.setTitle(_translate("frm_SEEMS_main", "Map Settings", None))
         self.lbl_select_map_scenario.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
-        self.lbl_select_map_theme.setText(_translate("frm_SEEMS_main", "Select Variable:", None))
+        self.lbl_select_map_layer.setText(_translate("frm_SEEMS_main", "Select Map Layer:", None))
         self.lbl_select_map_year.setText(_translate("frm_SEEMS_main", "Select Map Year:", None))
         self.btn_show_map.setText(_translate("frm_SEEMS_main", "Show Map", None))
         self.tab_controlpanel.setTabText(self.tab_controlpanel.indexOf(self.results_maps), _translate("frm_SEEMS_main", "Results - Maps", None))
@@ -1091,26 +1093,6 @@ class Ui_frm_SEEMS_main(object):
         self.actionAbout.setText(_translate("frm_SEEMS_main", "About", None))
 
 
-
-#     def btn_show_map_onclick(self):
-#         # Set environment settings
-#         env.workspace = "C:/WolongRun/WolongDB.mdb"
-#  
-#         # Set local variables
-#         outWorkspace = "C:/WolongRun/WolongDB.mdb"
-#         
-#         # Make a copy of the base feature (LandUse feature/shapefile) as the working feature for map display
-#         arcpy.CopyFeatures_management('LandUse', str(outWorkspace + '/LandUse_copy1'))
-# 
-#         # Add fields to the copied feature
-#         
-#         # Read relevant records from the respective (land) table
-#         
-#         # Insert the records into the copied feature
-#         
-#         # Output the map as a .PNG image, with a predefined symbology style
-#         
-#         # Display the image
 
 
     def btn_start_simulation_onclick(self):
@@ -1339,7 +1321,7 @@ class Ui_frm_SEEMS_main(object):
         
 
 
-    def cmb_select_scenario_onchange(self):
+    def cmb_select_review_scenario_onchange(self):
         
         # Determine which variables to load according to "chart type" radio button selection.
         if self.rbt_single_variable_time_series.isChecked():
@@ -1358,7 +1340,27 @@ class Ui_frm_SEEMS_main(object):
 
 
     def cmb_select_map_scenario_onchange(self):
-        pass
+
+        # Refresh the stat_table cursor
+        stat_table = DataAccess.get_table(db, stat_table_name) 
+            
+        # Get the variable list and simulation length for the selected scenario        
+#         variable_list = list()
+        year_list = list()
+
+        for record in stat_table:
+            if record.ScenarioVersion == self.cmb_select_map_scenario.currentText():
+                if record.StatDate not in year_list:
+                    year_list.append(record.StatDate)
+        
+        # Set up the year selection slider bar.
+        self.sld_select_map_year.setMinimum(min(year_list))
+        self.sld_select_map_year.setMaximum(max(year_list))
+        self.sld_select_map_year.setTickInterval(1)
+        
+        # Set up the start year and end year labels that are attached to the slider bar.
+        self.lbl_map_start_year.setText(str(min(year_list)))
+        self.lbl_map_end_year.setText(str(max(year_list)))
     
     
 
@@ -1488,40 +1490,27 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-
-    def action_menu_help_about(self):
-        help_about_dialog = QtGui.QDialog()
-        help_about_dialog_ui = Ui_SEEMS_help_about()
-        help_about_dialog_ui.setupUi(help_about_dialog)
-        help_about_dialog.exec_()
-
-
-
-    def display_image(self, widget, path):
-        '''
-        Display a .PNG image in a predefined widget
-        '''
-        # Create a QVBoxLayout within the widget for embedding
-        self.greeting_lyt = QtGui.QVBoxLayout(widget)
-                
-        pic = QtGui.QLabel(widget)        
-        pic.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        pic.updateGeometry()
-
-        pic.setPixmap(QtGui.QPixmap(path))
-
-#         scroll_area = QtGui.QScrollArea(widget)
-#         scroll_area.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-#         scroll_area.updateGeometry()
-#         scroll_area.setWidget(pic)
+#     def btn_show_map_onclick(self):
+#         # Set environment settings
+#         env.workspace = "C:/WolongRun/WolongDB.mdb"
+#  
+#         # Set local variables
+#         outWorkspace = "C:/WolongRun/WolongDB.mdb"
+#         
+#         # Make a copy of the base feature (LandUse feature/shapefile) as the working feature for map display
+#         arcpy.CopyFeatures_management('LandUse', str(outWorkspace + '/LandUse_copy1'))
 # 
-#         scroll_area.setWidgetResizable(True)
-#         pic.setScaledContents(True)
+#         # Add fields to the copied feature
+#         
+#         # Read relevant records from the respective (land) table
+#         
+#         # Insert the records into the copied feature
+#         
+#         # Output the map as a .PNG image, with a predefined symbology style
+#         
+#         # Display the image
+
         
-                
-        self.greeting_lyt.addWidget(pic)
-    
-    
     
     def make_plot_space(self, widget):
         
@@ -1543,6 +1532,59 @@ class Ui_frm_SEEMS_main(object):
         self.lyt.addWidget(self.mpl_toolbar)            
 
 
+
+#     def display_image(self, widget, path, scalable):
+#         '''
+#         Display a .PNG image in a predefined widget
+#         widget: the parent widget to host the layout
+#         layout: the layout to contain the image (QLabel widget)
+#         path: path to the image to be displayed
+#         scalable: boolean variable indicating whether to enable scaling of the displayed image
+#         '''
+#         # Create a QVBoxLayout within the widget for embedding
+#         self.greeting_lyt = QtGui.QVBoxLayout(widget)
+#         
+#         # Call ImageViewer class to display the image
+#         ImageViewer(widget=widget, layout=self.greeting_lyt, image_path=path, scalable=scalable)
+        
+
+
+    def action_menu_help_about(self):
+        help_about_dialog = QtGui.QDialog()
+        help_about_dialog_ui = Ui_SEEMS_help_about()
+        help_about_dialog_ui.setupUi(help_about_dialog)
+        help_about_dialog.exec_()
+        
+              
+        
+    def add_toolbar(self, frm_SEEMS_main):
+
+        action_zoom_in = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomIn.png'), 'Zoom In', frm_SEEMS_main)        
+        action_zoom_out = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomOut.png'), 'Zoom Out', frm_SEEMS_main)
+        action_zoom_fit_window = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomFit.png'), 'Zoom Fit Window', frm_SEEMS_main)
+        
+        action_zoom_in.triggered.connect(self.zoom_in)
+        action_zoom_out.triggered.connect(self.zoom_out)
+        action_zoom_fit_window.triggered.connect(self.zoom_fit_window)
+        
+        self.toolbar = frm_SEEMS_main.addToolBar('Image View Controls')
+                
+        self.toolbar.addAction(action_zoom_in)
+        self.toolbar.addAction(action_zoom_out)
+        self.toolbar.addAction(action_zoom_fit_window)        
+
+
+    def zoom_in(self):
+#         self.img.imageLabel.resize(3 * self.img.imageLabel.pixmap().size())
+        self.map.zoomIn()
+    
+    def zoom_out(self):
+        self.map.zoomOut()
+    
+    def zoom_fit_window(self):
+        self.map.fitToWindow()
+        
+        
 
 class MplCanvas(FigureCanvas):
     def __init__(self, parent=None):
@@ -1691,4 +1733,107 @@ class Ui_SEEMS_help_about(object):
             "<html><head/><body><p align=\"center\">SEEMS - Socio-Econ-Ecosystem Multipurpose Simulator</p> \
             <p align=\"center\">v 0.9.0</p><p align=\"center\">Created by Liyan Xu and Hongmou Zhang</p> \
             <p align=\"center\">@MIT</p><p align=\"center\">2015.6.9</p></body></html>", None))
+
+
+
+
+
+class ImageViewer(QtGui.QWidget):
+    def __init__(self, widget, layout, image_path, scalable):
+        super(ImageViewer, self).__init__()
+
+#         self.printer = QtGui.QPrinter()
+        self.scaleFactor = 1.0
+
+        self.imageLabel = QtGui.QLabel()
+        self.imageLabel.setBackgroundRole(QtGui.QPalette.Base)
+#         self.imageLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+#         self.imageLabel.updateGeometry()
+        self.imageLabel.setScaledContents(True)
+        
+        self.imageLabel.setPixmap(QtGui.QPixmap(image_path))
+
+        if scalable == True:
+            self.scrollArea = QtGui.QScrollArea(widget)
+            self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
+            self.scrollArea.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+            self.scrollArea.updateGeometry()
+            self.scrollArea.setWidget(self.imageLabel)
+    
+            layout.addWidget(self.scrollArea)
+        
+        else:
+            layout.addWidget(self.imageLabel)
+
+        self.createActions()
+
+
+
+    def createActions(self):
+
+        self.zoomInAct = QtGui.QAction("Zoom &In (25%)", self,
+                shortcut="Ctrl++", enabled=False, triggered=self.zoomIn)
+
+        self.zoomOutAct = QtGui.QAction("Zoom &Out (25%)", self,
+                shortcut="Ctrl+-", enabled=False, triggered=self.zoomOut)
+
+        self.normalSizeAct = QtGui.QAction("&Normal Size", self,
+                shortcut="Ctrl+S", enabled=False, triggered=self.normalSize)
+
+        self.fitToWindowAct = QtGui.QAction("&Fit to Window", self,
+                enabled=False, checkable=True, shortcut="Ctrl+F",
+                triggered=self.fitToWindow)
+        
+#         self.printAct = QtGui.QAction("&Print...", self, shortcut="Ctrl+P",
+#                 enabled=False, triggered=self.print_)
+
+
+    def zoomIn(self):
+        self.scaleImage(1.25)
+
+    def zoomOut(self):
+        self.scaleImage(0.8)
+
+    def normalSize(self):
+        self.imageLabel.adjustSize()
+        self.scaleFactor = 1.0
+
+    def fitToWindow(self):
+        fitToWindow = self.fitToWindowAct.isChecked()
+        self.scrollArea.setWidgetResizable(fitToWindow)
+        if not fitToWindow:
+            self.normalSize()
+
+        self.updateActions()
+
+    def updateActions(self):
+        self.zoomInAct.setEnabled(not self.fitToWindowAct.isChecked())
+        self.zoomOutAct.setEnabled(not self.fitToWindowAct.isChecked())
+        self.normalSizeAct.setEnabled(not self.fitToWindowAct.isChecked())
+
+    def scaleImage(self, factor):
+        self.scaleFactor *= factor
+        self.imageLabel.resize(self.scaleFactor * self.imageLabel.pixmap().size())
+
+        self.adjustScrollBar(self.scrollArea.horizontalScrollBar(), factor)
+        self.adjustScrollBar(self.scrollArea.verticalScrollBar(), factor)
+
+        self.zoomInAct.setEnabled(self.scaleFactor < 3.0)
+        self.zoomOutAct.setEnabled(self.scaleFactor > 0.333)
+
+    def adjustScrollBar(self, scrollBar, factor):
+        scrollBar.setValue(int(factor * scrollBar.value() + ((factor - 1) * scrollBar.pageStep()/2)))
+        
+
+#     def print_(self):
+#         dialog = QtGui.QPrintDialog(self.printer, self)
+#         if dialog.exec_():
+#             painter = QtGui.QPainter(self.printer)
+#             rect = painter.viewport()
+#             size = self.imageLabel.pixmap().size()
+#             size.scale(rect.size(), QtCore.Qt.KeepAspectRatio)
+#             painter.setViewport(rect.x(), rect.y(), size.width(), size.height())
+#             painter.setWindow(self.imageLabel.pixmap().rect())
+#             painter.drawPixmap(0, 0, self.imageLabel.pixmap())
+
 
