@@ -43,7 +43,7 @@ version_table_name = 'VersionTable'
  
  
 greetings_image_path = 'C:\WolongRun\GUI\Resources\The Urbanization Lab.png'
-map_image_path = 'C:\WolongRun\GIS_output\wolong_landuse_2015.png'
+map_image_path = 'C:\WolongRun\GIS_output\maps_png\wolong_landuse_2015.png'
  
 # Get the working database
 db = DataAccess(dbname, dbdriver)
@@ -564,7 +564,7 @@ def refresh_progress_bar(progress, gui):
 
 
 def refresh_version_table(database, scenario_name, start_year, simulation_depth):
-    order = "insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' + str(start_year + simulation_depth) +");"
+    order = "insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' + str(start_year + simulation_depth) +", 1, 1, 1);"
     DataAccess.insert_record_to_table(database, order)
     DataAccess.db_commit(database)
     
@@ -1490,7 +1490,7 @@ class Ui_frm_SEEMS_main(object):
             # Update the current map year label display
             self.lbl_map_current_year.setText(str(self.sld_select_map_year.value()))        
                     
-            new_map_image_path = str("C:\WolongRun\GIS_output\wolong_landuse_" + str(self.sld_select_map_year.value()) + ".png")
+            new_map_image_path = str("C:\WolongRun\GIS_output\maps_png\wolong_landuse_" + str(self.sld_select_map_year.value()) + ".png")
             
             self.map_layout.removeWidget(self.map.scrollArea)            
             self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=new_map_image_path, scalable=True)

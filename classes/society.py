@@ -182,6 +182,7 @@ class Society(object):
          
         # Then simulate the natural land cover succession process
         for OBJECTID_1 in self.land_dict:
+            self.land_dict[OBJECTID_1].StatDate = self.current_year
             self.land_dict[OBJECTID_1].land_cover_succession(self.current_year, self.model_parameters_dict)
             
                
