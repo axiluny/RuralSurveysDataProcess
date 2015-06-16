@@ -19,8 +19,8 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 import numpy
-import arcpy
-from arcpy import env
+# import arcpy
+# from arcpy import env
 
 
 '''
@@ -43,7 +43,7 @@ version_table_name = 'VersionTable'
  
  
 greetings_image_path = 'C:\WolongRun\GUI\Resources\The Urbanization Lab.png'
-map_image_path = 'C:\WolongRun\GIS_output\wolong_landuse.png'
+map_image_path = 'C:\WolongRun\GIS_output\wolong_landuse_2015.png'
  
 # Get the working database
 db = DataAccess(dbname, dbdriver)
@@ -679,6 +679,79 @@ class Ui_frm_SEEMS_main(object):
         self.sbx_set_simulation_end_year.setObjectName(_fromUtf8("sbx_set_simulation_end_year"))
         self.gridLayout_2.addWidget(self.sbx_set_simulation_end_year, 0, 3, 1, 1)
         self.verticalLayout_7.addWidget(self.gbx_set_simulation_period)
+        self.gbx_results_saving_options = QtGui.QGroupBox(self.gbx_setup_a_scenario)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.gbx_results_saving_options.sizePolicy().hasHeightForWidth())
+        self.gbx_results_saving_options.setSizePolicy(sizePolicy)
+        self.gbx_results_saving_options.setObjectName(_fromUtf8("gbx_results_saving_options"))
+        self.verticalLayout_6 = QtGui.QVBoxLayout(self.gbx_results_saving_options)
+        self.verticalLayout_6.setObjectName(_fromUtf8("verticalLayout_6"))
+        self.gridLayout = QtGui.QGridLayout()
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.lbl_save_hh = QtGui.QLabel(self.gbx_results_saving_options)
+        self.lbl_save_hh.setObjectName(_fromUtf8("lbl_save_hh"))
+        self.gridLayout.addWidget(self.lbl_save_hh, 0, 0, 1, 1)
+        self.txt_save_hh_interval = QtGui.QLineEdit(self.gbx_results_saving_options)
+        self.txt_save_hh_interval.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.txt_save_hh_interval.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.txt_save_hh_interval.setObjectName(_fromUtf8("txt_save_hh_interval"))
+        self.txt_save_hh_interval.setText('1')
+        self.gridLayout.addWidget(self.txt_save_hh_interval, 0, 1, 1, 1)
+        self.lbl_save_hh_years = QtGui.QLabel(self.gbx_results_saving_options)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lbl_save_hh_years.sizePolicy().hasHeightForWidth())
+        self.lbl_save_hh_years.setSizePolicy(sizePolicy)
+        self.lbl_save_hh_years.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lbl_save_hh_years.setObjectName(_fromUtf8("lbl_save_hh_years"))
+        self.gridLayout.addWidget(self.lbl_save_hh_years, 0, 2, 1, 1)
+        self.verticalLayout_6.addLayout(self.gridLayout)
+        self.gridLayout_4 = QtGui.QGridLayout()
+        self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
+        self.txt_save_pp_interval = QtGui.QLineEdit(self.gbx_results_saving_options)
+        self.txt_save_pp_interval.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.txt_save_pp_interval.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.txt_save_pp_interval.setObjectName(_fromUtf8("txt_save_pp_interval"))
+        self.txt_save_pp_interval.setText('1')
+        self.gridLayout_4.addWidget(self.txt_save_pp_interval, 0, 1, 1, 1)
+        self.lbl_save_pp = QtGui.QLabel(self.gbx_results_saving_options)
+        self.lbl_save_pp.setObjectName(_fromUtf8("lbl_save_pp"))
+        self.gridLayout_4.addWidget(self.lbl_save_pp, 0, 0, 1, 1)
+        self.lbl_save_pp_years = QtGui.QLabel(self.gbx_results_saving_options)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lbl_save_pp_years.sizePolicy().hasHeightForWidth())
+        self.lbl_save_pp_years.setSizePolicy(sizePolicy)
+        self.lbl_save_pp_years.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lbl_save_pp_years.setObjectName(_fromUtf8("lbl_save_pp_years"))
+        self.gridLayout_4.addWidget(self.lbl_save_pp_years, 0, 2, 1, 1)
+        self.verticalLayout_6.addLayout(self.gridLayout_4)
+        self.gridLayout_5 = QtGui.QGridLayout()
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.lbl_save_land = QtGui.QLabel(self.gbx_results_saving_options)
+        self.lbl_save_land.setObjectName(_fromUtf8("lbl_save_land"))
+        self.gridLayout_5.addWidget(self.lbl_save_land, 0, 0, 1, 1)
+        self.txt_save_land_interval = QtGui.QLineEdit(self.gbx_results_saving_options)
+        self.txt_save_land_interval.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.txt_save_land_interval.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.txt_save_land_interval.setObjectName(_fromUtf8("txt_save_land_interval"))
+        self.txt_save_land_interval.setText('1')
+        self.gridLayout_5.addWidget(self.txt_save_land_interval, 0, 1, 1, 1)
+        self.lbl_save_land_years = QtGui.QLabel(self.gbx_results_saving_options)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.lbl_save_land_years.sizePolicy().hasHeightForWidth())
+        self.lbl_save_land_years.setSizePolicy(sizePolicy)
+        self.lbl_save_land_years.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lbl_save_land_years.setObjectName(_fromUtf8("lbl_save_land_years"))
+        self.gridLayout_5.addWidget(self.lbl_save_land_years, 0, 2, 1, 1)
+        self.verticalLayout_6.addLayout(self.gridLayout_5)
+        self.verticalLayout_7.addWidget(self.gbx_results_saving_options)
         self.btn_start_simulation = QtGui.QPushButton(self.gbx_setup_a_scenario)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -919,12 +992,16 @@ class Ui_frm_SEEMS_main(object):
         self.cmb_select_map_layer.setObjectName(_fromUtf8("cmb_select_map_layer"))
         self.formLayout_10.setWidget(1, QtGui.QFormLayout.FieldRole, self.cmb_select_map_layer)
         self.verticalLayout_8.addLayout(self.formLayout_10)
-        self.gridLayout = QtGui.QGridLayout()
-        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.formLayout_2 = QtGui.QFormLayout()
+        self.formLayout_2.setObjectName(_fromUtf8("formLayout_2"))
         self.lbl_select_map_year = QtGui.QLabel(self.gpb_map_settings)
         self.lbl_select_map_year.setObjectName(_fromUtf8("lbl_select_map_year"))
-        self.gridLayout.addWidget(self.lbl_select_map_year, 0, 0, 1, 1)
-        self.verticalLayout_8.addLayout(self.gridLayout)
+        self.formLayout_2.setWidget(0, QtGui.QFormLayout.LabelRole, self.lbl_select_map_year)
+        self.lbl_map_current_year = QtGui.QLabel(self.gpb_map_settings)
+        self.lbl_map_current_year.setText(_fromUtf8(""))
+        self.lbl_map_current_year.setObjectName(_fromUtf8("lbl_map_current_year"))
+        self.formLayout_2.setWidget(0, QtGui.QFormLayout.FieldRole, self.lbl_map_current_year)
+        self.verticalLayout_8.addLayout(self.formLayout_2)
         self.sld_select_map_year = QtGui.QSlider(self.gpb_map_settings)
         self.sld_select_map_year.setOrientation(QtCore.Qt.Horizontal)
         self.sld_select_map_year.setTickPosition(QtGui.QSlider.TicksBelow)
@@ -996,40 +1073,12 @@ class Ui_frm_SEEMS_main(object):
     
     
         '''
-        The following lines in this submodule are developers added codes
-        '''        
-        # Display a greetings image in the first tab (scenarios manager)
-        # Create a QVBoxLayout within the widget for embedding
-        self.greeting_lyt = QtGui.QVBoxLayout(self.greetings_widget)        
-        # Call ImageViewer class to display the image
-        greetings_imgage = ImageViewer(widget=self.greetings_widget, layout=self.greeting_lyt, image_path=greetings_image_path, scalable=False)
-        
-        
-        # Display a map in the results - maps tab's map drawing area
-        self.map_layout = QtGui.QVBoxLayout(self.map_display_widget)
-        self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=map_image_path, scalable=True)
-                
-        # Add a toolbar for map display controls
-        self.add_toolbar(frm_SEEMS_main)
-        
-        # Display a plot space in the second tab (results - charts)
-        self.make_plot_space(widget = self.canvas_widget)   
+        The following lines in this submodule are developers added codes.
 
-        
-        # Automatically add a default new scenario name at initiation
-        self.add_default_new_scenario_name()
-
-        # Initiate the scenario selection combo boxes in the control panel
-        self.refresh_scenario_combobox(self.cmb_select_manage_scenario)
-        self.refresh_scenario_combobox(self.cmb_select_review_scenario)
-        self.refresh_scenario_combobox(self.cmb_select_map_scenario)
-
-        '''  
-        Events handling 
+        First, Events handling 
         '''
         # Scenario management
-        self.btn_start_simulation.clicked.connect(self.btn_start_simulation_onclick)
-        
+        self.btn_start_simulation.clicked.connect(self.btn_start_simulation_onclick)        
         self.btn_delete_scenario.clicked.connect(self.btn_delete_scenario_onclick)
         
         
@@ -1044,15 +1093,48 @@ class Ui_frm_SEEMS_main(object):
         
         # Results review - maps          
         self.cmb_select_map_scenario.currentIndexChanged.connect(self.cmb_select_map_scenario_onchange)
-        
+        self.sld_select_map_year.valueChanged.connect(self.sld_select_map_year_onchange)
 #         self.btn_show_map.clicked.connect(self.btn_show_map_onclick)
 
         # Other window components
         self.actionAbout.triggered.connect(self.action_menu_help_about)
         
+
+        '''
+        Second, manually add some widgets.
+        '''
+        # Display a greetings image in the first tab (scenarios manager)
+        # Create a QVBoxLayout within the widget for embedding
+        self.greeting_lyt = QtGui.QVBoxLayout(self.greetings_widget)
+        # Call ImageViewer class to display the image
+        greetings_imgage = ImageViewer(widget=self.greetings_widget, layout=self.greeting_lyt, image_path=greetings_image_path, scalable=False)
+        self.greeting_lyt.addWidget(greetings_imgage.imageLabel)
+                
+        # Display a map in the results - maps tab's map drawing area
+        self.map_layout = QtGui.QVBoxLayout(self.map_display_widget)
+        self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=map_image_path, scalable=True)
+        self.map_layout.addWidget(self.map.scrollArea)
+                
+        # Add a toolbar for map display controls
+        self.add_toolbar(frm_SEEMS_main)
         
+        # Display a plot space in the second tab (results - charts)
+        self.make_plot_space(widget = self.canvas_widget)   
+
+        '''
+        Finally, initialize the GUI components
+        '''        
+        # Automatically add a default new scenario name at initiation
+        self.add_default_new_scenario_name()
+
+        # Initialize the scenario selection combo boxes in the control panel
+        self.refresh_scenario_combobox(self.cmb_select_manage_scenario)
+        self.refresh_scenario_combobox(self.cmb_select_review_scenario)
+        self.refresh_scenario_combobox(self.cmb_select_map_scenario)        
   
-  
+
+
+
     def retranslateUi(self, frm_SEEMS_main):
         frm_SEEMS_main.setWindowTitle(_translate("frm_SEEMS_main", "SEEMS  -  Socio-Econ-Ecosystem Multipurpose Simulator", None))
         self.gbx_setup_a_scenario.setTitle(_translate("frm_SEEMS_main", "Setup a New Scenario", None))
@@ -1060,6 +1142,13 @@ class Ui_frm_SEEMS_main(object):
         self.gbx_set_simulation_period.setTitle(_translate("frm_SEEMS_main", "Set Simulation Period", None))
         self.lbl_set_simulation_start_year.setText(_translate("frm_SEEMS_main", "Start Year:", None))
         self.lbl_set_simulation_end_year.setText(_translate("frm_SEEMS_main", "End Year:", None))
+        self.gbx_results_saving_options.setTitle(_translate("frm_SEEMS_main", "Results Saving Options", None))
+        self.lbl_save_hh.setText(_translate("frm_SEEMS_main", "Save Household Status to Database Every", None))
+        self.lbl_save_hh_years.setText(_translate("frm_SEEMS_main", "Year(s)", None))
+        self.lbl_save_pp.setText(_translate("frm_SEEMS_main", "Save Person Status to Database Every", None))
+        self.lbl_save_pp_years.setText(_translate("frm_SEEMS_main", "Year(s)", None))
+        self.lbl_save_land.setText(_translate("frm_SEEMS_main", "Save LandUse Status to Database Every", None))
+        self.lbl_save_land_years.setText(_translate("frm_SEEMS_main", "Year(s)", None))
         self.btn_start_simulation.setText(_translate("frm_SEEMS_main", "Start Simulation", None))
         self.gbx_manage_scenarios.setTitle(_translate("frm_SEEMS_main", "Manage Scenarios", None))
         self.lbl_select_manage_scenario.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
@@ -1341,28 +1430,73 @@ class Ui_frm_SEEMS_main(object):
 
     def cmb_select_map_scenario_onchange(self):
 
-        # Refresh the stat_table cursor
-        stat_table = DataAccess.get_table(db, stat_table_name) 
-            
-        # Get the variable list and simulation length for the selected scenario        
-#         variable_list = list()
-        year_list = list()
-
-        for record in stat_table:
-            if record.ScenarioVersion == self.cmb_select_map_scenario.currentText():
-                if record.StatDate not in year_list:
-                    year_list.append(record.StatDate)
+        # Refresh the version_table stat_table cursors
+#         stat_table = DataAccess.get_table(db, stat_table_name) 
+        version_table = DataAccess.get_table(db, version_table_name)
         
+#         # Get the variable list and simulation length for the selected scenario        
+# #         variable_list = list()
+#         year_list = list()
+
+#         for record in stat_table:
+#             if record.ScenarioVersion == self.cmb_select_map_scenario.currentText():
+#                 if record.StatDate not in year_list:
+#                     year_list.append(record.StatDate)
+# 
+#         # Set up the year selection slider bar.
+#         self.sld_select_map_year.setMinimum(min(year_list))
+#         self.sld_select_map_year.setMaximum(max(year_list))
+#         self.sld_select_map_year.setTickInterval(int(self.txt_save_land_interval.text()))
+#         
+#         # Set up the start year and end year labels that are attached to the slider bar.
+#         self.lbl_map_start_year.setText(str(min(year_list)))
+#         self.lbl_map_end_year.setText(str(max(year_list)))
+        
+        for record in version_table:
+            if record.ScenarioName == self.cmb_select_map_scenario.currentText():
+                start_time = record.StartTime
+                end_time = record.EndTime
+                land_interval = record.LandInterval
+
         # Set up the year selection slider bar.
-        self.sld_select_map_year.setMinimum(min(year_list))
-        self.sld_select_map_year.setMaximum(max(year_list))
-        self.sld_select_map_year.setTickInterval(1)
+        self.sld_select_map_year.setMinimum(start_time)
+        self.sld_select_map_year.setMaximum(end_time)
+        self.sld_select_map_year.setSingleStep(land_interval)
+        self.sld_select_map_year.setTickInterval(land_interval)
         
         # Set up the start year and end year labels that are attached to the slider bar.
-        self.lbl_map_start_year.setText(str(min(year_list)))
-        self.lbl_map_end_year.setText(str(max(year_list)))
+        self.lbl_map_start_year.setText(str(start_time))
+        self.lbl_map_end_year.setText(str(end_time))        
+
     
     
+    
+    def sld_select_map_year_onchange(self):
+
+        version_table = DataAccess.get_table(db, version_table_name)
+ 
+        for record in version_table:
+            if record.ScenarioName == self.cmb_select_map_scenario.currentText():
+                start_time = record.StartTime
+                end_time = record.EndTime
+                land_interval = record.LandInterval                
+ 
+        # Update the map display
+        map_progress = self.sld_select_map_year.value() - start_time
+        if map_progress % land_interval != 0:
+            pass
+        
+        else:                
+            # Update the current map year label display
+            self.lbl_map_current_year.setText(str(self.sld_select_map_year.value()))        
+                    
+            new_map_image_path = str("C:\WolongRun\GIS_output\wolong_landuse_" + str(self.sld_select_map_year.value()) + ".png")
+            
+            self.map_layout.removeWidget(self.map.scrollArea)            
+            self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=new_map_image_path, scalable=True)
+            self.map_layout.addWidget(self.map.scrollArea)
+     
+        
 
     def btn_review_plot_onclick(self):
         '''
@@ -1743,29 +1877,32 @@ class ImageViewer(QtGui.QWidget):
         super(ImageViewer, self).__init__()
 
 #         self.printer = QtGui.QPrinter()
+        self.createActions()
+        
         self.scaleFactor = 1.0
 
         self.imageLabel = QtGui.QLabel()
         self.imageLabel.setBackgroundRole(QtGui.QPalette.Base)
-#         self.imageLabel.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-#         self.imageLabel.updateGeometry()
-        self.imageLabel.setScaledContents(True)
-        
         self.imageLabel.setPixmap(QtGui.QPixmap(image_path))
 
+        
         if scalable == True:
+            self.imageLabel.setScaledContents(True)
+            
             self.scrollArea = QtGui.QScrollArea(widget)
             self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
-            self.scrollArea.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-            self.scrollArea.updateGeometry()
             self.scrollArea.setWidget(self.imageLabel)
-    
-            layout.addWidget(self.scrollArea)
+                        
+#             layout.addWidget(self.scrollArea)
+
         
         else:
-            layout.addWidget(self.imageLabel)
+            self.imageLabel.setScaledContents(False)
+            self.imageLabel.setAlignment(QtCore.Qt.AlignCenter)           
 
-        self.createActions()
+#             layout.addWidget(self.imageLabel)
+
+
 
 
 
