@@ -19,8 +19,8 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 import numpy
-# import arcpy
-# from arcpy import env
+import arcpy
+from arcpy import env
 
 
 '''
@@ -629,7 +629,7 @@ class Ui_frm_SEEMS_main(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gbx_scenario_container.sizePolicy().hasHeightForWidth())
         self.gbx_scenario_container.setSizePolicy(sizePolicy)
-        self.gbx_scenario_container.setMaximumSize(QtCore.QSize(550, 16777215))
+        self.gbx_scenario_container.setMaximumSize(QtCore.QSize(700, 16777215))
         self.gbx_scenario_container.setTitle(_fromUtf8(""))
         self.gbx_scenario_container.setObjectName(_fromUtf8("gbx_scenario_container"))
         self.verticalLayout = QtGui.QVBoxLayout(self.gbx_scenario_container)
@@ -658,7 +658,7 @@ class Ui_frm_SEEMS_main(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gbx_set_simulation_period.sizePolicy().hasHeightForWidth())
         self.gbx_set_simulation_period.setSizePolicy(sizePolicy)
-        self.gbx_set_simulation_period.setMaximumSize(QtCore.QSize(16777215, 75))
+        self.gbx_set_simulation_period.setMaximumSize(QtCore.QSize(16777215, 100))
         self.gbx_set_simulation_period.setObjectName(_fromUtf8("gbx_set_simulation_period"))
         self.gridLayout_2 = QtGui.QGridLayout(self.gbx_set_simulation_period)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
@@ -746,7 +746,7 @@ class Ui_frm_SEEMS_main(object):
         self.horizontalLayout_3 = QtGui.QHBoxLayout(self.results_charts)
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.gbx_review_plot_container = QtGui.QGroupBox(self.results_charts)
-        self.gbx_review_plot_container.setMaximumSize(QtCore.QSize(550, 16777215))
+        self.gbx_review_plot_container.setMaximumSize(QtCore.QSize(700, 16777215))
         self.gbx_review_plot_container.setTitle(_fromUtf8(""))
         self.gbx_review_plot_container.setObjectName(_fromUtf8("gbx_review_plot_container"))
         self.verticalLayout_9 = QtGui.QVBoxLayout(self.gbx_review_plot_container)
@@ -840,7 +840,7 @@ class Ui_frm_SEEMS_main(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gbx_plot_type.sizePolicy().hasHeightForWidth())
         self.gbx_plot_type.setSizePolicy(sizePolicy)
-        self.gbx_plot_type.setMaximumSize(QtCore.QSize(16777215, 70))
+        self.gbx_plot_type.setMaximumSize(QtCore.QSize(16777215, 100))
         self.gbx_plot_type.setObjectName(_fromUtf8("gbx_plot_type"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.gbx_plot_type)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
@@ -893,7 +893,7 @@ class Ui_frm_SEEMS_main(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.gbx_map_container.sizePolicy().hasHeightForWidth())
         self.gbx_map_container.setSizePolicy(sizePolicy)
-        self.gbx_map_container.setMaximumSize(QtCore.QSize(550, 16777215))
+        self.gbx_map_container.setMaximumSize(QtCore.QSize(700, 16777215))
         self.gbx_map_container.setTitle(_fromUtf8(""))
         self.gbx_map_container.setObjectName(_fromUtf8("gbx_map_container"))
         self.verticalLayout_4 = QtGui.QVBoxLayout(self.gbx_map_container)
