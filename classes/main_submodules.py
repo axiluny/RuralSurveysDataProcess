@@ -42,7 +42,7 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
  
-greetings_image_path = 'C:\WolongRun\GIS_output\wolong_landuse.png'
+greetings_image_path = 'C:\WolongRun\GUI\Resources\The Urbanization Lab.png'
 map_image_path = 'C:\WolongRun\GIS_output\wolong_landuse.png'
  
 # Get the working database
