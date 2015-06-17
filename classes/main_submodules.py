@@ -35,7 +35,7 @@ dbdriver = '{Microsoft Access Driver (*.mdb)}'
 model_table_name = 'ModelTable'
 household_table_name = 'HouseholdTable'
 person_table_name = 'PersonTable'
-land_table_name = 'LanduseTable'
+land_table_name = 'LandUseTable'
 business_sector_table_name = 'BusinessSectorTable'
 policy_table_name = 'PolicyTable'
 stat_table_name = 'StatTable'
@@ -84,13 +84,15 @@ user created main submodules
 def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, 
                     pp_table_name, pp_table, land_table_name, land_table, 
                     business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
-                    stat_table_name, stat_table, simulation_depth, start_year, gui):
+                    stat_table_name, stat_table, simulation_depth, start_year, 
+                    pp_save_interval, hh_save_interval, land_save_interval,
+                    gui):
 
     # Set up an initial value (1%) when clicked so that the user knows it's running.
     refresh_progress_bar(simulation_depth, gui)
 
     # Insert a record in the VersionTable
-    refresh_version_table(db, scenario_name, start_year, simulation_depth)
+    refresh_version_table(db, scenario_name, start_year, simulation_depth, pp_save_interval, hh_save_interval, land_save_interval)
     
     # Initialize the society class: create society, household, person, etc instances
     soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
@@ -100,7 +102,7 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
     
     #Start simulation
     for iteration_count in range(simulation_depth):
-        step_go(db, soc, start_year, iteration_count, scenario_name)
+        step_go(db, soc, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval)
 
         # Set value for the progress bar
         refresh_progress_bar((iteration_count + 1) * 100, gui)
@@ -111,7 +113,7 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
 
 
 
-def step_go(database, society_instance, start_year, iteration_count, scenario_name):
+def step_go(database, society_instance, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval):
     
     # If it's the first round of iteration, just get the stats and save the records to database
     # Else, proceed with the simulation in society.step_go, and then get the stats and save the records to database
@@ -120,14 +122,14 @@ def step_go(database, society_instance, start_year, iteration_count, scenario_na
         add_stat_results(society_instance, scenario_name)
         
         # Then save updated tables in database
-        save_results_to_db(database, society_instance, scenario_name)
+        save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
     # Do the simulation
     Society.step_go(society_instance, start_year, iteration_count)
 
     add_stat_results(society_instance, scenario_name)
     
-    save_results_to_db(database, society_instance, scenario_name)
+    save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
 
 
@@ -307,204 +309,198 @@ def add_stat_results(society_instance, scenario_name):
     
     
     
-def save_results_to_db(database, society_instance, scenario_name):
+def save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval):
     
     # Determine household, people,and land table names
     # Format: Scenario_name + household/people/land
     new_hh_table_name = scenario_name + '_households'
     new_pp_table_name = scenario_name + '_persons'
     new_land_table_name = scenario_name + '_land'
+
     
-    stat_table_name = 'StatTable'
     
-        
+    '''    
     # Saving the Household table in the database
+    '''
+    # Check saving intervals first
+    if iteration_count % int(hh_save_interval) == 0:
+        # Only save results to the database at designated iterations
       
-    # If the table with that name does not exist in the database
-    # i.e. in the first round of iteration,
-    # Then first create a new table, then insert the records.
-    # Otherwise, just find the right table, and then insert the records.
-    if DataAccess.get_table(database, new_hh_table_name) == None: 
-     
-        # Create a new Household table from the variable list of Household Class
-        new_household_table_formatter = '('
-        for var in society_instance.hh_var_list:
-            # Add household variables to the formatter
-            new_household_table_formatter += var[0] + ' ' + var[2] + ','  
-        new_household_table_formatter = new_household_table_formatter[0: len(new_household_table_formatter) - 1] + ')'
-     
-        create_table_order = "create table " + new_hh_table_name +''+ new_household_table_formatter
-        DataAccess.create_table(database, create_table_order)
-        DataAccess.db_commit(database)
- 
-        # Then insert all households into the new table
-        # InsertContent = ''
-        for HID in society_instance.hh_dict:
-            # Make the insert values for this household
-            new_household_record_content = '('
+        # If the table with that name does not exist in the database
+        # i.e. in the first round of iteration,
+        # Then first create a new table, then insert the records.
+        # Otherwise, just find the right table, and then insert the records.
+        if DataAccess.get_table(database, new_hh_table_name) == None: 
+         
+            # Create a new Household table from the variable list of Household Class
+            new_household_table_formatter = '('
             for var in society_instance.hh_var_list:
-                # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID], var[0]) != None: 
-                    new_household_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID], var[0]))+ '\','
-                else:
-                    new_household_record_content += unicode(getattr(society_instance.hh_dict[HID], var[0]))+ ','
-            # Change the ending comma to a closing parenthesis
-            new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
-            # Insert one household record
-            insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
-            DataAccess.insert_record_to_table(database, insert_table_order)
-        DataAccess.db_commit(database)  
- 
+                # Add household variables to the formatter
+                new_household_table_formatter += var[0] + ' ' + var[2] + ','  
+            new_household_table_formatter = new_household_table_formatter[0: len(new_household_table_formatter) - 1] + ')'
+         
+            create_table_order = "create table " + new_hh_table_name +''+ new_household_table_formatter
+            DataAccess.create_table(database, create_table_order)
+            DataAccess.db_commit(database)
      
-    else:
-        # Just insert all households into the new table
-        # InsertContent = ''
-        for HID in society_instance.hh_dict:
-            # Make the insert values for this household
-            new_household_record_content = '('
-            for var in society_instance.hh_var_list:
-                # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID], var[0]) != None: 
-                    new_household_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID], var[0]))+ '\','
-                else:
-                    new_household_record_content += unicode(getattr(society_instance.hh_dict[HID], var[0]))+ ','
-            # Change the ending comma to a closing parenthesis
-            new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
-            # Insert one household record
-            insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
-            DataAccess.insert_record_to_table(database, insert_table_order)
-        DataAccess.db_commit(database)        
+            # Then insert all households into the new table
+            # InsertContent = ''
+            for HID in society_instance.hh_dict:
+                # Make the insert values for this household
+                new_household_record_content = '('
+                for var in society_instance.hh_var_list:
+                    # If the value is string, add quotes
+                    if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID], var[0]) != None: 
+                        new_household_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID], var[0]))+ '\','
+                    else:
+                        new_household_record_content += unicode(getattr(society_instance.hh_dict[HID], var[0]))+ ','
+                # Change the ending comma to a closing parenthesis
+                new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
+                # Insert one household record
+                insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
+                DataAccess.insert_record_to_table(database, insert_table_order)
+            DataAccess.db_commit(database)  
+     
+         
+        else:
+            # Just insert all households into the new table
+            # InsertContent = ''
+            for HID in society_instance.hh_dict:
+                # Make the insert values for this household
+                new_household_record_content = '('
+                for var in society_instance.hh_var_list:
+                    # If the value is string, add quotes
+                    if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID], var[0]) != None: 
+                        new_household_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID], var[0]))+ '\','
+                    else:
+                        new_household_record_content += unicode(getattr(society_instance.hh_dict[HID], var[0]))+ ','
+                # Change the ending comma to a closing parenthesis
+                new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
+                # Insert one household record
+                insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
+                DataAccess.insert_record_to_table(database, insert_table_order)
+            DataAccess.db_commit(database)        
 
 
-
+    '''
     # Saving the Person table in the database
-      
-    # If the table with that name does not exist in the database
-    # i.e. in the first round of iteration,
-    # Then first create a new table, then insert the records.
-    # Otherwise, just find the right table, and then insert the records.
-    if DataAccess.get_table(database, new_pp_table_name) == None: # This is most indecent... see dataaccess for details
+    '''
+    if iteration_count % int(pp_save_interval) == 0:
+
+        if DataAccess.get_table(database, new_pp_table_name) == None: # This is most indecent... see dataaccess for details
+         
+            # Create a new Person table from the variable list of Person Class
+            new_person_table_formatter = '('
+            for var in society_instance.pp_var_list:
+                # Add person variables to the formatter
+                new_person_table_formatter += var[0] + ' ' + var[2] + ','  
+            new_person_table_formatter = new_person_table_formatter[0: len(new_person_table_formatter) - 1] + ')'
+         
+            create_table_order = "create table " + new_pp_table_name +''+ new_person_table_formatter
+            DataAccess.create_table(database, create_table_order)
+            DataAccess.db_commit(database)
+    
+    
+            for HID in society_instance.hh_dict:
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    # Make the insert values for this person
+                    new_person_record_content = '('
+                    for var in society_instance.pp_var_list:
+                        # If the value is string, add quotes
+                        if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]) != None: 
+                            new_person_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ '\','
+                        else:
+                            new_person_record_content += unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ ','
+                    # Change the ending comma to a closing parenthesis
+                    new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
+                    # Insert one person record
+                    insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
+                    DataAccess.insert_record_to_table(database, insert_table_order)
+                DataAccess.db_commit(database)  
      
-        # Create a new Person table from the variable list of Person Class
-        new_person_table_formatter = '('
-        for var in society_instance.pp_var_list:
-            # Add person variables to the formatter
-            new_person_table_formatter += var[0] + ' ' + var[2] + ','  
-        new_person_table_formatter = new_person_table_formatter[0: len(new_person_table_formatter) - 1] + ')'
-     
-        create_table_order = "create table " + new_pp_table_name +''+ new_person_table_formatter
-        DataAccess.create_table(database, create_table_order)
-        DataAccess.db_commit(database)
-
-
-        # Then insert all persons into the new table
-        # InsertContent = ''
-        for HID in society_instance.hh_dict:
-            for PID in society_instance.hh_dict[HID].own_pp_dict:
-                # Make the insert values for this person
-                new_person_record_content = '('
-                for var in society_instance.pp_var_list:
-                    # If the value is string, add quotes
-                    if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]) != None: 
-                        new_person_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ '\','
-                    else:
-                        new_person_record_content += unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ ','
-                # Change the ending comma to a closing parenthesis
-                new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
-                # Insert one person record
-                insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-                DataAccess.insert_record_to_table(database, insert_table_order)
-            DataAccess.db_commit(database)  
- 
-     
-    else:
-        # Just insert all persons into the new table
-        # InsertContent = ''
-        for HID in society_instance.hh_dict:
-            for PID in society_instance.hh_dict[HID].own_pp_dict:
-                # Make the insert values for this person
-                new_person_record_content = '('
-                for var in society_instance.pp_var_list:
-                    # If the value is string, add quotes
-                    if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]) != None: 
-                        new_person_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ '\','
-                    else:
-                        new_person_record_content += unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ ','
-                # Change the ending comma to a closing parenthesis
-                new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
-                # Insert one person record
-                insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-                DataAccess.insert_record_to_table(database, insert_table_order)
-            DataAccess.db_commit(database)  
+         
+        else:
+            
+            for HID in society_instance.hh_dict:
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    # Make the insert values for this person
+                    new_person_record_content = '('
+                    for var in society_instance.pp_var_list:
+                        # If the value is string, add quotes
+                        if var[2] == 'VARCHAR' and getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]) != None: 
+                            new_person_record_content += '\''+ unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ '\','
+                        else:
+                            new_person_record_content += unicode(getattr(society_instance.hh_dict[HID].own_pp_dict[PID], var[0]))+ ','
+                    # Change the ending comma to a closing parenthesis
+                    new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
+                    # Insert one person record
+                    insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
+                    DataAccess.insert_record_to_table(database, insert_table_order)
+                DataAccess.db_commit(database)  
 
 
 
 
-
+    '''
     # Saving the Land table in the database
-      
-    # If the table with that name does not exist in the database
-    # i.e. in the first round of iteration,
-    # Then first create a new table, then insert the records.
-    # Otherwise, just find the right table, and then insert the records.
-    if DataAccess.get_table(database, new_land_table_name) == None: # This is most indecent... see dataaccess for details
-     
-        # Create a new Land table from the variable list of Land Class
-        new_land_table_formatter = '('
-        for var in society_instance.land_var_list:
-            # Add person variables to the formatter
-            new_land_table_formatter += var[0] + ' ' + var[2] + ','  
-        new_land_table_formatter = new_land_table_formatter[0: len(new_land_table_formatter) - 1] + ')'
-     
-        create_table_order = "create table " + new_land_table_name +''+ new_land_table_formatter
-        DataAccess.create_table(database, create_table_order)
-        DataAccess.db_commit(database)
-
-
-        # Then insert all land parcels into the new table
-        # InsertContent = ''
-        for OBJECTID_1 in society_instance.land_dict:
-            # Make the insert values for this land parcel
-            new_land_record_content = '('
+    '''
+    if iteration_count % int(land_save_interval) == 0:
+    
+        if DataAccess.get_table(database, new_land_table_name) == None: # This is most indecent... see dataaccess for details
+         
+            # Create a new Land table from the variable list of Land Class
+            new_land_table_formatter = '('
             for var in society_instance.land_var_list:
-                # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(society_instance.land_dict[OBJECTID_1], var[0]) != None: 
-                    new_land_record_content += '\''+ unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ '\','
-                else:
-                    new_land_record_content += unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ ','
-            # Change the ending comma to a closing parenthesis
-            new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
-            # Insert one land parcel record
-            insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
-            DataAccess.insert_record_to_table(database, insert_table_order)
-        DataAccess.db_commit(database)  
- 
+                # Add person variables to the formatter
+                new_land_table_formatter += var[0] + ' ' + var[2] + ','  
+            new_land_table_formatter = new_land_table_formatter[0: len(new_land_table_formatter) - 1] + ')'
+         
+            create_table_order = "create table " + new_land_table_name +''+ new_land_table_formatter
+            DataAccess.create_table(database, create_table_order)
+            DataAccess.db_commit(database)
+    
+    
+            for ParcelID in society_instance.land_dict:
+                # Make the insert values for this land parcel
+                new_land_record_content = '('
+                for var in society_instance.land_var_list:
+                    # If the value is string, add quotes
+                    if var[2] == 'VARCHAR' and getattr(society_instance.land_dict[ParcelID], var[0]) != None: 
+                        new_land_record_content += '\''+ unicode(getattr(society_instance.land_dict[ParcelID], var[0]))+ '\','
+                    else:
+                        new_land_record_content += unicode(getattr(society_instance.land_dict[ParcelID], var[0]))+ ','
+                # Change the ending comma to a closing parenthesis
+                new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
+                # Insert one land parcel record
+                insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
+                DataAccess.insert_record_to_table(database, insert_table_order)
+            DataAccess.db_commit(database)  
      
-    else:
-        # Just insert all land parcels into the new table
-        # InsertContent = ''
-        for OBJECTID_1 in society_instance.land_dict:
-            # Make the insert values for this household
-            new_land_record_content = '('
-            for var in society_instance.land_var_list:
-                # If the value is string, add quotes
-                if var[2] == 'VARCHAR' and getattr(society_instance.land_dict[OBJECTID_1], var[0]) != None: 
-                    new_land_record_content += '\''+ unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ '\','
-                else:
-                    new_land_record_content += unicode(getattr(society_instance.land_dict[OBJECTID_1], var[0]))+ ','
-            # Change the ending comma to a closing parenthesis
-            new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
-            # Insert one land parcel record
-            insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
-            DataAccess.insert_record_to_table(database, insert_table_order)
-        DataAccess.db_commit(database)        
+         
+        else:
+
+            for ParcelID in society_instance.land_dict:
+                # Make the insert values for this household
+                new_land_record_content = '('
+                for var in society_instance.land_var_list:
+                    # If the value is string, add quotes
+                    if var[2] == 'VARCHAR' and getattr(society_instance.land_dict[ParcelID], var[0]) != None: 
+                        new_land_record_content += '\''+ unicode(getattr(society_instance.land_dict[ParcelID], var[0]))+ '\','
+                    else:
+                        new_land_record_content += unicode(getattr(society_instance.land_dict[ParcelID], var[0]))+ ','
+                # Change the ending comma to a closing parenthesis
+                new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
+                # Insert one land parcel record
+                insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
+                DataAccess.insert_record_to_table(database, insert_table_order)
+            DataAccess.db_commit(database)        
 
 
 
 
-
+    '''
     # Saving the Statistics table in the database  
-      
+    '''  
     # The data table "StatTable" should be pre-created in the database
     # So no need to consider the case when a such table does not exist.
     for StatID in society_instance.stat_dict:
@@ -563,8 +559,12 @@ def refresh_progress_bar(progress, gui):
 
 
 
-def refresh_version_table(database, scenario_name, start_year, simulation_depth):
-    order = "insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' + str(start_year + simulation_depth) +", 1, 1, 1);"
+def refresh_version_table(database, scenario_name, start_year, simulation_depth, pp_save_interval, hh_save_interval, land_save_interval):
+    
+    order = str("insert into VersionTable values ('" + scenario_name +"', '', " + str(start_year) + ', ' 
+                + str(start_year + simulation_depth) + ", " 
+                + str(hh_save_interval) +", " + str(pp_save_interval) + ", " + str(land_save_interval) + ");")
+    
     DataAccess.insert_record_to_table(database, order)
     DataAccess.db_commit(database)
     
@@ -1192,6 +1192,9 @@ class Ui_frm_SEEMS_main(object):
         end_year = self.sbx_set_simulation_end_year.value()
         simulation_depth = end_year - start_year
 
+        hh_save_interval = self.txt_save_hh_interval.text()
+        pp_save_interval = self.txt_save_pp_interval.text()
+        land_save_interval = self.txt_save_land_interval.text()
 
         # Check for already existing names first.
         version_table = DataAccess.get_table(db, version_table_name)        
@@ -1222,7 +1225,9 @@ class Ui_frm_SEEMS_main(object):
             create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
                             person_table_name, person_table, land_table_name, land_table, 
                             business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
-                            stat_table_name, stat_table, simulation_depth, start_year, self)
+                            stat_table_name, stat_table, simulation_depth, start_year, 
+                            pp_save_interval, hh_save_interval, land_save_interval,
+                            self)
 
             # When simulation is done, refresh the default scenario name
             self.add_default_new_scenario_name()
@@ -1430,27 +1435,9 @@ class Ui_frm_SEEMS_main(object):
 
     def cmb_select_map_scenario_onchange(self):
 
-        # Refresh the version_table stat_table cursors
-#         stat_table = DataAccess.get_table(db, stat_table_name) 
+        # Refresh the version_table cursor
         version_table = DataAccess.get_table(db, version_table_name)
         
-#         # Get the variable list and simulation length for the selected scenario        
-# #         variable_list = list()
-#         year_list = list()
-
-#         for record in stat_table:
-#             if record.ScenarioVersion == self.cmb_select_map_scenario.currentText():
-#                 if record.StatDate not in year_list:
-#                     year_list.append(record.StatDate)
-# 
-#         # Set up the year selection slider bar.
-#         self.sld_select_map_year.setMinimum(min(year_list))
-#         self.sld_select_map_year.setMaximum(max(year_list))
-#         self.sld_select_map_year.setTickInterval(int(self.txt_save_land_interval.text()))
-#         
-#         # Set up the start year and end year labels that are attached to the slider bar.
-#         self.lbl_map_start_year.setText(str(min(year_list)))
-#         self.lbl_map_end_year.setText(str(max(year_list)))
         
         for record in version_table:
             if record.ScenarioName == self.cmb_select_map_scenario.currentText():

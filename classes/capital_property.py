@@ -30,9 +30,9 @@ class CapitalProperty(object):
         self.land_properties_list = list()
 
         # And then fill it with records in the land_dict (society_instance.land_dict)
-        for OBJECTID_1 in land_dict:              
-            if land_dict[OBJECTID_1].HID == hh.HID:
-                self.land_properties_list.append(land_dict[OBJECTID_1])
+        for ParcelID in land_dict:              
+            if land_dict[ParcelID].HID == hh.HID:
+                self.land_properties_list.append(land_dict[ParcelID])
                     
         # Get the household's numerical land properties from the list
         self.farmland = 0

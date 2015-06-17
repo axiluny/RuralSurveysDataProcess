@@ -117,45 +117,46 @@ class Household(object):
         # Note this is before the household existence bifurcation. 
         # So all households in society.hh_dict get this switch reset (every year).
         self.is_dissolved_this_year = False
-        
-        
-        # Only the existing households proceed.
-        if self.is_exist == 1:
-            
-            temp_pp_list = list()
-                                
-            # Annual population dynamics (personal demographic status updates)
-            for PID in self.own_pp_dict:
-                temp_pp_list.append(Person.personal_demographic_update(self.own_pp_dict[PID], current_year, model_parameters))
+         
+         
 
-            # Reset own persons (members) dict (own_pp_dict)
-            self.own_pp_dict = dict()
-                        
-            # Refresh own_pp_list                    
-            for p in temp_pp_list:
-                self.own_pp_dict[p.PID] = p
-                                                    
-                                                                
+        # Annual population dynamics (personal demographic status updates)             
+        temp_pp_list = list()
+                             
+        for PID in self.own_pp_dict:
+            temp_pp_list.append(Person.personal_demographic_update(self.own_pp_dict[PID], current_year, model_parameters))
+        
+        # Reset own persons (members) dict (own_pp_dict)
+        self.own_pp_dict = dict()
+                     
+        # Refresh own_pp_list                    
+        for p in temp_pp_list:
+            self.own_pp_dict[p.PID] = p
+
+
+        # Only the existing households proceed.
+        if self.is_exist == 1:                                                     
+                                                                 
             # If the updated household has no members, mark it as non-exist.
             alive_members_count = 0
             for PID in self.own_pp_dict:
                 if self.own_pp_dict[PID].is_alive == 1:
                     alive_members_count += 1
-                    
+                     
             if alive_members_count == 0:        
                 self.is_exist = 0
                 self.is_dissolved_this_year = True # Turn on this switch so that the household could be dissolved later in the society class
-            
-
+             
+ 
             # Then deal with the deceased persons
             for p in temp_pp_list:         
                 # If p dies this year and p's spouse lives
                 if p.is_died_this_year == True and p.SpouseID != '0' and self.own_pp_dict[p.SpouseID].is_alive == 1:
-                                       
+                                        
                     # Then p's spouse's marital status changes
                     self.own_pp_dict[p.SpouseID].IsMarry = 0
                     self.own_pp_dict[p.SpouseID].SpouseID = '0'
-   
+    
                     # And p's own marital status is also marked changed
                     self.own_pp_dict[p.PID].IsMarry = 0
                     self.own_pp_dict[p.PID].SpouseID = '0'     

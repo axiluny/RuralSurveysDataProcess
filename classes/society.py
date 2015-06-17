@@ -56,7 +56,7 @@ class Society(object):
         self.land_dict = dict()
         for land in land_table:
             land_parcel = Land(land, self.land_var_list, self.current_year)
-            self.land_dict[land_parcel.OBJECTID_1] = land_parcel
+            self.land_dict[land_parcel.ParcelID] = land_parcel
 
 
         # Initialize the household instances (household capital property and land class instances are initialized at the initialization of household class);
@@ -113,23 +113,23 @@ class Society(object):
                       
         # Household and personal demographics
         self.agents_update()
-          
-        self.marriage()
            
+        self.marriage()
+            
         self.child_birth()
-        
+         
         # Update household capital property conditions
         self.household_capital_property_update()
-        
+         
         # Households' economic activities simulation; including policy-related decision-making.
         self.household_economy()
-         
+          
         # The land sub-model.
         self.land_update()
-        
+         
         # The energy (and carbon, and habitat) sub-model.
         self.energy_update()
-         
+          
 #         # Debugging code
 #         print self.count2, self.count1, self.count
         
@@ -174,16 +174,16 @@ class Society(object):
                     self.hh_dict[HID].own_capital_properties.land_properties_list.remove(land_parcel)
                           
                     # And change the attributes of the same land parcel in society.land_dict
-                    self.land_dict[land_parcel.OBJECTID_1].IsG2G = 1
-                    self.land_dict[land_parcel.OBJECTID_1].SStartyear = self.current_year
-                    self.land_dict[land_parcel.OBJECTID_1].HID = ''
-                    self.land_dict[land_parcel.OBJECTID_1].IsG2G_this_year = False
+                    self.land_dict[land_parcel.ParcelID].IsG2G = 1
+                    self.land_dict[land_parcel.ParcelID].SStartyear = self.current_year
+                    self.land_dict[land_parcel.ParcelID].HID = ''
+                    self.land_dict[land_parcel.ParcelID].IsG2G_this_year = False
 
          
         # Then simulate the natural land cover succession process
-        for OBJECTID_1 in self.land_dict:
-            self.land_dict[OBJECTID_1].StatDate = self.current_year
-            self.land_dict[OBJECTID_1].land_cover_succession(self.current_year, self.model_parameters_dict)
+        for ParcelID in self.land_dict:
+            self.land_dict[ParcelID].StatDate = self.current_year
+            self.land_dict[ParcelID].land_cover_succession(self.current_year, self.model_parameters_dict)
             
                
             
