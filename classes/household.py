@@ -108,8 +108,6 @@ class Household(object):
         Annual demographic updates of the household.
         '''
         
-        
-        
         # Update the current time stamp
         self.StatDate = current_year
         

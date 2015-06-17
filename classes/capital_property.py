@@ -7,6 +7,7 @@ Created on May 26, 2015
 from land import *
 
 
+
 class CapitalProperty(object):
     '''
     Households' factors of production: properties and related behaviors

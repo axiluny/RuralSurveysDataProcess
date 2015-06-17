@@ -135,7 +135,6 @@ class Society(object):
         
 
 
-
     
     def household_economy(self):
         
