@@ -21,10 +21,21 @@ class StatClass(object):
         self.StatValue = float()
         self.StatUnit = ''
         
-        # Properties for composite indicators
+        '''
+        # Properties for special statistics items
+        
+        composite indicators - indicates whether the statistics item is a composite indicator, such as 'Income Structure among Sectors'
+            0 - No; 1 - Yes. 0 by default.
+        
+        map layers - indicates whether the statistics item is a map layer (not actually a statistics item)
+            0 - No; 1 - Yes. 0 by default.
+                    
+        '''                
+        # composite indicators
         self.CompositeIndicator = 0
-        # Indicates whether the statistics item is a composite indicator, such as 'Income Structure among Sectors'
-        # 0 - No; 1 - Yes. 0 by default.
+        
+        # map layers
+        self.MapLayer = 0
     
         
         
@@ -950,5 +961,26 @@ class StatClass(object):
         
         
         
-                
+
+
+    '''
+    Map layers
+    '''
+    def get_lulc_map_layer(self, society_instance, scenario_name):
+
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year
+        self.Variable = 'Land-use/land cover'
+        self.StatValue = 0
+        self.StatUnit = ''
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.MapLayer = 1 # Make it a map layer
+
+        society_instance.stat_dict[self.StatID] = self
+        
+        
+        
+        
+                        
            

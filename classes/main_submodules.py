@@ -6,7 +6,7 @@ Created on Mar 26, 2015
 
 from data_access import DataAccess
 from society import Society
-import statistics
+import stat_module
 
 from PyQt4 import QtCore, QtGui
 from PyQt4.Qt import QMessageBox, QColorDialog
@@ -19,10 +19,8 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 import numpy
-# import arcpy
-# from arcpy import env
 
-
+# Also need to import arcpy. But this takes a while. Better import it before actual using it, in export_map submodule.
 
 
 '''
@@ -46,7 +44,16 @@ version_table_name = 'VersionTable'
  
 greetings_image_path = 'C:\WolongRun\GUI\Resources\The Urbanization Lab.png'
 map_image_path = 'C:\WolongRun\GIS_output\maps_png\wolong_landuse_2015.png'
- 
+
+# Arcpy workspace
+arcpy_workspace = "C:/WolongRun/WolongDB.mdb"
+# ArcMap .mxd map file location
+arcmap_mxd_location = r'C:\WolongRun\GIS_output\SEEMS_Map.mxd'
+# Layer styles path
+layer_styles_path = r'C:\WolongRun\GIS_output\layer_styles\LandUse.lyr'
+# Exported .png maps location
+export_png_path = "C:\WolongRun\GIS_output\maps_png"
+
 # Get the working database
 db = DataAccess(dbname, dbdriver)
  
@@ -126,12 +133,82 @@ def step_go(database, society_instance, start_year, iteration_count, scenario_na
         # Then save updated tables in database
         save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
+        # Export maps
+        export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+        
     # Do the simulation
     Society.step_go(society_instance, start_year, iteration_count)
 
     add_stat_results(society_instance, scenario_name)
     
     save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+
+    export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+
+
+
+
+def export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval):
+
+    # Import arcpy first.
+    import arcpy
+    from arcpy import env
+
+    # Set Arcpy environment settings
+    env.workspace = arcpy_workspace
+    
+    # Set local variables
+    outWorkspace = arcpy_workspace
+
+    # Check saving intervals. Only export maps along with a land table saved.
+    if iteration_count % int(land_save_interval) == 0:
+
+        map_save_year = society_instance.current_year
+        new_landuse_feature_name = 'LandUse_' + scenario_name + '_' + str(map_save_year)        
+
+        # Get the map file (.mxd)
+        map_mxd = arcpy.mapping.MapDocument(arcmap_mxd_location)
+
+        # Get the legend, and set not to auto add newly added items into the legend.
+        legend = arcpy.mapping.ListLayoutElements(map_mxd, "LEGEND_ELEMENT", "Legend")[0]
+        legend.autoAdd = False
+
+        # Make a copy of the base feature (LandUse feature/shapefile) as the working feature for map display
+        arcpy.CopyFeatures_management('LandUse', str(outWorkspace + '/' + new_landuse_feature_name))
+
+        # Make a layer from the copied feature.
+        arcpy.MakeFeatureLayer_management(new_landuse_feature_name, new_landuse_feature_name)
+
+        # Get the database table for the land records respective to the map
+        insert_land_table_name = str( '"' + scenario_name + '_land"')
+        insert_land_table = DataAccess.get_table(database, insert_land_table_name)
+
+        # Read relevant records from the land table and save the records in a dictionary indexed by ParcelID of land records
+        to_be_inserted_dict = dict()
+        
+        for record in insert_land_table:
+            if record.StatDate == map_save_year:
+                to_be_inserted_dict[record.ParcelID] = record.LandCover
+
+        # Update values in field LandCover to reflect the new land cover status
+        for ParcelID in to_be_inserted_dict:
+            update_table_order = "UPDATE " + new_landuse_feature_name + " SET LandCover = '"  + str(to_be_inserted_dict[ParcelID]) + "' WHERE ParcelID = " + str(ParcelID)
+        
+            DataAccess.update_table(database, update_table_order)
+            DataAccess.db_commit(database)
+
+        # Apply the predefined symbology to the new layer        
+        layer = arcpy.mapping.Layer(new_landuse_feature_name)
+        arcpy.ApplySymbologyFromLayer_management(layer, layer_styles_path)
+        d_f = arcpy.mapping.ListDataFrames(map_mxd)[0]
+        arcpy.mapping.AddLayer(d_f, layer, "AUTO_ARRANGE")
+        map_mxd.save()
+
+        # Output the map as a .PNG image
+        new_landuse_map_png_name = str(export_png_path + '\\' + new_landuse_feature_name + '.png')
+        
+#         arcpy.mapping.ExportToPNG(map_mxd, new_landuse_map_png_name, df_export_height=850, df_export_width=1100, resolution=175)
+        arcpy.mapping.ExportToPNG(map_mxd, new_landuse_map_png_name, resolution=165)
 
 
 
@@ -145,148 +222,148 @@ def add_stat_results(society_instance, scenario_name):
     Single variables
     '''
     # Total population
-    pp = statistics.StatClass()
-    statistics.StatClass.get_population_count(pp, society_instance, scenario_name)
-     
+    pp = stat_module.StatClass()
+    stat_module.StatClass.get_population_count(pp, society_instance, scenario_name)
+
     # Household count
-    hh = statistics.StatClass()
-    statistics.StatClass.get_household_count(hh, society_instance, scenario_name)
+    hh = stat_module.StatClass()
+    stat_module.StatClass.get_household_count(hh, society_instance, scenario_name)
      
     # Dissolved household count
-    dhh = statistics.StatClass()
-    statistics.StatClass.get_dissolved_household_count(dhh, society_instance, scenario_name)
+    dhh = stat_module.StatClass()
+    stat_module.StatClass.get_dissolved_household_count(dhh, society_instance, scenario_name)
     
     # Type 1 households count - Prefers labor/risk aversion
-    ty1h = statistics.StatClass()
-    statistics.StatClass.get_pref_labor_risk_aversion_hh_count(ty1h, society_instance, scenario_name)
+    ty1h = stat_module.StatClass()
+    stat_module.StatClass.get_pref_labor_risk_aversion_hh_count(ty1h, society_instance, scenario_name)
     
     # Type 2 households count - Prefers leisure/risk aversion
-    ty2h = statistics.StatClass()
-    statistics.StatClass.get_pref_leisure_risk_aversion_hh_count(ty2h, society_instance, scenario_name)
+    ty2h = stat_module.StatClass()
+    stat_module.StatClass.get_pref_leisure_risk_aversion_hh_count(ty2h, society_instance, scenario_name)
     
     # Type 3 households count - Prefers labor/risk appetite
-    ty3h = statistics.StatClass()
-    statistics.StatClass.get_pref_labor_risk_appetite_hh_count(ty3h, society_instance, scenario_name)
+    ty3h = stat_module.StatClass()
+    stat_module.StatClass.get_pref_labor_risk_appetite_hh_count(ty3h, society_instance, scenario_name)
     
     # Type 4 households count - Prefers leisure/risk appetite
-    ty4h = statistics.StatClass()
-    statistics.StatClass.get_pref_leisure_risk_appetite_hh_count(ty4h, society_instance, scenario_name)
+    ty4h = stat_module.StatClass()
+    stat_module.StatClass.get_pref_leisure_risk_appetite_hh_count(ty4h, society_instance, scenario_name)
     
     # Total net savings
-    tns = statistics.StatClass()
-    statistics.StatClass.get_total_net_savings(tns, society_instance, scenario_name)
+    tns = stat_module.StatClass()
+    stat_module.StatClass.get_total_net_savings(tns, society_instance, scenario_name)
     
     # Total cash savings
-    tc = statistics.StatClass()
-    statistics.StatClass.get_total_cash_savings(tc, society_instance, scenario_name)
+    tc = stat_module.StatClass()
+    stat_module.StatClass.get_total_cash_savings(tc, society_instance, scenario_name)
      
     # Total debt
-    tb = statistics.StatClass()
-    statistics.StatClass.get_total_debt(tb, society_instance, scenario_name)    
+    tb = stat_module.StatClass()
+    stat_module.StatClass.get_total_debt(tb, society_instance, scenario_name)    
      
     # Gross annual income
-    gai = statistics.StatClass()
-    statistics.StatClass.get_gross_annual_income(gai, society_instance, scenario_name)
+    gai = stat_module.StatClass()
+    stat_module.StatClass.get_gross_annual_income(gai, society_instance, scenario_name)
     
     # Gross business revenues
-    gbr = statistics.StatClass()
-    statistics.StatClass.get_gross_business_revenues(gbr, society_instance, scenario_name)
+    gbr = stat_module.StatClass()
+    stat_module.StatClass.get_gross_business_revenues(gbr, society_instance, scenario_name)
     
     # Gross Compensational Revenues
-    gcr = statistics.StatClass()
-    statistics.StatClass.get_gross_compensational_revenues(gcr, society_instance, scenario_name)
+    gcr = stat_module.StatClass()
+    stat_module.StatClass.get_gross_compensational_revenues(gcr, society_instance, scenario_name)
     
     # Annual income per person
-    aipp = statistics.StatClass()
-    statistics.StatClass.get_annual_income_per_person(aipp, society_instance, scenario_name)
+    aipp = stat_module.StatClass()
+    stat_module.StatClass.get_annual_income_per_person(aipp, society_instance, scenario_name)
     
     # Annual income per household
-    aiph = statistics.StatClass()
-    statistics.StatClass.get_annual_income_per_household(aiph, society_instance, scenario_name)
+    aiph = stat_module.StatClass()
+    stat_module.StatClass.get_annual_income_per_household(aiph, society_instance, scenario_name)
     
     # Trucks count
-    trk = statistics.StatClass()
-    statistics.StatClass.get_trucks_count(trk, society_instance, scenario_name)
+    trk = stat_module.StatClass()
+    stat_module.StatClass.get_trucks_count(trk, society_instance, scenario_name)
     
     # Minibuses count
-    mnb = statistics.StatClass()
-    statistics.StatClass.get_minibuses_count(mnb, society_instance, scenario_name)
+    mnb = stat_module.StatClass()
+    stat_module.StatClass.get_minibuses_count(mnb, society_instance, scenario_name)
     
     # Total agriculture income
-    agi = statistics.StatClass()
-    statistics.StatClass.get_total_agriculture_income(agi, society_instance, scenario_name)
+    agi = stat_module.StatClass()
+    stat_module.StatClass.get_total_agriculture_income(agi, society_instance, scenario_name)
      
     # Total temporary job income
-    tji = statistics.StatClass()
-    statistics.StatClass.get_total_tempjob_income(tji, society_instance, scenario_name)
+    tji = stat_module.StatClass()
+    stat_module.StatClass.get_total_tempjob_income(tji, society_instance, scenario_name)
      
     # Total freight transportation income
-    fti = statistics.StatClass()
-    statistics.StatClass.get_total_freighttrans_income(fti, society_instance, scenario_name)
+    fti = stat_module.StatClass()
+    stat_module.StatClass.get_total_freighttrans_income(fti, society_instance, scenario_name)
      
     # Total passenger transportation income
-    pti = statistics.StatClass()
-    statistics.StatClass.get_total_passengertrans_income(pti, society_instance, scenario_name)
+    pti = stat_module.StatClass()
+    stat_module.StatClass.get_total_passengertrans_income(pti, society_instance, scenario_name)
      
     # Total lodging income
-    lgi = statistics.StatClass()
-    statistics.StatClass.get_total_lodging_income(lgi, society_instance, scenario_name)
+    lgi = stat_module.StatClass()
+    stat_module.StatClass.get_total_lodging_income(lgi, society_instance, scenario_name)
          
     # Total renting income
-    rti = statistics.StatClass()
-    statistics.StatClass.get_total_renting_income(rti, society_instance, scenario_name)    
+    rti = stat_module.StatClass()
+    stat_module.StatClass.get_total_renting_income(rti, society_instance, scenario_name)    
     
     # Agriculture Employment Ratio
-    ager = statistics.StatClass()
-    statistics.StatClass.get_agriculture_employment_ratio(ager, society_instance, scenario_name)
+    ager = stat_module.StatClass()
+    stat_module.StatClass.get_agriculture_employment_ratio(ager, society_instance, scenario_name)
     
     # Temporary Jobs Employment Ratio
-    tjer = statistics.StatClass()
-    statistics.StatClass.get_tempjob_employment_ratio(tjer, society_instance, scenario_name)
+    tjer = stat_module.StatClass()
+    stat_module.StatClass.get_tempjob_employment_ratio(tjer, society_instance, scenario_name)
     
     # Freight transportation employment ratio
-    fter = statistics.StatClass()
-    statistics.StatClass.get_freighttrans_employment_ratio(fter, society_instance, scenario_name)
+    fter = stat_module.StatClass()
+    stat_module.StatClass.get_freighttrans_employment_ratio(fter, society_instance, scenario_name)
     
     # Passenger transportation employment ratio
-    pter = statistics.StatClass()
-    statistics.StatClass.get_passengertrans_employment_ratio(pter, society_instance, scenario_name)
+    pter = stat_module.StatClass()
+    stat_module.StatClass.get_passengertrans_employment_ratio(pter, society_instance, scenario_name)
     
     # Lodging employment ratio
-    lger = statistics.StatClass()
-    statistics.StatClass.get_lodging_employment_ratio(lger, society_instance, scenario_name)
+    lger = stat_module.StatClass()
+    stat_module.StatClass.get_lodging_employment_ratio(lger, society_instance, scenario_name)
     
     # Renting employment ratio
-    rter = statistics.StatClass()
-    statistics.StatClass.get_renting_employment_ratio(rter, society_instance, scenario_name)
+    rter = stat_module.StatClass()
+    stat_module.StatClass.get_renting_employment_ratio(rter, society_instance, scenario_name)
     
     # Total farmland area
-    tfa = statistics.StatClass()
-    statistics.StatClass.get_total_farmland_area(tfa, society_instance, scenario_name)
+    tfa = stat_module.StatClass()
+    stat_module.StatClass.get_total_farmland_area(tfa, society_instance, scenario_name)
     
     # Total abandoned farmland area
-    tafa = statistics.StatClass()
-    statistics.StatClass.get_abandoned_farmland_area(tafa, society_instance, scenario_name)
+    tafa = stat_module.StatClass()
+    stat_module.StatClass.get_abandoned_farmland_area(tafa, society_instance, scenario_name)
     
     # Total Farmland to Forest Area
-    tftfa = statistics.StatClass()
-    statistics.StatClass.get_farmland_to_forest_area(tftfa, society_instance, scenario_name)
+    tftfa = stat_module.StatClass()
+    stat_module.StatClass.get_farmland_to_forest_area(tftfa, society_instance, scenario_name)
     
     # Total construction land area
-    tcla = statistics.StatClass()
-    statistics.StatClass.get_total_construction_land_area(tcla, society_instance, scenario_name)
+    tcla = stat_module.StatClass()
+    stat_module.StatClass.get_total_construction_land_area(tcla, society_instance, scenario_name)
     
     # Total grassland area
-    tgla = statistics.StatClass()
-    statistics.StatClass.get_total_grassland_area(tgla, society_instance, scenario_name)
+    tgla = stat_module.StatClass()
+    stat_module.StatClass.get_total_grassland_area(tgla, society_instance, scenario_name)
     
     # Total shrubbery land area
-    tsla = statistics.StatClass()
-    statistics.StatClass.get_total_shrubbery_area(tsla, society_instance, scenario_name)
+    tsla = stat_module.StatClass()
+    stat_module.StatClass.get_total_shrubbery_area(tsla, society_instance, scenario_name)
     
     # Total mingled forest area
-    tmfa = statistics.StatClass()
-    statistics.StatClass.get_total_mingled_forest_area(tmfa, society_instance, scenario_name)
+    tmfa = stat_module.StatClass()
+    stat_module.StatClass.get_total_mingled_forest_area(tmfa, society_instance, scenario_name)
     
     
     
@@ -294,20 +371,29 @@ def add_stat_results(society_instance, scenario_name):
     Composite indicators
     '''
     # Sectors income structure
-    sis = statistics.StatClass()
-    statistics.StatClass.get_sectors_income_structure(sis, society_instance, scenario_name)
+    sis = stat_module.StatClass()
+    stat_module.StatClass.get_sectors_income_structure(sis, society_instance, scenario_name)
 
     # Sectors employment structure
-    ses = statistics.StatClass()
-    statistics.StatClass.get_sectors_employment_structure(ses, society_instance, scenario_name)
+    ses = stat_module.StatClass()
+    stat_module.StatClass.get_sectors_employment_structure(ses, society_instance, scenario_name)
     
     # Household preference type structure
-    hpts = statistics.StatClass()
-    statistics.StatClass.get_household_preference_type_structures(hpts, society_instance, scenario_name)
+    hpts = stat_module.StatClass()
+    stat_module.StatClass.get_household_preference_type_structures(hpts, society_instance, scenario_name)
     
     # Land-use/Land cover structure
-    lulcs = statistics.StatClass()
-    statistics.StatClass.get_landuse_landcover_structures(lulcs, society_instance, scenario_name)
+    lulcs = stat_module.StatClass()
+    stat_module.StatClass.get_landuse_landcover_structures(lulcs, society_instance, scenario_name)
+    
+
+    '''
+    Map layers
+    '''
+    # landuse/land cover
+    lulcmap = stat_module.StatClass()
+    stat_module.StatClass.get_lulc_map_layer(lulcmap, society_instance, scenario_name)
+    
     
     
     
@@ -551,6 +637,8 @@ def remove_scenario_version_from_database(version_name, database, gui):
     DataAccess.drop_table(database, drop_land_table_order)
     
     DataAccess.db_commit(database)
+    
+    gui.add_default_new_scenario_name()
     
     # Return True if succeeded.
     return True
@@ -1096,7 +1184,7 @@ class Ui_frm_SEEMS_main(object):
         # Results review - maps          
         self.cmb_select_map_scenario.currentIndexChanged.connect(self.cmb_select_map_scenario_onchange)
         self.sld_select_map_year.valueChanged.connect(self.sld_select_map_year_onchange)
-#         self.btn_show_map.clicked.connect(self.btn_show_map_onclick)
+        self.btn_show_map.clicked.connect(self.btn_show_map_onclick)
 
         # Other window components
         self.actionAbout.triggered.connect(self.action_menu_help_about)
@@ -1112,7 +1200,8 @@ class Ui_frm_SEEMS_main(object):
         greetings_imgage = ImageViewer(widget=self.greetings_widget, layout=self.greeting_lyt, image_path=greetings_image_path, scalable=False)
         self.greeting_lyt.addWidget(greetings_imgage.imageLabel)
                 
-        # Display a map in the results - maps tab's map drawing area
+        # Display an empty map in the results - maps tab's map drawing area
+        # The map will be automatically replaced by the first scenario's first map layer image if there exists such a scenario, so whatever image here would do.
         self.map_layout = QtGui.QVBoxLayout(self.map_display_widget)
         self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=map_image_path, scalable=True)
         self.map_layout.addWidget(self.map.scrollArea)
@@ -1132,9 +1221,15 @@ class Ui_frm_SEEMS_main(object):
         # Initialize the scenario selection combo boxes in the control panel
         self.refresh_scenario_combobox(self.cmb_select_manage_scenario)
         self.refresh_scenario_combobox(self.cmb_select_review_scenario)
-        self.refresh_scenario_combobox(self.cmb_select_map_scenario)        
-  
+        self.refresh_scenario_combobox(self.cmb_select_map_scenario)
+        
+        # Initialize the map layer selection combo box in the control panel
+        self.refresh_map_tab_map_layers()
 
+        # Temporarily set some input components disabled (read-only)
+        self.txt_save_hh_interval.setDisabled(True)
+        self.txt_save_pp_interval.setDisabled(True)
+        
 
 
     def retranslateUi(self, frm_SEEMS_main):
@@ -1238,6 +1333,8 @@ class Ui_frm_SEEMS_main(object):
             self.refresh_scenario_combobox(self.cmb_select_manage_scenario)
             self.refresh_scenario_combobox(self.cmb_select_review_scenario)
             self.refresh_scenario_combobox(self.cmb_select_map_scenario)
+
+            self.refresh_map_tab_map_layers()
             
             # Refresh the status bar
             self.statusbar.showMessage('Simulation complete')
@@ -1396,11 +1493,37 @@ class Ui_frm_SEEMS_main(object):
             self.sbx_select_plot_start_year.setProperty("value", min(year_list))
             
             if cross_section == False: # Time series data
+                self.sbx_select_plot_end_year.setDisabled(False)
                 self.sbx_select_plot_end_year.setProperty("value", max(year_list))
             else: # Cross-section data
-                self.sbx_select_plot_end_year.setProperty("value", min(year_list))
+                self.sbx_select_plot_end_year.setProperty("value", 0)
+                self.sbx_select_plot_end_year.setDisabled(True)
 
 
+    def refresh_map_tab_map_layers(self):
+        # Refresh the stat_table cursor
+        stat_table = DataAccess.get_table(db, stat_table_name) 
+
+        # Clear current select map layer combo box
+        self.cmb_select_map_layer.clear()
+        
+        # Get the maps layer records in the stat table
+        layer_list = list()
+
+        for record in stat_table:
+            if record.ScenarioVersion == self.cmb_select_map_scenario.currentText():
+                if record.Variable not in layer_list and record.MapLayer == 1:
+                    layer_list.append(record.Variable)
+
+        if len(layer_list) != 0:
+                    
+            # Sort the variables list
+            layer_list.sort()
+                        
+            # add the items to variable combo box
+            self.cmb_select_map_layer.addItems(layer_list)
+
+    
 
     def rbt_single_variable_time_series_ontoggled(self):
         self.refresh_review_tab_variable_and_time(single_variable = True, cross_section = False)
@@ -1440,22 +1563,32 @@ class Ui_frm_SEEMS_main(object):
         # Refresh the version_table cursor
         version_table = DataAccess.get_table(db, version_table_name)
         
+        # Refresh the map layer selection combo box
+        self.refresh_map_tab_map_layers()
         
+        start_time = int()
+        end_time = int()
+        land_interval = int()
+        
+        # Refresh the map year selection slider bar
         for record in version_table:
+            
             if record.ScenarioName == self.cmb_select_map_scenario.currentText():
                 start_time = record.StartTime
                 end_time = record.EndTime
                 land_interval = record.LandInterval
+                break
 
-        # Set up the year selection slider bar.
-        self.sld_select_map_year.setMinimum(start_time)
-        self.sld_select_map_year.setMaximum(end_time)
-        self.sld_select_map_year.setSingleStep(land_interval)
-        self.sld_select_map_year.setTickInterval(land_interval)
-        
-        # Set up the start year and end year labels that are attached to the slider bar.
-        self.lbl_map_start_year.setText(str(start_time))
-        self.lbl_map_end_year.setText(str(end_time))        
+        if start_time != 0 and end_time != 0 and land_interval != 0:
+            # Set up the year selection slider bar.
+            self.sld_select_map_year.setMinimum(start_time)
+            self.sld_select_map_year.setMaximum(end_time)
+            self.sld_select_map_year.setSingleStep(land_interval)
+            self.sld_select_map_year.setTickInterval(land_interval)
+            
+            # Set up the start year and end year labels that are attached to the slider bar.
+            self.lbl_map_start_year.setText(str(start_time))
+            self.lbl_map_end_year.setText(str(end_time))        
 
     
     
@@ -1463,27 +1596,31 @@ class Ui_frm_SEEMS_main(object):
     def sld_select_map_year_onchange(self):
 
         version_table = DataAccess.get_table(db, version_table_name)
+
+        start_time = int()
+        end_time = int()
+        land_interval = int()
  
         for record in version_table:
             if record.ScenarioName == self.cmb_select_map_scenario.currentText():
                 start_time = record.StartTime
                 end_time = record.EndTime
-                land_interval = record.LandInterval                
+                land_interval = record.LandInterval
+                break          
  
         # Update the map display
-        map_progress = self.sld_select_map_year.value() - start_time
-        if map_progress % land_interval != 0:
-            pass
-        
-        else:                
-            # Update the current map year label display
-            self.lbl_map_current_year.setText(str(self.sld_select_map_year.value()))        
-                    
-            new_map_image_path = str("C:\WolongRun\GIS_output\maps_png\wolong_landuse_" + str(self.sld_select_map_year.value()) + ".png")
+        if start_time != 0 and end_time != 0 and land_interval != 0:
             
-            self.map_layout.removeWidget(self.map.scrollArea)            
-            self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=new_map_image_path, scalable=True)
-            self.map_layout.addWidget(self.map.scrollArea)
+            map_progress = self.sld_select_map_year.value() - start_time + 1
+            
+            if map_progress % land_interval == 0:           
+                # Update the current map year label display
+                self.lbl_map_current_year.setText(str(self.sld_select_map_year.value()))
+                
+                # Update map display
+                self.display_map(map_scenario=self.cmb_select_map_scenario.currentText(), 
+                                 map_layer=self.cmb_select_map_layer.currentText(), 
+                                 map_year=self.sld_select_map_year.value())
      
         
 
@@ -1613,27 +1750,30 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-#     def btn_show_map_onclick(self):
-#         # Set environment settings
-#         env.workspace = "C:/WolongRun/WolongDB.mdb"
-#  
-#         # Set local variables
-#         outWorkspace = "C:/WolongRun/WolongDB.mdb"
-#         
-#         # Make a copy of the base feature (LandUse feature/shapefile) as the working feature for map display
-#         arcpy.CopyFeatures_management('LandUse', str(outWorkspace + '/LandUse_copy1'))
-# 
-#         # Add fields to the copied feature
-#         
-#         # Read relevant records from the respective (land) table
-#         
-#         # Insert the records into the copied feature
-#         
-#         # Output the map as a .PNG image, with a predefined symbology style
-#         
-#         # Display the image
+    def btn_show_map_onclick(self):
 
+        # Get the map display settings from the GUI inputs
+        map_scenario = self.cmb_select_map_scenario.currentText()
+        map_layer = self.cmb_select_map_layer.currentText()
+        map_year = self.sld_select_map_year.value()
         
+        # Display the image
+        self.display_map(map_scenario, map_layer, map_year)
+
+
+    
+    
+    def display_map(self, map_scenario, map_layer, map_year):
+        if map_layer == 'Land-use/land cover':
+            layer = 'LandUse_'
+        
+        landuse_layer_name = layer + map_scenario + '_' + str(map_year)
+        new_map_image_path = str(export_png_path + '\\' + landuse_layer_name + '.png')
+        
+        self.map_layout.removeWidget(self.map.scrollArea)            
+        self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=new_map_image_path, scalable=True)
+        self.map_layout.addWidget(self.map.scrollArea)
+
     
     def make_plot_space(self, widget):
         
@@ -1881,6 +2021,7 @@ class ImageViewer(QtGui.QWidget):
             self.scrollArea = QtGui.QScrollArea(widget)
             self.scrollArea.setBackgroundRole(QtGui.QPalette.Dark)
             self.scrollArea.setWidget(self.imageLabel)
+            self.scrollArea.setAlignment(QtCore.Qt.AlignCenter)
                         
 #             layout.addWidget(self.scrollArea)
 

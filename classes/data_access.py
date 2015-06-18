@@ -85,6 +85,12 @@ class DataAccess(object):
         self.cursor.execute(order)
 
     
+    def update_table(self, order):
+        '''
+        Update a table in the database by an order
+        '''
+        self.cursor.execute(order)
+        
     
     def db_commit(self):
         '''
