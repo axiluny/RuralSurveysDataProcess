@@ -14,7 +14,7 @@ from PyQt4.QtCore import Qt
 
 # from matplotlib.backends.backend_agg import FigureCanvas
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
@@ -42,8 +42,8 @@ stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
  
-greetings_image_path = 'C:\WolongRun\GUI\Resources\The Urbanization Lab.png'
-map_image_path = 'C:\WolongRun\GIS_output\maps_png\wolong_landuse_2015.png'
+greetings_image_location = 'C:\WolongRun\GUI\Resources\The Urbanization Lab.png'
+greetings_map_location = 'C:\WolongRun\GUI\Resources\greetings_map_blank.png'
 
 # Arcpy workspace
 arcpy_workspace = "C:/WolongRun/WolongDB.mdb"
@@ -1197,13 +1197,13 @@ class Ui_frm_SEEMS_main(object):
         # Create a QVBoxLayout within the widget for embedding
         self.greeting_lyt = QtGui.QVBoxLayout(self.greetings_widget)
         # Call ImageViewer class to display the image
-        greetings_imgage = ImageViewer(widget=self.greetings_widget, layout=self.greeting_lyt, image_path=greetings_image_path, scalable=False)
+        greetings_imgage = ImageViewer(widget=self.greetings_widget, layout=self.greeting_lyt, image_path=greetings_image_location, scalable=False)
         self.greeting_lyt.addWidget(greetings_imgage.imageLabel)
                 
         # Display an empty map in the results - maps tab's map drawing area
         # The map will be automatically replaced by the first scenario's first map layer image if there exists such a scenario, so whatever image here would do.
         self.map_layout = QtGui.QVBoxLayout(self.map_display_widget)
-        self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=map_image_path, scalable=True)
+        self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=greetings_map_location, scalable=True)
         self.map_layout.addWidget(self.map.scrollArea)
                 
         # Add a toolbar for map display controls
@@ -1610,10 +1610,9 @@ class Ui_frm_SEEMS_main(object):
  
         # Update the map display
         if start_time != 0 and end_time != 0 and land_interval != 0:
-            
-            map_progress = self.sld_select_map_year.value() - start_time + 1
-            
-            if map_progress % land_interval == 0:           
+                
+            if self.sld_select_map_year.value() == start_time \
+            or (self.sld_select_map_year.value() - start_time - 1) % land_interval == 0:
                 # Update the current map year label display
                 self.lbl_map_current_year.setText(str(self.sld_select_map_year.value()))
                 
@@ -1621,6 +1620,8 @@ class Ui_frm_SEEMS_main(object):
                 self.display_map(map_scenario=self.cmb_select_map_scenario.currentText(), 
                                  map_layer=self.cmb_select_map_layer.currentText(), 
                                  map_year=self.sld_select_map_year.value())
+
+                    
      
         
 
@@ -1708,6 +1709,7 @@ class Ui_frm_SEEMS_main(object):
                             and st.StatDate >= plot_start_year \
                             and st.StatDate <= self.sbx_select_plot_end_year.value():                          
                                 
+                                y_unit = st.StatUnit
                                 plot_xy_tuple_list.append((st.StatDate, st.StatValue))
                                 
                         plot_xy_tuple_list.sort()        
