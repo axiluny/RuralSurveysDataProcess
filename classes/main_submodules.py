@@ -27,11 +27,10 @@ import numpy
 Globals, Constants, and other declarations.
 '''
 
-
-# dbname = 'C:/WolongRun/test_db/SimplifiedDB.mdb'
+# Global constants for database managements
 dbname = 'C:/WolongRun/WolongDB'
 dbdriver = '{Microsoft Access Driver (*.mdb)}'
- 
+
 model_table_name = 'ModelTable'
 household_table_name = 'HouseholdTable'
 person_table_name = 'PersonTable'
@@ -41,9 +40,10 @@ policy_table_name = 'PolicyTable'
 stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
  
- 
-greetings_image_location = 'C:\WolongRun\GUI\Resources\The Urbanization Lab.png'
-greetings_map_location = 'C:\WolongRun\GUI\Resources\greetings_map_blank.png'
+# GUI components location
+greetings_image_location = 'C:\WolongRun\GUI Resources\Resources\The Urbanization Lab.png'
+greetings_map_location = 'C:\WolongRun\GUI Resources\Resources\greetings_map_blank.png'
+icons_path = 'C:\WolongRun\GUI Resources\SEEMS Icons'
 
 # Arcpy workspace
 arcpy_workspace = "C:/WolongRun/WolongDB.mdb"
@@ -53,6 +53,8 @@ arcmap_mxd_location = r'C:\WolongRun\GIS_output\SEEMS_Map.mxd'
 layer_styles_path = r'C:\WolongRun\GIS_output\layer_styles\LandUse.lyr'
 # Exported .png maps location
 export_png_path = "C:\WolongRun\GIS_output\maps_png"
+
+
 
 # Get the working database
 db = DataAccess(dbname, dbdriver)
@@ -68,7 +70,6 @@ stat_table = DataAccess.get_table(db, stat_table_name)
 version_table = DataAccess.get_table(db, version_table_name)
 
 
-
 # Make a dictionary of composite statistics indicators
 composite_indicators_dict = {'1 Total Income by Sectors': ['IV-01 Total Agriculture Income', 'IV-02 Total Temp Job Income', 
                                 'IV-03 Total Freight Trans Income', 'IV-04 Total Passenger Trans Income',
@@ -79,7 +80,7 @@ composite_indicators_dict = {'1 Total Income by Sectors': ['IV-01 Total Agricult
                              '3 Household Preference Types': ['II-01 Pref Labor_Risk Aversion HH Count', 'II-02 Pref Leisure_Risk Aversion HH Count',
                                 'II-03 Pref Labor_Risk Appetite HH Count', 'II-04 Pref Leisure_Risk Appetite HH Count'], 
                              '4 Land-use/Land Cover Structure': ['V-01 Total Farmland Area', 'V-04 Total Construction Land Area',
-                                'V-05 Total Grassland Area', 'V-06 Total Shrubbery Area', 'V-07 Total Mingled Forest Area']}
+                                'V-05 Total Grassland Area', 'V-06 Total Shrubbery Area', 'V-07 Total Mixed Coniferous Forest Area']}
 
 
 
@@ -134,7 +135,7 @@ def step_go(database, society_instance, start_year, iteration_count, scenario_na
         save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
         # Export maps
-        export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+#         export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
     # Do the simulation
     Society.step_go(society_instance, start_year, iteration_count)
@@ -143,7 +144,7 @@ def step_go(database, society_instance, start_year, iteration_count, scenario_na
     
     save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
-    export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+#     export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
 
 
@@ -361,9 +362,9 @@ def add_stat_results(society_instance, scenario_name):
     tsla = stat_module.StatClass()
     stat_module.StatClass.get_total_shrubbery_area(tsla, society_instance, scenario_name)
     
-    # Total mingled forest area
+    # Total mixed forest area
     tmfa = stat_module.StatClass()
-    stat_module.StatClass.get_total_mingled_forest_area(tmfa, society_instance, scenario_name)
+    stat_module.StatClass.get_total_mixed_forest_area(tmfa, society_instance, scenario_name)
     
     
     
@@ -1823,20 +1824,29 @@ class Ui_frm_SEEMS_main(object):
               
         
     def add_toolbar(self, frm_SEEMS_main):
-
-        action_zoom_in = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomIn.png'), 'Zoom In', frm_SEEMS_main)        
-        action_zoom_out = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomOut.png'), 'Zoom Out', frm_SEEMS_main)
-        action_zoom_fit_window = QtGui.QAction(QtGui.QIcon('C:\WolongRun\SEEMS Icons\ZoomFit.png'), 'Zoom Fit Window', frm_SEEMS_main)
         
+        # Find the icons
+        zoom_in_icon_location = str(icons_path + '\\ZoomIn.png')
+        zoom_out_icon_location = str(icons_path + '\\ZoomOut.png')
+        zoom_actual_size_icon_location = str(icons_path + '\\ZoomActualSize.png')
+
+        # Define the actions
+        action_zoom_in = QtGui.QAction(QtGui.QIcon(zoom_in_icon_location), 'Zoom In', frm_SEEMS_main)        
+        action_zoom_out = QtGui.QAction(QtGui.QIcon(zoom_out_icon_location), 'Zoom Out', frm_SEEMS_main)
+        action_zoom_actual_size = QtGui.QAction(QtGui.QIcon(zoom_actual_size_icon_location), 'Zoom Actual Size', frm_SEEMS_main)
+        
+        # Define the action events
         action_zoom_in.triggered.connect(self.zoom_in)
         action_zoom_out.triggered.connect(self.zoom_out)
-        action_zoom_fit_window.triggered.connect(self.zoom_fit_window)
+        action_zoom_actual_size.triggered.connect(self.zoom_actual_size)
         
+        # Add the toolbar
         self.toolbar = frm_SEEMS_main.addToolBar('Image View Controls')
-                
+        
+        # Add actions into the toolbar
         self.toolbar.addAction(action_zoom_in)
         self.toolbar.addAction(action_zoom_out)
-        self.toolbar.addAction(action_zoom_fit_window)        
+        self.toolbar.addAction(action_zoom_actual_size)        
 
 
     def zoom_in(self):
@@ -1846,8 +1856,8 @@ class Ui_frm_SEEMS_main(object):
     def zoom_out(self):
         self.map.zoomOut()
     
-    def zoom_fit_window(self):
-        self.map.fitToWindow()
+    def zoom_actual_size(self):
+        self.map.fitActualSize()
         
         
 
@@ -2051,7 +2061,7 @@ class ImageViewer(QtGui.QWidget):
 
         self.fitToWindowAct = QtGui.QAction("&Fit to Window", self,
                 enabled=False, checkable=True, shortcut="Ctrl+F",
-                triggered=self.fitToWindow)
+                triggered=self.fitActualSize)
         
 #         self.printAct = QtGui.QAction("&Print...", self, shortcut="Ctrl+P",
 #                 enabled=False, triggered=self.print_)
@@ -2067,7 +2077,7 @@ class ImageViewer(QtGui.QWidget):
         self.imageLabel.adjustSize()
         self.scaleFactor = 1.0
 
-    def fitToWindow(self):
+    def fitActualSize(self):
         fitToWindow = self.fitToWindowAct.isChecked()
         self.scrollArea.setWidgetResizable(fitToWindow)
         if not fitToWindow:

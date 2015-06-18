@@ -45,29 +45,31 @@ class Land(object):
         '''
         
         # Determine the length of vegetation succession
-        self.succession_length = current_year - self.SStartyear
+        if self.SStartyear != 0:
+            self.succession_length = current_year - self.SStartyear
+            
         
-        if self.LandCover == 'Cultivate' and self.IsG2G == 1:
-            if self.succession_length == int(model_parameters['CultivatedSuccessionYear']):
-                self.LandCover = 'Grass'
-                self.SStartyear = current_year
-                   
-        
-        elif self.LandCover == 'Construction' and self.IsC2G == 1:
-            if self.succession_length == int(model_parameters['ConstructionSuccessionYear']):
-                self.LandCover = 'Grass'
-                self.SStartyear = current_year        
-        
-        elif self.LandCover == 'Grass':
-            if self.succession_length == int(model_parameters['GrassSuccessionYear']):
-                self.LandCover = 'Shrubbery'
-                self.SStartYear = current_year
-                
-        
-        elif self.LandCover == 'Shrubbery':
-            if self.succession_length == int(model_parameters['ShrubberySuccessionYear']):
-                self.LandCover = 'Mingled'
-                self.SStartYear = current_year
+            if self.LandCover == 'Cultivate' and self.IsG2G == 1:
+                if self.succession_length == int(model_parameters['CultivatedSuccessionYear']):
+                    self.LandCover = 'Grass'
+                    self.SStartyear = current_year
+                       
+            
+            elif self.LandCover == 'Construction' and self.IsC2G == 1:
+                if self.succession_length == int(model_parameters['ConstructionSuccessionYear']):
+                    self.LandCover = 'Grass'
+                    self.SStartyear = current_year        
+            
+            elif self.LandCover == 'Grass':
+                if self.succession_length == int(model_parameters['GrassSuccessionYear']):
+                    self.LandCover = 'Shrubbery'
+                    self.SStartyear = current_year
+                    
+            
+            elif self.LandCover == 'Shrubbery':
+                if self.succession_length == int(model_parameters['ShrubberySuccessionYear']):
+                    self.LandCover = 'Mixed'
+                    self.SStartyear = current_year
         
         
         

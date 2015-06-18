@@ -742,9 +742,9 @@ class StatClass(object):
         farmland_area = 0
 
         # Get the statistics
-        for OBJECTID_1 in society_instance.land_dict:
-            if society_instance.land_dict[OBJECTID_1].LandCover == 'Cultivate':
-                farmland_area += society_instance.land_dict[OBJECTID_1].Shape_Area / 666.7
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Cultivate':
+                farmland_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
         
         
         '''
@@ -821,9 +821,9 @@ class StatClass(object):
         construction_area = 0
         
         # Get the statistics
-        for OBJECTID_1 in society_instance.land_dict:
-            if society_instance.land_dict[OBJECTID_1].LandCover == 'Construction':
-                construction_area += society_instance.land_dict[OBJECTID_1].Shape_Area / 666.7
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Construction':
+                construction_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
         
         
         # Add the statistics
@@ -842,9 +842,9 @@ class StatClass(object):
         grassland_area = 0
         
         # Get the statistics
-        for OBJECTID_1 in society_instance.land_dict:
-            if society_instance.land_dict[OBJECTID_1].LandCover == 'Grass':
-                grassland_area += society_instance.land_dict[OBJECTID_1].Shape_Area / 666.7
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Grass':
+                grassland_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
         
         
         # Add the statistics
@@ -863,9 +863,9 @@ class StatClass(object):
         shrubbery_area = 0
         
         # Get the statistics
-        for OBJECTID_1 in society_instance.land_dict:
-            if society_instance.land_dict[OBJECTID_1].LandCover == 'Shrubbery':
-                shrubbery_area += society_instance.land_dict[OBJECTID_1].Shape_Area / 666.7
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Shrubbery':
+                shrubbery_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
         
         
         # Add the statistics
@@ -879,21 +879,21 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self  
 
 
-    def get_total_mingled_forest_area(self, society_instance, scenario_name):
+    def get_total_mixed_forest_area(self, society_instance, scenario_name):
         
-        mingled_forest_area = 0
+        mixed_forest_area = 0
         
         # Get the statistics
-        for OBJECTID_1 in society_instance.land_dict:
-            if society_instance.land_dict[OBJECTID_1].LandCover == 'Mingled':
-                mingled_forest_area += society_instance.land_dict[OBJECTID_1].Shape_Area / 666.7
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Mixed':
+                mixed_forest_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
         
         
         # Add the statistics
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
-        self.Variable = 'V-07 Total Mingled Forest Area'
-        self.StatValue = mingled_forest_area
+        self.Variable = 'V-07 Total Mixed Coniferous Forest Area'
+        self.StatValue = mixed_forest_area
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
