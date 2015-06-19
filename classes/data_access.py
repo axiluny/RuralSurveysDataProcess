@@ -4,7 +4,6 @@ Created on Mar 25, 2015
 @author: Liyan Xu; Hongmou Zhang
 '''
 import pyodbc
-# from household import Household
 
 
 class DataAccess(object):
@@ -22,21 +21,20 @@ class DataAccess(object):
 
 
 
-
     def get_table (self, table_name):
         '''
         Get a table by a given name in the database; create a pointer to that table
         '''
         
-        try:
+#         try:
     
-            table_cursor = self.cursor.execute('SELECT * FROM ' + table_name)
-            table = table_cursor.fetchall()        
+        table_cursor = self.cursor.execute('SELECT * FROM ' + table_name)
+        table = table_cursor.fetchall()        
+    
+        return table
         
-            return table
-        
-        except pyodbc.ProgrammingError: #This is ridiculously indecent... How to get a None value decently here?
-            return None
+#         except pyodbc.ProgrammingError: #This is ridiculously indecent... How to get a None value decently here?
+#             return None
 
         
 
@@ -97,5 +95,8 @@ class DataAccess(object):
         Commit an activity in the database
         '''
         self.connector.commit()        
+
+        
+
 
     

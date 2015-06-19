@@ -18,17 +18,28 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as Navigatio
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
+import os
 import numpy
+from shutil import *
 
 # Also need to import arcpy. But this takes a while. Better import it before actual using it, in export_map submodule.
-
 
 '''
 Globals, Constants, and other declarations.
 '''
+# GUI components location
+greetings_image_location = 'C:\WolongRun\GUI Resources\Resources\The Urbanization Lab.png'
+greetings_map_location = 'C:\WolongRun\GUI Resources\Resources\greetings_map_blank.png'
+icons_path = 'C:\WolongRun\GUI Resources\SEEMS Icons'
+
 
 # Global constants for database managements
-dbname = 'C:/WolongRun/WolongDB'
+db_file_name = 'WolongDB.mdb'
+input_dbpath = 'C:/WolongRun'
+output_dbpath = 'C:/WolongRun/Results_Output'
+input_db_location = str(input_dbpath + '\\' + db_file_name)
+output_db_location = str(output_dbpath + '\\' + db_file_name)
+
 dbdriver = '{Microsoft Access Driver (*.mdb)}'
 
 model_table_name = 'ModelTable'
@@ -39,35 +50,32 @@ business_sector_table_name = 'BusinessSectorTable'
 policy_table_name = 'PolicyTable'
 stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
- 
-# GUI components location
-greetings_image_location = 'C:\WolongRun\GUI Resources\Resources\The Urbanization Lab.png'
-greetings_map_location = 'C:\WolongRun\GUI Resources\Resources\greetings_map_blank.png'
-icons_path = 'C:\WolongRun\GUI Resources\SEEMS Icons'
 
-# Arcpy workspace
-arcpy_workspace = "C:/WolongRun/WolongDB.mdb"
-# ArcMap .mxd map file location
-arcmap_mxd_location = r'C:\WolongRun\GIS_output\SEEMS_Map.mxd'
-# Layer styles path
-layer_styles_path = r'C:\WolongRun\GIS_output\layer_styles\LandUse.lyr'
-# Exported .png maps location
-export_png_path = "C:\WolongRun\GIS_output\maps_png"
-
-
-
-# Get the working database
-db = DataAccess(dbname, dbdriver)
+# Get the input and output databases
+input_db = DataAccess(input_db_location, dbdriver)
+output_db = DataAccess(output_db_location, dbdriver)
  
 # Get the table pointers
-model_table = DataAccess.get_table(db, model_table_name)
-household_table = DataAccess.get_table(db, household_table_name)
-person_table = DataAccess.get_table(db, person_table_name)
-land_table = DataAccess.get_table(db, land_table_name)
-business_sector_table = DataAccess.get_table(db, business_sector_table_name)
-policy_table = DataAccess.get_table(db, policy_table_name)
-stat_table = DataAccess.get_table(db, stat_table_name)
-version_table = DataAccess.get_table(db, version_table_name)
+model_table = DataAccess.get_table(input_db, model_table_name)
+household_table = DataAccess.get_table(input_db, household_table_name)
+person_table = DataAccess.get_table(input_db, person_table_name)
+land_table = DataAccess.get_table(input_db, land_table_name)
+business_sector_table = DataAccess.get_table(input_db, business_sector_table_name)
+policy_table = DataAccess.get_table(input_db, policy_table_name)
+stat_table = DataAccess.get_table(input_db, stat_table_name)
+version_table = DataAccess.get_table(input_db, version_table_name)
+
+
+# Arcpy workspace
+arcpy_workspace = output_dbpath + '\\' + db_file_name
+# Input ArcMap .mxd map name
+input_mxd = 'SEEMS_Map.mxd'
+# Input ArcMap .mxd map file path
+input_mxd_path = r'C:\WolongRun\GIS Resources'
+# Input Layer styles location
+layer_styles_location = r'C:\WolongRun\GIS Resources\layer_styles\LandUse.lyr'
+# External materials path
+output_gis_path = "C:\WolongRun\Results_Output"
 
 
 # Make a dictionary of composite statistics indicators
@@ -86,12 +94,12 @@ composite_indicators_dict = {'1 Total Income by Sectors': ['IV-01 Total Agricult
 
 
 '''
-user created main submodules 
+The main submodules 
 '''
 
 
 
-def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, 
+def create_scenario(scenario_name, model_table_name, model_table, hh_table_name, hh_table, 
                     pp_table_name, pp_table, land_table_name, land_table, 
                     business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
                     stat_table_name, stat_table, simulation_depth, start_year, 
@@ -100,20 +108,26 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
 
     # Set up an initial value (1%) when clicked so that the user knows it's running.
     refresh_progress_bar(simulation_depth, gui)
-
-    # Insert a record in the VersionTable
-    refresh_version_table(db, scenario_name, start_year, simulation_depth, pp_save_interval, hh_save_interval, land_save_interval)
     
+    # Check if there exists an output database file;
+    # And if not, make a copy of the input database file to store the output results (so that to keep the input (original) database clean)    
+    if os.path.isfile(output_db_location) == False:
+        copyfile(input_db_location, output_db_location)
+
+    # Insert a record in the VersionTables in both input and output database files
+#     refresh_version_table(input_db, scenario_name, start_year, simulation_depth, pp_save_interval, hh_save_interval, land_save_interval)    
+    refresh_version_table(output_db, scenario_name, start_year, simulation_depth, pp_save_interval, hh_save_interval, land_save_interval)
+     
     # Initialize the society class: create society, household, person, etc instances
-    soc = Society(db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
+    soc = Society(input_db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
                   land_table_name, land_table, business_sector_table_name, business_sector_table, 
                   policy_table_name, policy_table, stat_table_name, simulation_depth, stat_table, 
                   start_year)
-    
+      
     #Start simulation
     for iteration_count in range(simulation_depth):
-        step_go(db, soc, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval)
-
+        step_go(output_db, soc, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval)
+  
         # Set value for the progress bar
         refresh_progress_bar((iteration_count + 1) * 100, gui)
 
@@ -123,93 +137,29 @@ def create_scenario(db, scenario_name, model_table_name, model_table, hh_table_n
 
 
 
-def step_go(database, society_instance, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval):
+def step_go(output_db, society_instance, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval):
     
     # If it's the first round of iteration, just get the stats and save the records to database
     # Else, proceed with the simulation in society.step_go, and then get the stats and save the records to database
     if iteration_count == 0:  
-        # Do statistics and add records to statistics table in database
+        # Do statistics and add records to the statistics dictionary in the society instance
         add_stat_results(society_instance, scenario_name)
         
-        # Then save updated tables in database
-        save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+        # Then save updated tables in the output database
+        save_results_to_db(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
         # Export maps
-#         export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+        export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
     # Do the simulation
     Society.step_go(society_instance, start_year, iteration_count)
 
     add_stat_results(society_instance, scenario_name)
     
-    save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+    save_results_to_db(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
-#     export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+    export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
-
-
-
-def export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval):
-
-    # Import arcpy first.
-    import arcpy
-    from arcpy import env
-
-    # Set Arcpy environment settings
-    env.workspace = arcpy_workspace
-    
-    # Set local variables
-    outWorkspace = arcpy_workspace
-
-    # Check saving intervals. Only export maps along with a land table saved.
-    if iteration_count % int(land_save_interval) == 0:
-
-        map_save_year = society_instance.current_year
-        new_landuse_feature_name = 'LandUse_' + scenario_name + '_' + str(map_save_year)        
-
-        # Get the map file (.mxd)
-        map_mxd = arcpy.mapping.MapDocument(arcmap_mxd_location)
-
-        # Get the legend, and set not to auto add newly added items into the legend.
-        legend = arcpy.mapping.ListLayoutElements(map_mxd, "LEGEND_ELEMENT", "Legend")[0]
-        legend.autoAdd = False
-
-        # Make a copy of the base feature (LandUse feature/shapefile) as the working feature for map display
-        arcpy.CopyFeatures_management('LandUse', str(outWorkspace + '/' + new_landuse_feature_name))
-
-        # Make a layer from the copied feature.
-        arcpy.MakeFeatureLayer_management(new_landuse_feature_name, new_landuse_feature_name)
-
-        # Get the database table for the land records respective to the map
-        insert_land_table_name = str( '"' + scenario_name + '_land"')
-        insert_land_table = DataAccess.get_table(database, insert_land_table_name)
-
-        # Read relevant records from the land table and save the records in a dictionary indexed by ParcelID of land records
-        to_be_inserted_dict = dict()
-        
-        for record in insert_land_table:
-            if record.StatDate == map_save_year:
-                to_be_inserted_dict[record.ParcelID] = record.LandCover
-
-        # Update values in field LandCover to reflect the new land cover status
-        for ParcelID in to_be_inserted_dict:
-            update_table_order = "UPDATE " + new_landuse_feature_name + " SET LandCover = '"  + str(to_be_inserted_dict[ParcelID]) + "' WHERE ParcelID = " + str(ParcelID)
-        
-            DataAccess.update_table(database, update_table_order)
-            DataAccess.db_commit(database)
-
-        # Apply the predefined symbology to the new layer        
-        layer = arcpy.mapping.Layer(new_landuse_feature_name)
-        arcpy.ApplySymbologyFromLayer_management(layer, layer_styles_path)
-        d_f = arcpy.mapping.ListDataFrames(map_mxd)[0]
-        arcpy.mapping.AddLayer(d_f, layer, "AUTO_ARRANGE")
-        map_mxd.save()
-
-        # Output the map as a .PNG image
-        new_landuse_map_png_name = str(export_png_path + '\\' + new_landuse_feature_name + '.png')
-        
-#         arcpy.mapping.ExportToPNG(map_mxd, new_landuse_map_png_name, df_export_height=850, df_export_width=1100, resolution=175)
-        arcpy.mapping.ExportToPNG(map_mxd, new_landuse_map_png_name, resolution=165)
 
 
 
@@ -398,7 +348,7 @@ def add_stat_results(society_instance, scenario_name):
     
     
     
-def save_results_to_db(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval):
+def save_results_to_db(output_database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval):
     
     # Determine household, people,and land table names
     # Format: Scenario_name + household/people/land
@@ -409,18 +359,18 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
     
     
     '''    
-    # Saving the Household table in the database
+    # Saving the Household table in the output_database
     '''
     # Check saving intervals first
     if iteration_count % int(hh_save_interval) == 0:
-        # Only save results to the database at designated iterations
+        # Only save results to the output_database at designated iterations
       
-        # If the table with that name does not exist in the database
+        # If the table with that name does not exist in the output_database
         # i.e. in the first round of iteration,
         # Then first create a new table, then insert the records.
         # Otherwise, just find the right table, and then insert the records.
-        if DataAccess.get_table(database, new_hh_table_name) == None: 
-         
+#         if DataAccess.get_table(output_database, new_hh_table_name) == None: 
+        if not output_database.cursor.tables(table=new_hh_table_name).fetchone():
             # Create a new Household table from the variable list of Household Class
             new_household_table_formatter = '('
             for var in society_instance.hh_var_list:
@@ -429,8 +379,8 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
             new_household_table_formatter = new_household_table_formatter[0: len(new_household_table_formatter) - 1] + ')'
          
             create_table_order = "create table " + new_hh_table_name +''+ new_household_table_formatter
-            DataAccess.create_table(database, create_table_order)
-            DataAccess.db_commit(database)
+            DataAccess.create_table(output_database, create_table_order)
+            DataAccess.db_commit(output_database)
      
             # Then insert all households into the new table
             # InsertContent = ''
@@ -447,8 +397,8 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
                 new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
                 # Insert one household record
                 insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
-                DataAccess.insert_record_to_table(database, insert_table_order)
-            DataAccess.db_commit(database)  
+                DataAccess.insert_record_to_table(output_database, insert_table_order)
+            DataAccess.db_commit(output_database)  
      
          
         else:
@@ -467,17 +417,17 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
                 new_household_record_content = new_household_record_content[0:len(new_household_record_content)-1] + ')'
                 # Insert one household record
                 insert_table_order = "insert into " + new_hh_table_name + ' values ' + new_household_record_content.replace('None','Null') +';'
-                DataAccess.insert_record_to_table(database, insert_table_order)
-            DataAccess.db_commit(database)        
+                DataAccess.insert_record_to_table(output_database, insert_table_order)
+            DataAccess.db_commit(output_database)        
 
 
     '''
-    # Saving the Person table in the database
+    # Saving the Person table in the output_database
     '''
     if iteration_count % int(pp_save_interval) == 0:
 
-        if DataAccess.get_table(database, new_pp_table_name) == None: # This is most indecent... see dataaccess for details
-         
+#         if DataAccess.get_table(output_database, new_pp_table_name) == None: # This is most indecent... see dataaccess for details
+        if not output_database.cursor.tables(table=new_pp_table_name).fetchone():         
             # Create a new Person table from the variable list of Person Class
             new_person_table_formatter = '('
             for var in society_instance.pp_var_list:
@@ -486,8 +436,8 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
             new_person_table_formatter = new_person_table_formatter[0: len(new_person_table_formatter) - 1] + ')'
          
             create_table_order = "create table " + new_pp_table_name +''+ new_person_table_formatter
-            DataAccess.create_table(database, create_table_order)
-            DataAccess.db_commit(database)
+            DataAccess.create_table(output_database, create_table_order)
+            DataAccess.db_commit(output_database)
     
     
             for HID in society_instance.hh_dict:
@@ -504,8 +454,8 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
                     new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
                     # Insert one person record
                     insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-                    DataAccess.insert_record_to_table(database, insert_table_order)
-                DataAccess.db_commit(database)  
+                    DataAccess.insert_record_to_table(output_database, insert_table_order)
+                DataAccess.db_commit(output_database)  
      
          
         else:
@@ -524,19 +474,19 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
                     new_person_record_content = new_person_record_content[0:len(new_person_record_content)-1] + ')'
                     # Insert one person record
                     insert_table_order = "insert into " + new_pp_table_name + ' values ' + new_person_record_content.replace('None','Null') +';'
-                    DataAccess.insert_record_to_table(database, insert_table_order)
-                DataAccess.db_commit(database)  
+                    DataAccess.insert_record_to_table(output_database, insert_table_order)
+                DataAccess.db_commit(output_database)  
 
 
 
 
     '''
-    # Saving the Land table in the database
+    # Saving the Land table in the output_database
     '''
     if iteration_count % int(land_save_interval) == 0:
     
-        if DataAccess.get_table(database, new_land_table_name) == None: # This is most indecent... see dataaccess for details
-         
+#         if DataAccess.get_table(output_database, new_land_table_name) == None: # This is most indecent... see dataaccess for details
+        if not output_database.cursor.tables(table=new_land_table_name).fetchone():               
             # Create a new Land table from the variable list of Land Class
             new_land_table_formatter = '('
             for var in society_instance.land_var_list:
@@ -545,8 +495,8 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
             new_land_table_formatter = new_land_table_formatter[0: len(new_land_table_formatter) - 1] + ')'
          
             create_table_order = "create table " + new_land_table_name +''+ new_land_table_formatter
-            DataAccess.create_table(database, create_table_order)
-            DataAccess.db_commit(database)
+            DataAccess.create_table(output_database, create_table_order)
+            DataAccess.db_commit(output_database)
     
     
             for ParcelID in society_instance.land_dict:
@@ -562,8 +512,8 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
                 new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
                 # Insert one land parcel record
                 insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
-                DataAccess.insert_record_to_table(database, insert_table_order)
-            DataAccess.db_commit(database)  
+                DataAccess.insert_record_to_table(output_database, insert_table_order)
+            DataAccess.db_commit(output_database)  
      
          
         else:
@@ -581,16 +531,16 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
                 new_land_record_content = new_land_record_content[0:len(new_land_record_content)-1] + ')'
                 # Insert one land parcel record
                 insert_table_order = "insert into " + new_land_table_name + ' values ' + new_land_record_content.replace('None','Null') +';'
-                DataAccess.insert_record_to_table(database, insert_table_order)
-            DataAccess.db_commit(database)        
+                DataAccess.insert_record_to_table(output_database, insert_table_order)
+            DataAccess.db_commit(output_database)        
 
 
 
 
     '''
-    # Saving the Statistics table in the database  
+    # Saving the Statistics table in the output_database  
     '''  
-    # The data table "StatTable" should be pre-created in the database
+    # The data table "StatTable" should be pre-created in the output_database
     # So no need to consider the case when a such table does not exist.
     for StatID in society_instance.stat_dict:
         # Make the insert values for this household
@@ -605,12 +555,156 @@ def save_results_to_db(database, society_instance, scenario_name, iteration_coun
         stat_record_content = stat_record_content[0:len(stat_record_content)-1] + ')'
         # Insert one household record
         insert_table_order = "insert into " + stat_table_name + ' values ' + stat_record_content.replace('None','Null') +';'
-        DataAccess.insert_record_to_table(database, insert_table_order)
-    DataAccess.db_commit(database)           
+        DataAccess.insert_record_to_table(output_database, insert_table_order)
+    DataAccess.db_commit(output_database)           
 
 
 
-def remove_scenario_version_from_database(version_name, database, gui):
+
+
+
+def export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval):
+
+    # Import arcpy first.
+    import arcpy
+    from arcpy import env
+
+    # Set Arcpy environment settings
+    env.workspace = arcpy_workspace
+    
+    # Set output workspace
+    outWorkspace = arcpy_workspace
+    
+    # Set output path for external files (.mxd maps, .png map figures, etc) for the specific scenario version
+    # Create one if it does not already exist.
+    version_output_gis_path = output_gis_path + '\\' + scenario_name
+    if os.path.isdir(version_output_gis_path) == False:
+        os.makedirs(version_output_gis_path)
+    
+    # Copy the .mxd map into the version's output path, and rename it with a _scenarioname suffix.
+    input_mxd_location = input_mxd_path + '\\' + input_mxd
+    output_mxd = version_output_gis_path + '\\' + input_mxd[:-4] + '_' + scenario_name + '.mxd'
+    if os.path.isfile(output_mxd) == False:
+        copyfile(input_mxd_location, output_mxd)
+
+
+    # Make a folder to store the exported shapefiles
+    export_shapefile_path = version_output_gis_path + '\\export_shapefiles'
+    if os.path.isdir(export_shapefile_path) == False:
+        os.makedirs(export_shapefile_path)    
+
+    # Make a folder to store the exported .png map figures
+    export_png_path = version_output_gis_path + '\\export_maps_png' 
+    if os.path.isdir(export_png_path) == False:
+        os.makedirs(export_png_path)
+
+
+    # Check saving intervals. Only export maps along with a land table saved.
+    if iteration_count % int(land_save_interval) == 0:
+
+        map_save_year = society_instance.current_year
+        new_landuse_feature_name = 'LandUse_' + scenario_name + '_' + str(map_save_year) + '.shp'
+        
+
+        # Get the map file (.mxd)
+        map_mxd = arcpy.mapping.MapDocument(output_mxd)
+
+        # Get the legend, and set not to auto add newly added items into the legend.
+        legend = arcpy.mapping.ListLayoutElements(map_mxd, "LEGEND_ELEMENT", "Legend")[0]
+        legend.autoAdd = False
+
+        
+
+        # Export the base feature (LandUse feature) as a shapefile as the working feature for map display
+        arcpy.FeatureClassToFeatureClass_conversion ("LandUse", export_shapefile_path, new_landuse_feature_name)        
+        
+        # Make a layer from the copied feature.
+        new_landuse_feature_full_path = str(export_shapefile_path + '\\' + new_landuse_feature_name)
+        arcpy.MakeFeatureLayer_management(new_landuse_feature_full_path, new_landuse_feature_name)
+
+        # Get the database table for the land records respective to the map
+        insert_land_table_name = str( '"' + scenario_name + '_land"')
+        insert_land_table = DataAccess.get_table(database, insert_land_table_name)
+
+        # Read relevant records from the land table and save the records in a dictionary indexed by ParcelID of land records
+        to_be_inserted_dict = dict()
+        
+        for record in insert_land_table:
+            if record.StatDate == map_save_year:
+                to_be_inserted_dict[record.ParcelID] = record.LandCover
+
+        # Update values in field LandCover to reflect the new land cover status
+        features = arcpy.UpdateCursor(new_landuse_feature_full_path)
+        for feature in features:
+            feature.LandCover = to_be_inserted_dict[feature.ParcelID]
+            features.updateRow(feature)
+
+
+        # Apply the predefined symbology to the new layer        
+        layer = arcpy.mapping.Layer(new_landuse_feature_full_path)
+        arcpy.ApplySymbologyFromLayer_management(layer, layer_styles_location)
+        d_f = arcpy.mapping.ListDataFrames(map_mxd)[0]
+        arcpy.mapping.AddLayer(d_f, layer, "AUTO_ARRANGE")
+        map_mxd.save()
+
+        # Output the map as a .PNG image
+        # The [:-4] slicing is for removing the '.shp' extension
+        new_landuse_map_png_name = str(export_png_path + '\\' + new_landuse_feature_name[:-4] + '.png')
+        
+        arcpy.mapping.ExportToPNG(map_mxd, new_landuse_map_png_name, resolution=165)        
+                
+        
+
+        '''
+        The following codes are the operations that are based on features in the geodatabase;
+        However, this technical approach would lead to new features created in the database,
+        and these features can't be deleted from the database (encounters the "schema lock" when trying to do so) 
+        when the scenario version is deleted.
+        
+        
+        # Make a copy of the base feature (LandUse feature) as the working feature for map display
+        arcpy.CopyFeatures_management('LandUse', str(outWorkspace + '/' + new_landuse_feature_name))
+
+        # Make a layer from the copied feature.
+        arcpy.MakeFeatureLayer_management(new_landuse_feature_name, new_landuse_feature_name)
+
+        # Get the database table for the land records respective to the map
+        insert_land_table_name = str( '"' + scenario_name + '_land"')
+        insert_land_table = DataAccess.get_table(database, insert_land_table_name)
+
+        # Read relevant records from the land table and save the records in a dictionary indexed by ParcelID of land records
+        to_be_inserted_dict = dict()
+        
+        for record in insert_land_table:
+            if record.StatDate == map_save_year:
+                to_be_inserted_dict[record.ParcelID] = record.LandCover
+
+        # Update values in field LandCover to reflect the new land cover status
+        for ParcelID in to_be_inserted_dict:
+            update_table_order = "UPDATE " + new_landuse_feature_name + " SET LandCover = '"  + str(to_be_inserted_dict[ParcelID]) + "' WHERE ParcelID = " + str(ParcelID)
+        
+            DataAccess.update_table(database, update_table_order)
+            DataAccess.db_commit(database)
+
+        # Apply the predefined symbology to the new layer        
+        layer = arcpy.mapping.Layer(new_landuse_feature_name)
+        arcpy.ApplySymbologyFromLayer_management(layer, layer_styles_location)
+        d_f = arcpy.mapping.ListDataFrames(map_mxd)[0]
+        arcpy.mapping.AddLayer(d_f, layer, "AUTO_ARRANGE")
+        map_mxd.save()
+
+        # Output the map as a .PNG image
+        new_landuse_map_png_name = str(export_png_path + '\\' + new_landuse_feature_name + '.png')
+        
+        arcpy.mapping.ExportToPNG(map_mxd, new_landuse_map_png_name, resolution=165)
+        '''
+
+
+
+
+
+
+def delete_scenario_version(version_name, database, gui):
     '''
     Remove a scenario version from the VersionTable;
     Also remove all the statistics records related to this scenario version in the StatTable;
@@ -630,15 +724,41 @@ def remove_scenario_version_from_database(version_name, database, gui):
     
     
     # Drop the tables
-    drop_hh_table_order = str('drop table ' + version_name + '_households')
-    DataAccess.drop_table(database, drop_hh_table_order)
-    drop_pp_table_order = str('drop table ' + version_name + '_persons')
-    DataAccess.drop_table(database, drop_pp_table_order)
-    drop_land_table_order = str('drop table ' + version_name + '_land')
-    DataAccess.drop_table(database, drop_land_table_order)
+    if database.cursor.tables(table=str(version_name + '_households')).fetchone(): # if the table exists
+        drop_hh_table_order = str('drop table ' + version_name + '_households')
+        DataAccess.drop_table(database, drop_hh_table_order)
+    
+    if database.cursor.tables(table=str(version_name + '_persons')).fetchone():    
+        drop_pp_table_order = str('drop table ' + version_name + '_persons')
+        DataAccess.drop_table(database, drop_pp_table_order)
+    if database.cursor.tables(table=str(version_name + '_land')).fetchone():           
+        drop_land_table_order = str('drop table ' + version_name + '_land')
+        DataAccess.drop_table(database, drop_land_table_order)
     
     DataAccess.db_commit(database)
     
+    # Remove the respective GIS output folder and all its contents (the .mxd file, the shapefiles, and the .png map figures)
+    version_output_gis_path = str(output_gis_path + '\\' + version_name)
+    if os.path.isdir(version_output_gis_path) == True:    
+        rmtree(version_output_gis_path)
+
+
+    '''
+    The following codes got "ERROR 000464: Cannot get exclusive schema lock." all the time. 
+    Leave this for now. Liyan. 20150619.
+    
+#     # Delete the respective features in the database
+#     # Import arcpy first.
+#     import arcpy
+#     from arcpy import env
+#     # Set Arcpy environment settings
+#     env.workspace = arcpy_workspace
+#     
+#     # Delete the features
+#     arcpy.Delete_management("LandUse_a003_2016")
+    '''
+    
+    # Refresh the automatically displayed new scenario name in the GUI
     gui.add_default_new_scenario_name()
     
     # Return True if succeeded.
@@ -1295,7 +1415,7 @@ class Ui_frm_SEEMS_main(object):
         land_save_interval = self.txt_save_land_interval.text()
 
         # Check for already existing names first.
-        version_table = DataAccess.get_table(db, version_table_name)        
+        version_table = DataAccess.get_table(output_db, version_table_name)        
         # Get the scenario list.
         scenario_list = list()
         for version in version_table:
@@ -1320,7 +1440,7 @@ class Ui_frm_SEEMS_main(object):
             self.statusbar.showMessage('Running simulation...')
 
 
-            create_scenario(db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
+            create_scenario(scenario_name, model_table_name, model_table, household_table_name, household_table, 
                             person_table_name, person_table, land_table_name, land_table, 
                             business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
                             stat_table_name, stat_table, simulation_depth, start_year, 
@@ -1350,7 +1470,7 @@ class Ui_frm_SEEMS_main(object):
 #                 # If the run is unsuccessful, revert to the starting point by deleting any tables or records
 #                 # that had been inserted to the database.
 #                 # And display an error message.
-#                 remove_scenario_version_from_database(scenario_name, db, self)
+#                 delete_scenario_version(scenario_name, output_db, self)
 #                 
 #                 # Refresh the status bar
 #                 self.statusbar.showMessage('Simulation failed')
@@ -1366,7 +1486,7 @@ class Ui_frm_SEEMS_main(object):
 
     def add_default_new_scenario_name(self):
         # Refresh the version_table cursor.
-        version_table = DataAccess.get_table(db, version_table_name)
+        version_table = DataAccess.get_table(output_db, version_table_name)
         
         # Get the scenario list.
         scenario_list = list()
@@ -1390,7 +1510,7 @@ class Ui_frm_SEEMS_main(object):
 
 
     def btn_delete_scenario_onclick(self):
-        if remove_scenario_version_from_database(self.cmb_select_manage_scenario.currentText(), db, self):
+        if delete_scenario_version(self.cmb_select_manage_scenario.currentText(), output_db, self):
             
             # Refresh the control panel scenario selection combo boxes
             self.refresh_scenario_combobox(self.cmb_select_manage_scenario)
@@ -1425,7 +1545,7 @@ class Ui_frm_SEEMS_main(object):
         '''
         
         # Refresh the version_table cursor
-        version_table = DataAccess.get_table(db, version_table_name)
+        version_table = DataAccess.get_table(output_db, version_table_name)
             
         # Get the scenario list for the select scenario combo boxes in the GUI/Results Review tab to display
         scenario_list = list()
@@ -1453,7 +1573,7 @@ class Ui_frm_SEEMS_main(object):
     def refresh_review_tab_variable_and_time(self, single_variable, cross_section):
                     
         # Refresh the stat_table cursor
-        stat_table = DataAccess.get_table(db, stat_table_name) 
+        stat_table = DataAccess.get_table(output_db, stat_table_name) 
 
         # Clear current select variable combo box
         self.cmb_select_review_variable.clear()
@@ -1503,7 +1623,7 @@ class Ui_frm_SEEMS_main(object):
 
     def refresh_map_tab_map_layers(self):
         # Refresh the stat_table cursor
-        stat_table = DataAccess.get_table(db, stat_table_name) 
+        stat_table = DataAccess.get_table(output_db, stat_table_name) 
 
         # Clear current select map layer combo box
         self.cmb_select_map_layer.clear()
@@ -1562,7 +1682,7 @@ class Ui_frm_SEEMS_main(object):
     def cmb_select_map_scenario_onchange(self):
 
         # Refresh the version_table cursor
-        version_table = DataAccess.get_table(db, version_table_name)
+        version_table = DataAccess.get_table(output_db, version_table_name)
         
         # Refresh the map layer selection combo box
         self.refresh_map_tab_map_layers()
@@ -1596,7 +1716,7 @@ class Ui_frm_SEEMS_main(object):
     
     def sld_select_map_year_onchange(self):
 
-        version_table = DataAccess.get_table(db, version_table_name)
+        version_table = DataAccess.get_table(output_db, version_table_name)
 
         start_time = int()
         end_time = int()
@@ -1635,7 +1755,7 @@ class Ui_frm_SEEMS_main(object):
         # for users may need to make plots after the iteration (running of main simulation program).
         
         # Read the statistics table.        
-        stat_table = DataAccess.get_table(db, stat_table_name)
+        stat_table = DataAccess.get_table(output_db, stat_table_name)
         
         # Get the plot title
         plot_title = str(self.cmb_select_review_variable.currentText())        
@@ -1767,9 +1887,12 @@ class Ui_frm_SEEMS_main(object):
     
     
     def display_map(self, map_scenario, map_layer, map_year):
-        if map_layer == 'Land-use/land cover':
-            layer = 'LandUse_'
+#         if map_layer == 'Land-use/land cover':
+        layer = 'LandUse_'
         
+        
+        export_png_path = output_gis_path + '\\' + map_scenario + '\\export_maps_png'         
+                
         landuse_layer_name = layer + map_scenario + '_' + str(map_year)
         new_map_image_path = str(export_png_path + '\\' + landuse_layer_name + '.png')
         
