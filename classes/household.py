@@ -67,6 +67,10 @@ class Household(object):
         
         # Define an empty list of participant policy programs
         self.own_policy_programs = list()
+
+
+        # Initialize the household's energy class instance
+        self.energy = Energy()
         
         
         # Define a variable indicating the household's preference type
@@ -98,8 +102,6 @@ class Household(object):
   
 
 
-        # Initialize the household's energy class instance
-        self.energy = Energy()
         
 
     
@@ -258,7 +260,7 @@ class Household(object):
             compensation_1 = hyp_capital_1.cash - self.own_capital_properties.cash
                     
             # Do the business based on hyp_capital_1
-            hyp_capital_1 = self.household_business_revenue(hyp_capital_1, business_sector_dict, False, model_parameters)           
+            hyp_capital_1 = self.household_business_revenue(hyp_capital_1, business_sector_dict, model_parameters, risk_effective=False)           
             
             # Get the total household revenues in this occasion
             revenue_1 = hyp_capital_1.get_total_business_income() + compensation_1
@@ -274,7 +276,7 @@ class Household(object):
             compensation_2 = hyp_capital_2.cash - self.own_capital_properties.cash
             
             # Do the business based on hyp_capital_2
-            hyp_capital_2 = self.household_business_revenue(hyp_capital_2, business_sector_dict, False, model_parameters)
+            hyp_capital_2 = self.household_business_revenue(hyp_capital_2, business_sector_dict, model_parameters, risk_effective=False)
             
             # Get the total household revenues in this occasion        
             revenue_2 = hyp_capital_2.get_total_business_income() + compensation_2
@@ -334,7 +336,7 @@ class Household(object):
 
 
 
-    def household_business_revenue(self, hh_capital, business_sector_dict, risk_effective, model_parameters):
+    def household_business_revenue(self, hh_capital, business_sector_dict, model_parameters, risk_effective):
         '''
         The process of a household doing business.
         business_sector_dict: all business sectors. i.e. society.business_sector_dict.
@@ -346,7 +348,7 @@ class Household(object):
         
         self.get_rank_available_business(hh_capital, self.own_av_business_sectors, model_parameters)
         
-        hh_capital = self.do_business(hh_capital, self.own_av_business_sectors, risk_effective, model_parameters)
+        hh_capital = self.do_business(hh_capital, self.own_av_business_sectors, model_parameters, risk_effective)
         
         return hh_capital
 
@@ -368,13 +370,13 @@ class Household(object):
         if self.hh_preference_type == 1 or self.hh_preference_type == 2:
             # Risk aversion. No loans. risk_type = True
             for SectorName in business_sector_dict:
-                if business_sector_dict[SectorName].is_doable(hh_capital, True) == True:
+                if business_sector_dict[SectorName].is_doable(hh_capital, risk_type=True) == True:
                     self.own_av_business_sectors.append(business_sector_dict[SectorName])
         
         else:
             # Risk appetite. risk_type = False
             for SectorName in business_sector_dict:
-                if business_sector_dict[SectorName].is_doable(hh_capital, False) == True:
+                if business_sector_dict[SectorName].is_doable(hh_capital, risk_type=False) == True:
                     self.own_av_business_sectors.append(business_sector_dict[SectorName])            
         
         
@@ -395,7 +397,7 @@ class Household(object):
             '''            
             # Get the hypothetical profit of each sector if entered
             for sector in business_list:
-                profit = sector.calculate_business_revenue(hh_capital, True, False, model_parameters).cash - hh_capital.cash
+                profit = sector.calculate_business_revenue(hh_capital, model_parameters, risk_type=True, risk_effective=False).cash - hh_capital.cash
                 temp_sectors_list.append((profit, sector))
                 
             # Rank the sectors by profit descendedly
@@ -421,7 +423,7 @@ class Household(object):
             '''
             # Get the hypothetical labor cost of each sector if entered
             for sector in business_list:
-                labor_cost = sector.calculate_business_revenue(hh_capital, True, False, model_parameters).labor_cost - hh_capital.labor_cost
+                labor_cost = sector.calculate_business_revenue(hh_capital, model_parameters, risk_type=True, risk_effective=False).labor_cost - hh_capital.labor_cost
                 temp_sectors_list.append((labor_cost, sector))
                 
             # Rank the sectors by labor cost ascendedly
@@ -441,7 +443,7 @@ class Household(object):
             '''
             # Get the hypothetical profit of each sector if entered
             for sector in business_list:
-                profit = sector.calculate_business_revenue(hh_capital, False, False, model_parameters).cash - hh_capital.cash
+                profit = sector.calculate_business_revenue(hh_capital, model_parameters, risk_type=False, risk_effective=False).cash - hh_capital.cash
                 temp_sectors_list.append((profit, sector))
                 
             # Rank the sectors by profit descendedly
@@ -467,7 +469,7 @@ class Household(object):
             '''
             # Get the hypothetical labor cost of each sector if entered
             for sector in business_list:
-                labor_cost = sector.calculate_business_revenue(hh_capital, False, False, model_parameters).labor_cost - hh_capital.labor_cost
+                labor_cost = sector.calculate_business_revenue(hh_capital, model_parameters, risk_type=False, risk_effective=False).labor_cost - hh_capital.labor_cost
                 temp_sectors_list.append((labor_cost, sector))
                 
             # Rank the sectors by labor cost ascendedly
@@ -483,7 +485,7 @@ class Household(object):
     
 
     
-    def do_business(self, hh_capital, business_list, risk_effective, model_parameters):
+    def do_business(self, hh_capital, business_list, model_parameters, risk_effective):
         '''
         risk_effective - whether the random risk factor takes effect in the calculation. True - real world; False: hypothetical.        
         '''
@@ -498,8 +500,8 @@ class Household(object):
             '''
             
             for sector in self.own_av_business_sectors:
-                hh_capital = BusinessSector.calculate_business_revenue(sector, hh_capital, 
-                                                            self.hh_risk_type, risk_effective, model_parameters)
+                hh_capital = BusinessSector.calculate_business_revenue(sector, hh_capital, model_parameters, 
+                                                                       self.hh_risk_type, risk_effective)
                 self.own_current_sectors.append(sector)
                 
                 if hh_capital.av_labor <= 0:
@@ -520,8 +522,8 @@ class Household(object):
                     break 
                 
                 else:
-                    hh_capital = BusinessSector.calculate_business_revenue(sector, 
-                            hh_capital, self.hh_risk_type, risk_effective, model_parameters)
+                    hh_capital = BusinessSector.calculate_business_revenue(sector, hh_capital, model_parameters, 
+                                                                           self.hh_risk_type, risk_effective)
                     self.own_current_sectors.append(sector)
                                                   
         return hh_capital        

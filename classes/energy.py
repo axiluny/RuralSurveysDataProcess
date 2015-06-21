@@ -22,7 +22,7 @@ class Energy(object):
     
     
     
-    def annual_energy_step_go(self, hh, model_parameters):
+    def energy_step_go(self, hh, model_parameters):
         
         self.get_household_energy_type(hh, model_parameters)
         self.get_energy_demand(hh, model_parameters)

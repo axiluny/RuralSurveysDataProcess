@@ -20,6 +20,7 @@ class StatClass(object):
         self.Variable = ''
         self.StatValue = float()
         self.StatUnit = ''
+
         
         '''
         # Properties for special statistics items
@@ -37,7 +38,12 @@ class StatClass(object):
         # map layers
         self.MapLayer = 0
     
-        
+        '''
+        Property indicating if the starting point statistics is meaningful.
+        E.g. income variables are "void" at the starting point since no economic activities have taken place yet;
+        while land use variable are meaningful at the starting point.
+        '''    
+        self.StartingPointEffective = int()
         
         
     '''
@@ -67,6 +73,8 @@ class StatClass(object):
         self.StatValue = pp_ct
         self.StatUnit = 'Persons'
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
                  
         society_instanceiety_instance.stat_dict[self.StatID] = self
 
@@ -90,6 +98,8 @@ class StatClass(object):
         self.StatValue = hh_ct
         self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
                  
         society_instanceiety_instance.stat_dict[self.StatID] = self
 
@@ -112,6 +122,8 @@ class StatClass(object):
         self.StatValue = dhh_ct
         self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
                  
         society_instance.stat_dict[self.StatID] = self    
     
@@ -137,6 +149,8 @@ class StatClass(object):
         self.StatValue = tpye_1_hh_ct
         self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
                  
         society_instance.stat_dict[self.StatID] = self          
     
@@ -159,6 +173,8 @@ class StatClass(object):
         self.StatValue = tpye_2_hh_ct
         self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
                  
         society_instance.stat_dict[self.StatID] = self              
     
@@ -181,6 +197,8 @@ class StatClass(object):
         self.StatValue = tpye_3_hh_ct
         self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
                  
         society_instance.stat_dict[self.StatID] = self     
 
@@ -203,6 +221,8 @@ class StatClass(object):
         self.StatValue = tpye_4_hh_ct
         self.StatUnit = 'Households'
         self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
                  
         society_instance.stat_dict[self.StatID] = self 
     
@@ -230,6 +250,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self 
             
     
@@ -252,6 +274,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self      
     
     
@@ -274,6 +298,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self
 
 
@@ -297,6 +323,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self        
 
 
@@ -318,6 +346,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self       
     
     
@@ -339,6 +369,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self
                 
 
@@ -366,6 +398,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self  
 
 
@@ -391,6 +425,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self  
 
 
@@ -412,6 +448,8 @@ class StatClass(object):
         self.StatUnit = 'Trucks'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self      
 
 
@@ -433,6 +471,8 @@ class StatClass(object):
         self.StatUnit = 'Mini-buses'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self     
 
     '''
@@ -458,6 +498,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self   
 
 
@@ -480,6 +522,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self   
 
 
@@ -502,6 +546,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self   
 
 
@@ -524,6 +570,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self  
             
         
@@ -547,11 +595,10 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self          
-        
-        
-        
-     
+             
         
         
         
@@ -574,6 +621,8 @@ class StatClass(object):
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self          
 
 
@@ -600,6 +649,8 @@ class StatClass(object):
         self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self
 
 
@@ -626,6 +677,8 @@ class StatClass(object):
         self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self
 
 
@@ -652,6 +705,8 @@ class StatClass(object):
         self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self
 
 
@@ -678,6 +733,8 @@ class StatClass(object):
         self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self        
 
 
@@ -704,6 +761,8 @@ class StatClass(object):
         self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self
 
 
@@ -730,6 +789,8 @@ class StatClass(object):
         self.StatUnit = 'Percent'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self
 
 
@@ -763,6 +824,8 @@ class StatClass(object):
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self
 
 
@@ -791,6 +854,8 @@ class StatClass(object):
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self
     
 
@@ -812,6 +877,8 @@ class StatClass(object):
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self    
     
     
@@ -834,6 +901,8 @@ class StatClass(object):
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self         
 
 
@@ -855,6 +924,8 @@ class StatClass(object):
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self       
     
 
@@ -876,6 +947,8 @@ class StatClass(object):
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self  
 
 
@@ -897,6 +970,8 @@ class StatClass(object):
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
+        self.StartingPointEffective = 1
+
         society_instance.stat_dict[self.StatID] = self  
 
     '''
@@ -914,6 +989,8 @@ class StatClass(object):
         
         self.CompositeIndicator = 1 # Make it a composite indicator
 
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self 
         
         
@@ -927,6 +1004,8 @@ class StatClass(object):
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.CompositeIndicator = 1 # Make it a composite indicator
+
+        self.StartingPointEffective = 0
 
         society_instance.stat_dict[self.StatID] = self         
         
@@ -942,6 +1021,8 @@ class StatClass(object):
         
         self.CompositeIndicator = 1 # Make it a composite indicator
 
+        self.StartingPointEffective = 0
+
         society_instance.stat_dict[self.StatID] = self         
         
         
@@ -956,6 +1037,8 @@ class StatClass(object):
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.CompositeIndicator = 1 # Make it a composite indicator
+
+        self.StartingPointEffective = 1
 
         society_instance.stat_dict[self.StatID] = self       
         
@@ -976,6 +1059,8 @@ class StatClass(object):
         self.StatID = self.Variable + '_' + str(self.StatDate)
         
         self.MapLayer = 1 # Make it a map layer
+
+        self.StartingPointEffective = 1
 
         society_instance.stat_dict[self.StatID] = self
         

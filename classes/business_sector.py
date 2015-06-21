@@ -83,7 +83,7 @@ class BusinessSector(object):
 
 
 
-    def calculate_business_revenue(self, capital, risk_type, risk_effective, model_parameters):
+    def calculate_business_revenue(self, capital, model_parameters, risk_type, risk_effective):
         '''
         capital - household's own capital properties (factors of production) i.e. household_class.own_capital_properties
         risk_type - household's preference toward risks. True - risk aversion; False - risk appetite;

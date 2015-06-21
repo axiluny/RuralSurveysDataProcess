@@ -51,10 +51,9 @@ policy_table_name = 'PolicyTable'
 stat_table_name = 'StatTable'
 version_table_name = 'VersionTable'
 
-# Get the input and output databases
+# Get the input database (the output database is get later when initiating the GUI)
 input_db = DataAccess(input_db_location, dbdriver)
-output_db = DataAccess(output_db_location, dbdriver)
- 
+
 # Get the table pointers
 model_table = DataAccess.get_table(input_db, model_table_name)
 household_table = DataAccess.get_table(input_db, household_table_name)
@@ -99,7 +98,7 @@ The main submodules
 
 
 
-def create_scenario(scenario_name, model_table_name, model_table, hh_table_name, hh_table, 
+def create_scenario(output_db, scenario_name, model_table_name, model_table, hh_table_name, hh_table, 
                     pp_table_name, pp_table, land_table_name, land_table, 
                     business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
                     stat_table_name, stat_table, simulation_depth, start_year, 
@@ -108,14 +107,8 @@ def create_scenario(scenario_name, model_table_name, model_table, hh_table_name,
 
     # Set up an initial value (1%) when clicked so that the user knows it's running.
     refresh_progress_bar(simulation_depth, gui)
-    
-    # Check if there exists an output database file;
-    # And if not, make a copy of the input database file to store the output results (so that to keep the input (original) database clean)    
-    if os.path.isfile(output_db_location) == False:
-        copyfile(input_db_location, output_db_location)
 
-    # Insert a record in the VersionTables in both input and output database files
-#     refresh_version_table(input_db, scenario_name, start_year, simulation_depth, pp_save_interval, hh_save_interval, land_save_interval)    
+    # Insert a record in the VersionTables in the output database files
     refresh_version_table(output_db, scenario_name, start_year, simulation_depth, pp_save_interval, hh_save_interval, land_save_interval)
      
     # Initialize the society class: create society, household, person, etc instances
@@ -140,7 +133,7 @@ def create_scenario(scenario_name, model_table_name, model_table, hh_table_name,
 def step_go(output_db, society_instance, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval):
     
     # If it's the first round of iteration, just get the stats and save the records to database
-    # Else, proceed with the simulation in society.step_go, and then get the stats and save the records to database
+    # Else, proceed with the simulation in society.society_step_go, and then get the stats and save the records to database
     if iteration_count == 0:  
         # Do statistics and add records to the statistics dictionary in the society instance
         add_stat_results(society_instance, scenario_name)
@@ -152,7 +145,7 @@ def step_go(output_db, society_instance, start_year, iteration_count, scenario_n
         export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
     # Do the simulation
-    Society.step_go(society_instance, start_year, iteration_count)
+    Society.society_step_go(society_instance, start_year, iteration_count)
 
     add_stat_results(society_instance, scenario_name)
     
@@ -1286,8 +1279,19 @@ class Ui_frm_SEEMS_main(object):
         '''
         The following lines in this submodule are developers added codes.
 
-        First, Events handling 
+        First, Check if there exists an output database file;
+        And if not, make a copy of the input database file to store the output results 
+        (so that to keep the input (original) database clean)    
         '''
+        if os.path.isfile(output_db_location) == False:
+            copyfile(input_db_location, output_db_location)
+            
+        output_db = DataAccess(output_db_location, dbdriver)        
+        
+        '''
+        Second, events handling 
+        '''
+        
         # Scenario management
         self.btn_start_simulation.clicked.connect(self.btn_start_simulation_onclick)        
         self.btn_delete_scenario.clicked.connect(self.btn_delete_scenario_onclick)
@@ -1299,6 +1303,8 @@ class Ui_frm_SEEMS_main(object):
         self.rbt_single_variable_time_series.toggled.connect(self.rbt_single_variable_time_series_ontoggled)
         self.rbt_single_variable_cross_section.toggled.connect(self.rbt_single_variable_cross_section_ontoggled)
         self.rbt_multi_variable_time_series.toggled.connect(self.rbt_multi_variable_time_series_ontoggled)
+        
+        self.cmb_select_review_variable.currentIndexChanged.connect(self.cmb_select_review_variable_onchange)
 
         self.btn_review_plot.clicked.connect(self.btn_review_plot_onclick)
         
@@ -1312,7 +1318,7 @@ class Ui_frm_SEEMS_main(object):
         
 
         '''
-        Second, manually add some widgets.
+        Next, manually add some widgets.
         '''
         # Display a greetings image in the first tab (scenarios manager)
         # Create a QVBoxLayout within the widget for embedding
@@ -1405,6 +1411,8 @@ class Ui_frm_SEEMS_main(object):
     def btn_start_simulation_onclick(self):
         
         # Get scenario settings from user inputs
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         scenario_name = str(self.txt_input_scenario_name.text())
         start_year = self.sbx_set_simulation_start_year.value()
         end_year = self.sbx_set_simulation_end_year.value()
@@ -1440,7 +1448,7 @@ class Ui_frm_SEEMS_main(object):
             self.statusbar.showMessage('Running simulation...')
 
 
-            create_scenario(scenario_name, model_table_name, model_table, household_table_name, household_table, 
+            create_scenario(output_db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
                             person_table_name, person_table, land_table_name, land_table, 
                             business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
                             stat_table_name, stat_table, simulation_depth, start_year, 
@@ -1486,6 +1494,8 @@ class Ui_frm_SEEMS_main(object):
 
     def add_default_new_scenario_name(self):
         # Refresh the version_table cursor.
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         version_table = DataAccess.get_table(output_db, version_table_name)
         
         # Get the scenario list.
@@ -1510,6 +1520,9 @@ class Ui_frm_SEEMS_main(object):
 
 
     def btn_delete_scenario_onclick(self):
+        
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         if delete_scenario_version(self.cmb_select_manage_scenario.currentText(), output_db, self):
             
             # Refresh the control panel scenario selection combo boxes
@@ -1545,6 +1558,8 @@ class Ui_frm_SEEMS_main(object):
         '''
         
         # Refresh the version_table cursor
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         version_table = DataAccess.get_table(output_db, version_table_name)
             
         # Get the scenario list for the select scenario combo boxes in the GUI/Results Review tab to display
@@ -1570,26 +1585,25 @@ class Ui_frm_SEEMS_main(object):
 
 
 
-    def refresh_review_tab_variable_and_time(self, single_variable, cross_section):
+    def refresh_review_tab_variable_combobox(self, single_variable, cross_section):
                     
         # Refresh the stat_table cursor
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         stat_table = DataAccess.get_table(output_db, stat_table_name) 
 
         # Clear current select variable combo box
         self.cmb_select_review_variable.clear()
             
-        # Get the variable list and simulation length for the selected scenario        
+        # Get the variable list for the selected scenario        
         variable_list = list()
-        year_list = list()
 
         for record in stat_table:
             if record.ScenarioVersion == self.cmb_select_review_scenario.currentText():
-                if record.StatDate not in year_list:
-                    year_list.append(record.StatDate)
                 if record.Variable not in variable_list:
 
                     if single_variable == True: # Single variable; exclude the composite indicators
-                        if record.CompositeIndicator == 0:
+                        if record.CompositeIndicator == 0 and record.MapLayer == 0:
                             variable_list.append(record.Variable)
                     else: # Multiple variables; include only the composite indicators
                         if record.CompositeIndicator == 1:
@@ -1606,23 +1620,54 @@ class Ui_frm_SEEMS_main(object):
                     
             # Sort the variables list
             variable_list.sort()
-                        
+            
             # add the items to variable combo box
             self.cmb_select_review_variable.addItems(variable_list)
-            
-            # Reset the plot start and end years display according to the respective scenario's settings.
-            self.sbx_select_plot_start_year.setProperty("value", min(year_list))
-            
-            if cross_section == False: # Time series data
+
+
+
+
+    def cmb_select_review_variable_onchange(self):
+        
+        # Refresh the stat_table cursor
+        output_db = DataAccess(output_db_location, dbdriver)
+        
+        stat_table = DataAccess.get_table(output_db, stat_table_name) 
+        
+        # Get the time stamps list respective to the current variable
+        year_list = list()
+
+        for record in stat_table:
+            if record.ScenarioVersion == self.cmb_select_review_scenario.currentText() \
+            and record.Variable == self.cmb_select_review_variable.currentText():
+                if record.StatDate not in year_list:
+                    year_list.append(record.StatDate)
+        
+                
+        # Update the plot start and end year spinboxes
+        if len(year_list) != 0:     
+            for stat in stat_table:
+                if stat.ScenarioVersion == self.cmb_select_review_scenario.currentText() \
+                and stat.Variable == self.cmb_select_review_variable.currentText():
+                    if stat.StartingPointEffective == 0:            
+                        self.sbx_select_plot_start_year.setProperty("value", min(year_list) + 1)
+                        break
+                    else:
+                        self.sbx_select_plot_start_year.setProperty("value", min(year_list))
+                        break
+                    
+            if self.rbt_single_variable_cross_section.isChecked():# Cross-section data
+                self.sbx_select_plot_end_year.setProperty("value", 0)
+                self.sbx_select_plot_end_year.setDisabled(True)     
+            else: # Time series data 
                 self.sbx_select_plot_end_year.setDisabled(False)
                 self.sbx_select_plot_end_year.setProperty("value", max(year_list))
-            else: # Cross-section data
-                self.sbx_select_plot_end_year.setProperty("value", 0)
-                self.sbx_select_plot_end_year.setDisabled(True)
 
 
     def refresh_map_tab_map_layers(self):
         # Refresh the stat_table cursor
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         stat_table = DataAccess.get_table(output_db, stat_table_name) 
 
         # Clear current select map layer combo box
@@ -1647,17 +1692,17 @@ class Ui_frm_SEEMS_main(object):
     
 
     def rbt_single_variable_time_series_ontoggled(self):
-        self.refresh_review_tab_variable_and_time(single_variable = True, cross_section = False)
+        self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)
         
         
         
     def rbt_single_variable_cross_section_ontoggled(self):
-        self.refresh_review_tab_variable_and_time(single_variable = True, cross_section = True)
+        self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = True)
         
         
         
     def rbt_multi_variable_time_series_ontoggled(self):
-        self.refresh_review_tab_variable_and_time(single_variable = False, cross_section = False)
+        self.refresh_review_tab_variable_combobox(single_variable = False, cross_section = False)
         
 
 
@@ -1665,23 +1710,25 @@ class Ui_frm_SEEMS_main(object):
         
         # Determine which variables to load according to "chart type" radio button selection.
         if self.rbt_single_variable_time_series.isChecked():
-            self.refresh_review_tab_variable_and_time(single_variable = True, cross_section = False)
+            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)
             
         elif self.rbt_single_variable_cross_section.isChecked():
-            self.refresh_review_tab_variable_and_time(single_variable = True, cross_section = True)
+            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = True)
             
         elif self.rbt_multi_variable_time_series.isChecked():
-            self.refresh_review_tab_variable_and_time(single_variable = False, cross_section = False)
+            self.refresh_review_tab_variable_combobox(single_variable = False, cross_section = False)
             
         else:
             # If no radio button is checked, just load the single variables.
-            self.refresh_review_tab_variable_and_time(single_variable = True, cross_section = False)   
+            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)   
 
 
 
     def cmb_select_map_scenario_onchange(self):
 
         # Refresh the version_table cursor
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         version_table = DataAccess.get_table(output_db, version_table_name)
         
         # Refresh the map layer selection combo box
@@ -1716,6 +1763,8 @@ class Ui_frm_SEEMS_main(object):
     
     def sld_select_map_year_onchange(self):
 
+        output_db = DataAccess(output_db_location, dbdriver)
+        
         version_table = DataAccess.get_table(output_db, version_table_name)
 
         start_time = int()
@@ -1754,24 +1803,21 @@ class Ui_frm_SEEMS_main(object):
         # Note that data must be read from the database, rather than lists and dictionaries in the program, 
         # for users may need to make plots after the iteration (running of main simulation program).
         
-        # Read the statistics table.        
+        # Read the statistics table.
+        output_db = DataAccess(output_db_location, dbdriver)
+            
         stat_table = DataAccess.get_table(output_db, stat_table_name)
         
         # Get the plot title
         plot_title = str(self.cmb_select_review_variable.currentText())        
         
+        
         # Define x and y axes units
         x_unit = 'Year'
         y_unit = ''
 
-
-        # Determine the plot time range according to the plot type
-        # For line plots, skip the first year (the starting point).
-        if self.rbt_line_chart.isChecked():
-            plot_start_year = self.sbx_select_plot_start_year.value() + 1
-        else:
-            plot_start_year = self.sbx_select_plot_start_year.value()
-
+        # Determine the plot start year
+        plot_start_year = self.sbx_select_plot_start_year.value()
 
         # Define the plot series list       
         plot_series_list = list()
@@ -1793,6 +1839,13 @@ class Ui_frm_SEEMS_main(object):
                     if st.Variable == str(self.cmb_select_review_variable.currentText()):    
                         series_name = st.Variable
                         y_unit = st.StatUnit
+
+#                         # Determine the plot time range according to the StartingPointEffective attribute
+#                         # If StartingPointEffective == 0, skip the first year (the starting point).                        
+#                         if st.StartingPointEffective == 0:
+#                             plot_start_year = self.sbx_select_plot_start_year.value() + 1
+#                         else:
+#                             plot_start_year = self.sbx_select_plot_start_year.value()
                         
                         # Assign values for the variable
                         if st.StatDate >= plot_start_year and st.StatDate <= self.sbx_select_plot_end_year.value():                
@@ -1820,6 +1873,18 @@ class Ui_frm_SEEMS_main(object):
             # Make the plot series list
             for indicator in composite_indicators_dict:
                 if self.cmb_select_review_variable.currentText() == indicator: 
+                    
+#                     # Determine the plot time range according to the StartingPointEffective attribute
+#                     # If StartingPointEffective == 0, skip the first year (the starting point).
+#                     for stat in stat_table:
+#                         if stat.Variable == indicator:                            
+#                             if stat.StartingPointEffective == 0:
+#                                 plot_start_year = self.sbx_select_plot_start_year.value() + 1
+#                                 break
+#                             else:
+#                                 plot_start_year = self.sbx_select_plot_start_year.value()
+#                                 break
+                    
                     for variable in composite_indicators_dict[indicator]:     
                         plot_xy_tuple_list = list()
                         

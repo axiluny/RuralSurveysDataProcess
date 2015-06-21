@@ -39,6 +39,34 @@ class Land(object):
     
     
     
+    def land_step_go(self, society_instance):
+            
+        # Update the statistics time stamp
+        self.StatDate = society_instance.current_year
+        
+        # Deal with the reverted farmland
+        try:
+            for land in society_instance.hh_dict[self.HID].own_capital_properties.land_properties_list:
+                if land.ParcelID == self.ParcelID and land.IsG2G_this_year == True:                
+                    society_instance.hh_dict[self.HID].own_capital_properties.land_properties_list.remove(land)
+                    
+                    self.IsG2G_this_year = False
+                    self.IsG2G = 1
+                    self.SStartyear = society_instance.current_year
+                    self.HID = ''
+        
+        except:
+            pass
+            # This try...except session is necessary because some land parcels in the land table 
+            # have an HID that does not appear in the household table.
+        
+
+        # Then simulate the natural land cover succession process
+        self.land_cover_succession(society_instance.current_year, society_instance.model_parameters_dict)
+
+
+    
+    
     def land_cover_succession(self, current_year, model_parameters):
         '''
         The natural succession process of land cover.

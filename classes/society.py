@@ -103,7 +103,7 @@ class Society(object):
 
 
         
-    def step_go(self, start_year, iteration_count):
+    def society_step_go(self, start_year, iteration_count):
         '''
         (Annual) iterative activities of the society class' instance.
         '''
@@ -136,53 +136,6 @@ class Society(object):
 
 
     
-    def household_economy(self):
-        
-        for HID in self.hh_dict:
-            # Determine the household's preferences
-            self.hh_dict[HID].housedhold_categorization()
-            
-            # Determine which policy program to participate in
-            self.hh_dict[HID].household_policy_decision(self.policy_dict, self.business_sector_dict, self.model_parameters_dict)
-        
-            # Do the business
-            # The second parameter, risk_effective = True, indicating it is a "real world" run this time,
-            # as opposed to the two "hypothetical" runs in the previous step, the policy decision step,
-            # when risk_effective = False. i.e. random factors don't take effect in households' economy decision-making process.
-            self.hh_dict[HID].own_capital_properties = self.hh_dict[HID].household_business_revenue(self.hh_dict[HID].own_capital_properties, self.business_sector_dict, True, self.model_parameters_dict)
-            
-            # Household's final accounting for the year
-            self.hh_dict[HID].household_final_accounting(self.model_parameters_dict)
-
-    
-    
-    def energy_update(self):
-        '''
-        To be elaborated.
-        '''
-        for HID in self.hh_dict:
-            Energy.annual_energy_step_go(self.hh_dict[HID].energy, self.hh_dict[HID], self.model_parameters_dict)
-            
-    
-    def land_update(self):
-
-        # Deal with the reverted farmland first
-        for HID in self.hh_dict:
-            for land_parcel in self.hh_dict[HID].own_capital_properties.land_properties_list:
-                if land_parcel.IsG2G_this_year == True:
-                    self.hh_dict[HID].own_capital_properties.land_properties_list.remove(land_parcel)
-                          
-                    # And change the attributes of the same land parcel in society.land_dict
-                    self.land_dict[land_parcel.ParcelID].IsG2G = 1
-                    self.land_dict[land_parcel.ParcelID].SStartyear = self.current_year
-                    self.land_dict[land_parcel.ParcelID].HID = ''
-                    self.land_dict[land_parcel.ParcelID].IsG2G_this_year = False
-
-         
-        # Then simulate the natural land cover succession process
-        for ParcelID in self.land_dict:
-            self.land_dict[ParcelID].StatDate = self.current_year
-            self.land_dict[ParcelID].land_cover_succession(self.current_year, self.model_parameters_dict)
             
                
             
@@ -386,20 +339,6 @@ class Society(object):
 
 
 
-    def household_capital_property_update(self):
-        '''
-        Traverse the hh_dict. Update every existing household's capital properties status.
-        '''
-        
-        for HID in self.hh_dict:
-            hh = self.hh_dict[HID]
-            
-            if hh.is_exist == 1:
-                # Only deal with existing households
-                hh.own_capital_properties.refresh(hh)
-
-
-
 
     def create_new_person(self, mom):
         '''
@@ -499,8 +438,8 @@ class Society(object):
         pp.R2HHH = '3_00_1'
 
 
-        # Remove the new household head (pp) from his original household's persons dict
-        del self.hh_dict[ori_hid].own_pp_dict[pp.PID]   
+        # Remove the new household head (pp) from his original household's persons dict 
+        self.remove_person_from_household(pp, ori_hid)
                                           
         # Add the new household head (pp) to new_hh.own_pp_dict
         new_hh.own_pp_dict[pp.PID] = pp
@@ -511,10 +450,6 @@ class Society(object):
         # Reallocate capital properties from the original household to the newly created one.
         self.household_property_reallocate(new_hh.HID, ori_hid, 'hh_head')
         
-
-
-
-    
     
 
 
@@ -529,8 +464,8 @@ class Society(object):
             # Record the original HID
             ori_hid = pp.HID
 
-            # Remove the person from his/her original household's persons dict
-            del self.hh_dict[ori_hid].own_pp_dict[pp.PID]          
+            # Remove the person from his/her original household's persons dict       
+            self.remove_person_from_household(pp, ori_hid)
             
             
             # Modify the personal properties of the newly added person
@@ -563,12 +498,24 @@ class Society(object):
                 
 #                 # Debugging codes
 #                 self.count2 += 1
-            
-                        
+                                    
         
         elif role == 'newborn_kid': # Newborn kids
             # Add the person to household members dict
             self.hh_dict[HID].own_pp_dict[pp.PID] = pp
+
+
+
+
+
+    def remove_person_from_household(self, pp, HID):
+        '''
+        Remove a person from a household. 
+        pp - the person instance.
+        HID - HID of the household from which the person is to be removed.
+        '''
+        del self.hh_dict[HID].own_pp_dict[pp.PID]
+
 
 
 
@@ -1015,7 +962,89 @@ class Society(object):
 
 
 
+    def household_capital_property_update(self):
+        '''
+        Traverse the hh_dict. Update every existing household's capital properties status.
+        '''
+        
+        for HID in self.hh_dict:
+            hh = self.hh_dict[HID]
+            
+            if hh.is_exist == 1:
+                # Only deal with existing households
+                hh.own_capital_properties.refresh(hh)
+
+
+
+
     
+    def household_economy(self):
+        '''
+        The (annual) economic activities of the households. Including households' preference categorization, 
+        policy-related decision-making,and production and consumption activities.
+        '''
+        
+        for HID in self.hh_dict:
+            # Determine the household's preferences
+            self.hh_dict[HID].housedhold_categorization()
+            
+            # Determine which policy program to participate in
+            self.hh_dict[HID].household_policy_decision(self.policy_dict, self.business_sector_dict, self.model_parameters_dict)
+        
+            # Do the business
+            # The second parameter, risk_effective = True, indicating it is a "real world" run this time,
+            # as opposed to the two "hypothetical" runs in the previous step, the policy decision step,
+            # when risk_effective = False. i.e. random factors don't take effect in households' economy decision-making process.
+            self.hh_dict[HID].own_capital_properties = self.hh_dict[HID].household_business_revenue(self.hh_dict[HID].own_capital_properties, 
+                                                        self.business_sector_dict, self.model_parameters_dict, risk_effective=True)
+            
+            # Household's final accountings for the year
+            self.hh_dict[HID].household_final_accounting(self.model_parameters_dict)
+            
+            
+            
+    
+    def land_update(self):
+        '''
+        Annual update of the status of the land parcels.
+        '''
+
+        for ParcelID in self.land_dict:    
+            self.land_dict[ParcelID].land_step_go(self)
+            
+        '''
+        An equivalent method, not referring to the land_step_go submodule in the land class.
+        
+
+#         # Deal with the reverted farmland first
+#         for HID in self.hh_dict:
+#             for land_parcel in self.hh_dict[HID].own_capital_properties.land_properties_list:
+#                 if land_parcel.IsG2G_this_year == True:
+#                     self.hh_dict[HID].own_capital_properties.land_properties_list.remove(land_parcel)
+#                           
+#                     # And change the attributes of the same land parcel in society.land_dict
+#                     self.land_dict[land_parcel.ParcelID].IsG2G = 1
+#                     self.land_dict[land_parcel.ParcelID].SStartyear = self.current_year
+#                     self.land_dict[land_parcel.ParcelID].HID = ''
+#                     self.land_dict[land_parcel.ParcelID].IsG2G_this_year = False
+# 
+#          
+#         # Then simulate the natural land cover succession process
+#         for ParcelID in self.land_dict:
+#             self.land_dict[ParcelID].StatDate = self.current_year
+#             self.land_dict[ParcelID].land_cover_succession(self.current_year, self.model_parameters_dict)
+        '''
+
+
+
+
+    def energy_update(self):
+        '''
+        To be elaborated.
+        '''
+        for HID in self.hh_dict:
+            Energy.energy_step_go(self.hh_dict[HID].energy, self.hh_dict[HID], self.model_parameters_dict)
+
     
     
     
