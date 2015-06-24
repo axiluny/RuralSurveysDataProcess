@@ -12,14 +12,13 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.Qt import QMessageBox, QColorDialog
 from PyQt4.QtCore import Qt
 
-# from matplotlib.backends.backend_agg import FigureCanvas
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import numpy
 
 import os
-import numpy
 from shutil import *
 
 # Also need to import arcpy. But this takes a while. Better import it before actual using it, in export_map submodule.
