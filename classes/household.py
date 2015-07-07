@@ -162,12 +162,6 @@ class Household(object):
                     self.own_pp_dict[p.PID].SpouseID = '0'     
         
         return self
-
-
-
-    
-#     def household_capital_properties_update(self):
-#         self.own_capital_properties.refresh(self)
     
     
     

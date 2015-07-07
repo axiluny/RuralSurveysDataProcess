@@ -113,7 +113,7 @@ def create_scenario(output_db, scenario_name, model_table_name, model_table, hh_
     # Initialize the society class: create society, household, person, etc instances
     soc = Society(input_db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
                   land_table_name, land_table, business_sector_table_name, business_sector_table, 
-                  policy_table_name, policy_table, stat_table_name, simulation_depth, stat_table, 
+                  policy_table_name, policy_table, stat_table_name, stat_table, 
                   start_year)
       
     #Start simulation
@@ -141,7 +141,7 @@ def step_go(output_db, society_instance, start_year, iteration_count, scenario_n
         save_results_to_db(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
         # Export maps
-        export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+#         export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
     # Do the simulation
     Society.society_step_go(society_instance, start_year, iteration_count)
@@ -150,7 +150,7 @@ def step_go(output_db, society_instance, start_year, iteration_count, scenario_n
     
     save_results_to_db(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
-    export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+#     export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
 
 
@@ -625,14 +625,14 @@ def export_maps(database, society_instance, scenario_name, iteration_count, pp_s
             if record.StatDate == map_save_year:
                 to_be_inserted_dict[record.ParcelID] = record.LandCover
 
-        # Update values in field LandCover to reflect the new land cover status
+        # Update values in field LandCover in the shapefile's attribute table to reflect the new land cover status
         features = arcpy.UpdateCursor(new_landuse_feature_full_path)
         for feature in features:
             feature.LandCover = to_be_inserted_dict[feature.ParcelID]
             features.updateRow(feature)
 
 
-        # Apply the predefined symbology to the new layer        
+        # Apply the predefined symbology to the new layer, and add the layer to the .mxd map.
         layer = arcpy.mapping.Layer(new_landuse_feature_full_path)
         arcpy.ApplySymbologyFromLayer_management(layer, layer_styles_location)
         d_f = arcpy.mapping.ListDataFrames(map_mxd)[0]
@@ -802,8 +802,8 @@ class Ui_frm_SEEMS_main(object):
     def setupUi(self, frm_SEEMS_main):
            
         '''
-        The followings are mainly PyQt auto-generated codes from the Qt Designer.
-        With some user editions.
+        The followings are PyQt auto-generated codes from the Qt Designer.
+        Up until otherwise indicated.
         '''
         
         # Set up the main window frame
@@ -1325,8 +1325,11 @@ class Ui_frm_SEEMS_main(object):
         # Call ImageViewer class to display the image
         greetings_imgage = ImageViewer(widget=self.greetings_widget, layout=self.greeting_lyt, image_path=greetings_image_location, scalable=False)
         self.greeting_lyt.addWidget(greetings_imgage.imageLabel)
+
+        # Display a plot space in the second tab (results - charts)
+        self.make_plot_space(widget = self.canvas_widget)   
                 
-        # Display an empty map in the results - maps tab's map drawing area
+        # Display an empty map in the third (results - maps) tab's map drawing area
         # The map will be automatically replaced by the first scenario's first map layer image if there exists such a scenario, so whatever image here would do.
         self.map_layout = QtGui.QVBoxLayout(self.map_display_widget)
         self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=greetings_map_location, scalable=True)
@@ -1335,8 +1338,7 @@ class Ui_frm_SEEMS_main(object):
         # Add a toolbar for map display controls
         self.add_toolbar(frm_SEEMS_main)
         
-        # Display a plot space in the second tab (results - charts)
-        self.make_plot_space(widget = self.canvas_widget)   
+
 
         '''
         Finally, initialize the GUI components
@@ -1584,6 +1586,7 @@ class Ui_frm_SEEMS_main(object):
 
 
 
+
     def refresh_review_tab_variable_combobox(self, single_variable, cross_section):
                     
         # Refresh the stat_table cursor
@@ -1624,6 +1627,39 @@ class Ui_frm_SEEMS_main(object):
             self.cmb_select_review_variable.addItems(variable_list)
 
 
+    
+
+    def rbt_single_variable_time_series_ontoggled(self):
+        self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)
+        
+        
+        
+    def rbt_single_variable_cross_section_ontoggled(self):
+        self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = True)
+        
+        
+        
+    def rbt_multi_variable_time_series_ontoggled(self):
+        self.refresh_review_tab_variable_combobox(single_variable = False, cross_section = False)
+
+
+
+    def cmb_select_review_scenario_onchange(self):
+        
+        # Determine which variables to load according to "chart type" radio button selection.
+        if self.rbt_single_variable_time_series.isChecked():
+            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)
+            
+        elif self.rbt_single_variable_cross_section.isChecked():
+            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = True)
+            
+        elif self.rbt_multi_variable_time_series.isChecked():
+            self.refresh_review_tab_variable_combobox(single_variable = False, cross_section = False)
+            
+        else:
+            # If no radio button is checked, just load the single variables.
+            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)   
+
 
 
     def cmb_select_review_variable_onchange(self):
@@ -1661,6 +1697,154 @@ class Ui_frm_SEEMS_main(object):
             else: # Time series data 
                 self.sbx_select_plot_end_year.setDisabled(False)
                 self.sbx_select_plot_end_year.setProperty("value", max(year_list))
+        
+
+
+
+    def make_plot_space(self, widget):
+        
+        # Create a QVBoxLayout within the widget for embedding.
+        self.lyt = QtGui.QVBoxLayout(widget)
+
+        # Create a canvas instance
+        self.mc = MplCanvas(widget)
+        
+        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.mc.updateGeometry()
+
+        
+        # Create a matplotlib toolbar
+        self.mpl_toolbar = NavigationToolbar(self.mc, widget)
+           
+        # Add the canvas and toolbar instances into the VBox Layout
+        self.lyt.addWidget(self.mc)        
+        self.lyt.addWidget(self.mpl_toolbar)    
+
+
+
+    def btn_review_plot_onclick(self):
+        '''
+        The Plot button in the 'Results - Charts' Tab of the Control Panel
+        '''
+
+        # Note that data must be read from the database, rather than lists and dictionaries in the program, 
+        # for users may need to make plots after the iteration (running of main simulation program).
+        
+        # Read the statistics table.
+        output_db = DataAccess(output_db_location, dbdriver)
+            
+        stat_table = DataAccess.get_table(output_db, stat_table_name)
+        
+        # Get the plot title
+        plot_title = str(self.cmb_select_review_variable.currentText())        
+        
+        
+        # Define x and y axes units
+        x_unit = 'Year'
+        y_unit = ''
+
+        # Determine the plot start year
+        plot_start_year = self.sbx_select_plot_start_year.value()
+
+        # Define the plot series list       
+        plot_series_list = list()
+        
+        # Assign values for the variable lists        
+        # Define a list containing the (x, y) data points (in the form of tuples)
+        plot_xy_tuple_list = list()
+        
+        
+        # Conditioning on the chart type
+        if self.rbt_single_variable_time_series.isChecked():
+            
+            data_type = 'timeseries'
+                
+            for st in stat_table:            
+                # Look only the records for the current scenario version
+                if st.ScenarioVersion == self.cmb_select_review_scenario.currentText():
+                    # Find the variable
+                    if st.Variable == str(self.cmb_select_review_variable.currentText()):    
+                        series_name = st.Variable
+                        y_unit = st.StatUnit
+                        
+                        # Assign values for the variable
+                        if st.StatDate >= plot_start_year and st.StatDate <= self.sbx_select_plot_end_year.value():                
+                            plot_xy_tuple_list.append((st.StatDate, st.StatValue))
+    
+            # Sort the list by the order of the x dimension
+            plot_xy_tuple_list.sort()
+            
+            # Make the x and y data for inputting to the plot submodule
+            x_data = list()
+            y_data_temp = list()
+            
+            for j in range(len(plot_xy_tuple_list)):
+                x_data.append(plot_xy_tuple_list[j][0])
+                y_data_temp.append(plot_xy_tuple_list[j][1])
+            
+            y_data = (series_name, y_data_temp)
+            plot_series_list.append(y_data)
+        
+                
+        elif self.rbt_multi_variable_time_series.isChecked():
+            
+            data_type = 'timeseries'
+            
+            # Make the plot series list
+            for indicator in composite_indicators_dict:
+                if self.cmb_select_review_variable.currentText() == indicator: 
+                    
+                    for variable in composite_indicators_dict[indicator]:     
+                        plot_xy_tuple_list = list()
+                        
+                        for st in stat_table:
+                            # Find the currently selected scenario
+                            if st.Variable == variable \
+                            and st.ScenarioVersion == self.cmb_select_review_scenario.currentText() \
+                            and st.StatDate >= plot_start_year \
+                            and st.StatDate <= self.sbx_select_plot_end_year.value():                          
+                                
+                                y_unit = st.StatUnit
+                                plot_xy_tuple_list.append((st.StatDate, st.StatValue))
+                                
+                        plot_xy_tuple_list.sort()        
+                
+                        # Make the x and y data for inputting to the plot submodule
+                        x_data = list()
+                        y_data_temp = list()
+                        
+                        for j in range(len(plot_xy_tuple_list)):
+                            x_data.append(plot_xy_tuple_list[j][0])
+                            y_data_temp.append(plot_xy_tuple_list[j][1])
+                        
+                        y_data = (variable, y_data_temp)
+                        
+                        plot_series_list.append(y_data)
+
+
+        elif self.rbt_single_variable_cross_section.isChecked():
+            data_type = 'crosssection'
+
+        
+        
+        else: # No plot data type radio button is checked
+            # Show a Noticing Message
+            msb = QMessageBox()
+            msb.setText('Please select a plot data type        ')
+            msb.setWindowTitle('SEEMS')
+            msb.exec_()                
+            
+
+        # Draw the plot
+        # First, remove any existing canvas contents
+        self.lyt.removeWidget(self.mc)
+        self.lyt.removeWidget(self.mpl_toolbar)
+        
+        # Then create a new canvas instance
+        self.mc = MplCanvas(self.canvas_widget)
+        
+        self.mc.plot(data_type, plot_title, x_data, plot_series_list, x_unit, y_unit, self)
+
 
 
     def refresh_map_tab_map_layers(self):
@@ -1687,39 +1871,6 @@ class Ui_frm_SEEMS_main(object):
                         
             # add the items to variable combo box
             self.cmb_select_map_layer.addItems(layer_list)
-
-    
-
-    def rbt_single_variable_time_series_ontoggled(self):
-        self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)
-        
-        
-        
-    def rbt_single_variable_cross_section_ontoggled(self):
-        self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = True)
-        
-        
-        
-    def rbt_multi_variable_time_series_ontoggled(self):
-        self.refresh_review_tab_variable_combobox(single_variable = False, cross_section = False)
-        
-
-
-    def cmb_select_review_scenario_onchange(self):
-        
-        # Determine which variables to load according to "chart type" radio button selection.
-        if self.rbt_single_variable_time_series.isChecked():
-            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)
-            
-        elif self.rbt_single_variable_cross_section.isChecked():
-            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = True)
-            
-        elif self.rbt_multi_variable_time_series.isChecked():
-            self.refresh_review_tab_variable_combobox(single_variable = False, cross_section = False)
-            
-        else:
-            # If no radio button is checked, just load the single variables.
-            self.refresh_review_tab_variable_combobox(single_variable = True, cross_section = False)   
 
 
 
@@ -1792,149 +1943,6 @@ class Ui_frm_SEEMS_main(object):
 
                     
      
-        
-
-    def btn_review_plot_onclick(self):
-        '''
-        The Plot button in the 'Results - Charts' Tab of the Control Panel
-        '''
-
-        # Note that data must be read from the database, rather than lists and dictionaries in the program, 
-        # for users may need to make plots after the iteration (running of main simulation program).
-        
-        # Read the statistics table.
-        output_db = DataAccess(output_db_location, dbdriver)
-            
-        stat_table = DataAccess.get_table(output_db, stat_table_name)
-        
-        # Get the plot title
-        plot_title = str(self.cmb_select_review_variable.currentText())        
-        
-        
-        # Define x and y axes units
-        x_unit = 'Year'
-        y_unit = ''
-
-        # Determine the plot start year
-        plot_start_year = self.sbx_select_plot_start_year.value()
-
-        # Define the plot series list       
-        plot_series_list = list()
-        
-        # Assign values for the variable lists        
-        # Define a list containing the (x, y) data points (in the form of tuples)
-        plot_xy_tuple_list = list()
-        
-        
-        # Conditioning on the chart type
-        if self.rbt_single_variable_time_series.isChecked():
-            
-            data_type = 'timeseries'
-                
-            for st in stat_table:            
-                # Look only the records for the current scenario version
-                if st.ScenarioVersion == self.cmb_select_review_scenario.currentText():
-                    # Find the variable
-                    if st.Variable == str(self.cmb_select_review_variable.currentText()):    
-                        series_name = st.Variable
-                        y_unit = st.StatUnit
-
-#                         # Determine the plot time range according to the StartingPointEffective attribute
-#                         # If StartingPointEffective == 0, skip the first year (the starting point).                        
-#                         if st.StartingPointEffective == 0:
-#                             plot_start_year = self.sbx_select_plot_start_year.value() + 1
-#                         else:
-#                             plot_start_year = self.sbx_select_plot_start_year.value()
-                        
-                        # Assign values for the variable
-                        if st.StatDate >= plot_start_year and st.StatDate <= self.sbx_select_plot_end_year.value():                
-                            plot_xy_tuple_list.append((st.StatDate, st.StatValue))
-    
-            # Sort the list by the order of the x dimension
-            plot_xy_tuple_list.sort()
-            
-            # Make the x and y data for inputting to the plot submodule
-            x_data = list()
-            y_data_temp = list()
-            
-            for j in range(len(plot_xy_tuple_list)):
-                x_data.append(plot_xy_tuple_list[j][0])
-                y_data_temp.append(plot_xy_tuple_list[j][1])
-            
-            y_data = (series_name, y_data_temp)
-            plot_series_list.append(y_data)
-        
-                
-        elif self.rbt_multi_variable_time_series.isChecked():
-            
-            data_type = 'timeseries'
-            
-            # Make the plot series list
-            for indicator in composite_indicators_dict:
-                if self.cmb_select_review_variable.currentText() == indicator: 
-                    
-#                     # Determine the plot time range according to the StartingPointEffective attribute
-#                     # If StartingPointEffective == 0, skip the first year (the starting point).
-#                     for stat in stat_table:
-#                         if stat.Variable == indicator:                            
-#                             if stat.StartingPointEffective == 0:
-#                                 plot_start_year = self.sbx_select_plot_start_year.value() + 1
-#                                 break
-#                             else:
-#                                 plot_start_year = self.sbx_select_plot_start_year.value()
-#                                 break
-                    
-                    for variable in composite_indicators_dict[indicator]:     
-                        plot_xy_tuple_list = list()
-                        
-                        for st in stat_table:
-                            # Find the currently selected scenario
-                            if st.Variable == variable \
-                            and st.ScenarioVersion == self.cmb_select_review_scenario.currentText() \
-                            and st.StatDate >= plot_start_year \
-                            and st.StatDate <= self.sbx_select_plot_end_year.value():                          
-                                
-                                y_unit = st.StatUnit
-                                plot_xy_tuple_list.append((st.StatDate, st.StatValue))
-                                
-                        plot_xy_tuple_list.sort()        
-                
-                        # Make the x and y data for inputting to the plot submodule
-                        x_data = list()
-                        y_data_temp = list()
-                        
-                        for j in range(len(plot_xy_tuple_list)):
-                            x_data.append(plot_xy_tuple_list[j][0])
-                            y_data_temp.append(plot_xy_tuple_list[j][1])
-                        
-                        y_data = (variable, y_data_temp)
-                        
-                        plot_series_list.append(y_data)
-
-
-        elif self.rbt_single_variable_cross_section.isChecked():
-            data_type = 'crosssection'
-
-        
-        
-        else: # No plot data type radio button is checked
-            # Show a Noticing Message
-            msb = QMessageBox()
-            msb.setText('Please select a plot data type        ')
-            msb.setWindowTitle('SEEMS')
-            msb.exec_()                
-            
-
-        # Draw the plot
-        # First, remove any existing canvas contents
-        self.lyt.removeWidget(self.mc)
-        self.lyt.removeWidget(self.mpl_toolbar)
-        
-        # Then create a new canvas instance
-        self.mc = MplCanvas(self.canvas_widget)
-        
-        self.mc.plot(data_type, plot_title, x_data, plot_series_list, x_unit, y_unit, self)
-
 
 
     def btn_show_map_onclick(self):
@@ -1963,26 +1971,7 @@ class Ui_frm_SEEMS_main(object):
         self.map_layout.removeWidget(self.map.scrollArea)            
         self.map = ImageViewer(widget=self.map_display_widget, layout=self.map_layout, image_path=new_map_image_path, scalable=True)
         self.map_layout.addWidget(self.map.scrollArea)
-
-    
-    def make_plot_space(self, widget):
         
-        # Create a QVBoxLayout within the widget for embedding.
-        self.lyt = QtGui.QVBoxLayout(widget)
-
-        # Create a canvas instance
-        self.mc = MplCanvas(widget)
-        
-        self.mc.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        self.mc.updateGeometry()
-
-        
-        # Create a matplotlib toolbar
-        self.mpl_toolbar = NavigationToolbar(self.mc, widget)
-           
-        # Add the canvas and toolbar instances into the VBox Layout
-        self.lyt.addWidget(self.mc)        
-        self.lyt.addWidget(self.mpl_toolbar)            
 
 
 
@@ -2061,6 +2050,8 @@ class MplCanvas(FigureCanvas):
 
         FigureCanvas.setSizePolicy(self, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+
+
 
 
     def plot(self, data_type, plot_title, x_data, y_data, x_unit, y_unit, gui):
@@ -2154,7 +2145,6 @@ class MplCanvas(FigureCanvas):
         
         elif data_type == 'crosssection':
             pass
-        
 
 
         # Create a new toolbar

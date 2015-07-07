@@ -27,7 +27,7 @@ class Society(object):
 
     def __init__(self, db, model_table_name, model_table, hh_table_name, hh_table, pp_table_name, pp_table, 
                  land_table_name, land_table, business_sector_table_name, business_sector_table, 
-                 policy_table_name, policy_table, stat_table_name, stat_table, simulation_depth, start_year):
+                 policy_table_name, policy_table, stat_table_name, stat_table, start_year):
         '''
         Initialize the society class;
         '''
@@ -56,7 +56,7 @@ class Society(object):
         self.land_dict = dict()
         for land in land_table:
             land_parcel = Land(land, self.land_var_list, self.current_year)
-            self.land_dict[land_parcel.ParcelID] = land_parcel
+            self.land_dict[land_parcel.ParcelID] = land_parcel # Indexed by ParcelID
 
 
         # Initialize the household instances (household capital property and land class instances are initialized at the initialization of household class);
@@ -82,7 +82,7 @@ class Society(object):
         self.policy_dict = dict()
         for program in policy_table:
             program_temp = Policy(program, self.policy_var_list)
-            self.policy_dict[program_temp.PolicyType] = program_temp
+            self.policy_dict[program_temp.PolicyType] = program_temp # Indexed by PolicyType
         
                         
         # Create a statistics dictionary; indexed by Variable Names.To be filled later in Statistics Class.
@@ -402,7 +402,7 @@ class Society(object):
         # Record the original HID
         ori_hid = pp.HID
          
-        # Reset all household properties, clear own_pp_dict, and reset the own_capital_properties instance
+        # Reset all household properties, clear own_pp_dict, reset the own_capital_properties instance, and re-initiate the energy instance.
         for var in new_hh.hh_var_list:
             setattr(new_hh, var[0], None)        
 
@@ -414,7 +414,10 @@ class Society(object):
                 new_hh.own_capital_properties.__dict__[item] = 0
             else:
                 new_hh.own_capital_properties.land_properties_list = list()
-            
+        
+        # Re-initiate the energy instance
+        new_hh.energy = energy.Energy()
+        
         
         # Assign a new HID for the new household
         new_hh.HID = self.assign_new_hid(pp)
