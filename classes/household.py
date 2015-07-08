@@ -165,6 +165,30 @@ class Household(object):
     
     
     
+    def household_economy(self, policies, business_sectors, model_parameters):
+        '''
+        The (annual) economic activities of the household. Including household's preference categorization, 
+        policy-related decision-making,and production and consumption activities.
+        '''
+        
+        # Determine the household's preferences
+        self.housedhold_categorization()
+
+        # Make policy decisions
+        self.household_policy_decision(policies, business_sectors, model_parameters)
+    
+        # Do the business
+        # The second parameter, risk_effective = True, indicating it is a "real world" run this time,
+        # as opposed to the two "hypothetical" runs in the previous step, the policy decision step,
+        # when risk_effective = False. i.e. random factors don't take effect in households' economy decision-making process.
+        self.own_capital_properties = self.household_business_revenue(self.own_capital_properties, 
+                                                    business_sectors, model_parameters, risk_effective=True)
+        
+        # Household's final accountings for the year
+        self.household_final_accounting(model_parameters)        
+    
+    
+    
     
     def housedhold_categorization(self):
 
