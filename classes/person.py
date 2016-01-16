@@ -115,28 +115,40 @@ class Person(object):
         if self.Age >= 23:
             self.is_student = False
         else:
-            if self.Age <= 6:
-                self.Education = 'uneducated'
-                self.is_student = True
-            elif self.Age >= 7 and self.Age <=12:
-                self.Education = 'primary'
-                self.is_student = True
-            elif self.Age >= 13 and self.Age <= 15:
-                self.Education = 'secondary'
-                self.is_student = True
-            elif self.Age >= 16 and self.Age <= 18:
-                self.Education = 'high_school'
-                self.is_student = True
-            elif self.Age >= 19 and self.Age <= 22:
-                if float(model_parameters['CollegeEnrollmentRate']) > random.random():
-                    self.Education = 'college'
-                    self.is_college = True
-                    self.moved_out = True
+            if self.Education == 'uneducated':
+                if self.Age >= 3 and self.Age <=6:
+                    self.Education = 'preschool'
                     self.is_student = True
-                    
-                else:
-                    self.Education = 'high_school'
-                    self.is_student = False
+
+            elif self.Education == 'preschool':
+                if self.Age >= 7 and self.Age <=12:
+                    self.Education = 'primary'
+                    self.is_student = True
+            
+            elif self.Education == 'primary':
+                if self.Age >= 13 and self.Age <= 15:
+                    self.Education = 'secondary'
+                    self.is_student = True
+            
+            elif self.Education == 'secondary':
+                if self.Age >= 16 and self.Age <= 18:
+                    if float(model_parameters['HighSchoolEnrollmentRate']) > random.random():
+                        self.Education = 'high_school'
+                        self.is_student = True                         
+                    else:
+                        self.is_student = False                                                            
+
+            elif self.Education == 'high_school':
+                if self.Age >= 19 and self.Age <= 22: # Four chances to enter colleges           
+                    if float(model_parameters['CollegeEnrollmentRate']) > random.random():
+                        self.Education = 'college'
+                        self.is_college = True
+                        self.moved_out = True
+                        self.is_student = True                         
+                    else:
+                        self.is_student = False
+
+
 
 
     def marry(self,model_parameters):

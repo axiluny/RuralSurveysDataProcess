@@ -128,6 +128,166 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self    
     
     '''
+    Demographics - Education
+    '''
+
+    def get_preschool_stu(self, society_instanceiety_instance, scenario_name):
+         
+        preschool_stu = 0
+         
+        # Get the statistics
+        for HID in society_instanceiety_instance.hh_dict:
+            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+                 
+                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
+                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'preschool':
+                        preschool_stu += 1 # total population
+         
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instanceiety_instance.current_year 
+        self.Variable = 'I-04 Preschool'
+        self.StatValue = preschool_stu
+        self.StatUnit = 'Persons'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
+                 
+        society_instanceiety_instance.stat_dict[self.StatID] = self
+
+
+
+    def get_primaryschool_stu(self, society_instanceiety_instance, scenario_name):
+         
+        primaryschool_stu = 0
+         
+        # Get the statistics
+        for HID in society_instanceiety_instance.hh_dict:
+            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+                 
+                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
+                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'primary':
+                        primaryschool_stu += 1 # total population
+         
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instanceiety_instance.current_year 
+        self.Variable = 'I-05 Primary School'
+        self.StatValue = primaryschool_stu
+        self.StatUnit = 'Persons'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
+                 
+        society_instanceiety_instance.stat_dict[self.StatID] = self
+    
+
+    def get_secondaryschool_stu(self, society_instanceiety_instance, scenario_name):
+         
+        secondaryschool_stu = 0
+         
+        # Get the statistics
+        for HID in society_instanceiety_instance.hh_dict:
+            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+                 
+                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
+                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'secondary':
+                        secondaryschool_stu += 1 # total population
+         
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instanceiety_instance.current_year 
+        self.Variable = 'I-06 Secondary School'
+        self.StatValue = secondaryschool_stu
+        self.StatUnit = 'Persons'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
+                 
+        society_instanceiety_instance.stat_dict[self.StatID] = self
+
+
+
+    def get_highschool_stu(self, society_instanceiety_instance, scenario_name):
+         
+        highschool_stu = 0
+         
+        # Get the statistics
+        for HID in society_instanceiety_instance.hh_dict:
+            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+                 
+                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
+                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'high_school':
+                        highschool_stu += 1 # total population
+         
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instanceiety_instance.current_year 
+        self.Variable = 'I-07 High School'
+        self.StatValue = highschool_stu
+        self.StatUnit = 'Persons'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
+                 
+        society_instanceiety_instance.stat_dict[self.StatID] = self    
+
+
+
+    def get_college_stu(self, society_instanceiety_instance, scenario_name):
+         
+        college_stu = 0
+         
+        # Get the statistics
+        for HID in society_instanceiety_instance.hh_dict:
+            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+                 
+                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
+                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'college':
+                        college_stu += 1 # total population
+         
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instanceiety_instance.current_year 
+        self.Variable = 'I-08 College'
+        self.StatValue = college_stu
+        self.StatUnit = 'Persons'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
+                 
+        society_instanceiety_instance.stat_dict[self.StatID] = self    
+
+
+
+    def get_uneducated(self, society_instanceiety_instance, scenario_name):
+         
+        uneducated = 0
+         
+        # Get the statistics
+        for HID in society_instanceiety_instance.hh_dict:
+            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+                 
+                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
+                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'uneducated':
+                        uneducated += 1 # total population
+         
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instanceiety_instance.current_year 
+        self.Variable = 'I-09 Uneducated'
+        self.StatValue = uneducated
+        self.StatUnit = 'Persons'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 1
+                 
+        society_instanceiety_instance.stat_dict[self.StatID] = self    
+
+
+    
+    
+    '''
     Basic society_instanceial indicators
     '''
         
@@ -977,12 +1137,28 @@ class StatClass(object):
     '''
     Composite Indicators
     '''
+
+    def get_education_structure(self, society_instance, scenario_name):
+        
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year
+        self.Variable = '1 Population by Education Levels'
+        self.StatValue = 0
+        self.StatUnit = 'Yuan (RMB)'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.CompositeIndicator = 1 # Make it a composite indicator
+
+        self.StartingPointEffective = 0
+
+        society_instance.stat_dict[self.StatID] = self 
+
     
     def get_sectors_income_structure(self, society_instance, scenario_name):
         
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year
-        self.Variable = '1 Total Income by Sectors'
+        self.Variable = '2 Total Income by Sectors'
         self.StatValue = 0
         self.StatUnit = 'Yuan (RMB)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
@@ -998,7 +1174,7 @@ class StatClass(object):
         
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year
-        self.Variable = '2 Employment by Sectors'
+        self.Variable = '3 Employment by Sectors'
         self.StatValue = 0
         self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)
@@ -1014,7 +1190,7 @@ class StatClass(object):
         
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year
-        self.Variable = '3 Household Preference Types'
+        self.Variable = '4 Household Preference Types'
         self.StatValue = 0
         self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)
@@ -1031,7 +1207,7 @@ class StatClass(object):
         
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year
-        self.Variable = '4 Land-use/Land Cover Structure'
+        self.Variable = '5 Land-use/Land Cover Structure'
         self.StatValue = 0
         self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)

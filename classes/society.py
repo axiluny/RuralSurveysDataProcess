@@ -118,18 +118,18 @@ class Society(object):
             
         self.child_birth()
          
-        # Update household capital property conditions
-        self.household_capital_property_update()
-          
-        # Households' economic activities simulation; including policy-related decision-making.
-        self.economic_activities()
-           
-        # The land sub-model.
-        self.land_update()
-          
-        # The energy (and carbon, and habitat) sub-model.
-        self.energy_update()
+#         # Update household capital property conditions
+#         self.household_capital_property_update()
 #           
+#         # Households' economic activities simulation; including policy-related decision-making.
+#         self.economic_activities()
+#            
+#         # The land sub-model.
+#         self.land_update()
+#           
+#         # The energy (and carbon, and habitat) sub-model.
+#         self.energy_update()
+           
 # #         # Debugging code
 # #         print self.count2, self.count1, self.count
         

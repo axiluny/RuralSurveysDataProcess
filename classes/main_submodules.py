@@ -77,15 +77,17 @@ output_gis_path = "C:\WolongRun\Results_Output"
 
 
 # Make a dictionary of composite statistics indicators
-composite_indicators_dict = {'1 Total Income by Sectors': ['IV-01 Total Agriculture Income', 'IV-02 Total Temp Job Income', 
+composite_indicators_dict = {'1 Population by Education Levels': ['I-04 Preschool', 'I-05 Primary School', 'I-06 Secondary School', 
+                                'I-07 High School', 'I-08 College', 'I-09 Uneducated'],                             
+                             '2 Total Income by Sectors': ['IV-01 Total Agriculture Income', 'IV-02 Total Temp Job Income', 
                                 'IV-03 Total Freight Trans Income', 'IV-04 Total Passenger Trans Income',
                                 'IV-05 Total Lodging Income', 'IV-06 Total Renting Income'], 
-                             '2 Employment by Sectors': ['IV-07 Agriculture Employment Ratio', 'IV-08 Temp Jobs Employment Ratio',
+                             '3 Employment by Sectors': ['IV-07 Agriculture Employment Ratio', 'IV-08 Temp Jobs Employment Ratio',
                                 'IV-09 Freight Trans Employment Ratio', 'IV-10 Passenger Trans Employment Ratio',
                                 'IV-11 Lodging Employment Ratio', 'IV-12 Renting Employment Ratio'], 
-                             '3 Household Preference Types': ['II-01 Pref Labor_Risk Aversion HH Count', 'II-02 Pref Leisure_Risk Aversion HH Count',
+                             '4 Household Preference Types': ['II-01 Pref Labor_Risk Aversion HH Count', 'II-02 Pref Leisure_Risk Aversion HH Count',
                                 'II-03 Pref Labor_Risk Appetite HH Count', 'II-04 Pref Leisure_Risk Appetite HH Count'], 
-                             '4 Land-use/Land Cover Structure': ['V-01 Total Farmland Area', 'V-04 Total Construction Land Area',
+                             '5 Land-use/Land Cover Structure': ['V-01 Total Farmland Area', 'V-04 Total Construction Land Area',
                                 'V-05 Total Grassland Area', 'V-06 Total Shrubbery Area', 'V-07 Total Mixed Coniferous Forest Area']}
 
 
@@ -175,6 +177,32 @@ def add_stat_results(society_instance, scenario_name):
     # Dissolved household count
     dhh = stat_module.StatClass()
     stat_module.StatClass.get_dissolved_household_count(dhh, society_instance, scenario_name)
+    
+    # Preschool students count
+    prstu = stat_module.StatClass()
+    stat_module.StatClass.get_preschool_stu(prstu,society_instance, scenario_name)
+
+    # Primary school students count
+    pristu = stat_module.StatClass()
+    stat_module.StatClass.get_primaryschool_stu(pristu, society_instance, scenario_name)
+
+    # Secondary school students count
+    scstu = stat_module.StatClass()
+    stat_module.StatClass.get_secondaryschool_stu(scstu, society_instance, scenario_name)
+
+    # High school students count
+    histu = stat_module.StatClass()
+    stat_module.StatClass.get_highschool_stu(histu, society_instance, scenario_name)
+
+    # College students count
+    clstu = stat_module.StatClass()
+    stat_module.StatClass.get_college_stu(clstu, society_instance, scenario_name)
+
+    # Uneducated population count
+    unedu = stat_module.StatClass()
+    stat_module.StatClass.get_uneducated(unedu, society_instance, scenario_name)
+
+    
     
     # Type 1 households count - Prefers labor/risk aversion
     ty1h = stat_module.StatClass()
@@ -313,6 +341,10 @@ def add_stat_results(society_instance, scenario_name):
     '''
     Composite indicators
     '''
+    # Education structures
+    edus = stat_module.StatClass()
+    stat_module.StatClass.get_education_structure(edus, society_instance, scenario_name)    
+    
     # Sectors income structure
     sis = stat_module.StatClass()
     stat_module.StatClass.get_sectors_income_structure(sis, society_instance, scenario_name)
