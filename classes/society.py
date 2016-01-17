@@ -5,6 +5,7 @@ Created on Mar 26, 2015
 '''
 import copy
 import random
+import math
 
 from data_access import DataAccess
 from household import Household
@@ -712,7 +713,7 @@ class Society(object):
                 self.hh_dict[out_HID].own_capital_properties.cash = 0
                 
             # Assign house and homestead properties for the newly created household
-            self.hh_dict[in_HID].own_capital_properties.house_area = 4 * float(self.model_parameters_dict['HomesteadArea'])
+            self.hh_dict[in_HID].own_capital_properties.house_area = 4 * float(self.model_parameters_dict['HomesteadArea']) # 4-people standard applies
             self.hh_dict[in_HID].own_capital_properties.house_rooms = int(self.hh_dict[in_HID].own_capital_properties.house_area / float(self.model_parameters_dict['RoomArea']))
             self.hh_dict[in_HID].own_capital_properties.homestead = self.hh_dict[in_HID].own_capital_properties.house_area
 
@@ -725,7 +726,33 @@ class Society(object):
                 self.hh_dict[out_HID].own_capital_properties.cash = 0
                 self.hh_dict[out_HID].own_capital_properties.debt = self.hh_dict[out_HID].own_capital_properties.debt + transfer - self.hh_dict[out_HID].own_capital_properties.cash
             
-            self.hh_dict[in_HID].own_capital_properties.cash = transfer
+            self.hh_dict[in_HID].own_capital_properties.cash = transfer            
+            
+            
+            # Lastly, deal with the farmland
+            # Total farm parcels the parent household has
+            total_farm_parcels = 0
+            for land_parcel in self.hh_dict[out_HID].own_capital_properties.land_properties_list:
+                if land_parcel.LandCover == 'Cultivate':
+                    total_farm_parcels += 1
+            
+            # potential farm owners, i.e. males in the parent household and the new household head
+            potential_farm_owners = 1 # Counting the new household head first
+            for PID in self.hh_dict[out_HID].own_pp_dict:
+                if self.hh_dict[out_HID].own_pp_dict[PID].Gender == 1:
+                    potential_farm_owners += 1
+            
+            # Calculate how many farm parcels the new household head can bring with him
+            new_farm_parcels = int(math.ceil(float(total_farm_parcels / potential_farm_owners)))
+            
+            # Remove the designated farm parcels from the parent household and allocate them to the new household
+            if new_farm_parcels != 0:
+                for i in range(new_farm_parcels):
+                    parcel_transfer = self.hh_dict[out_HID].own_capital_properties.land_properties_list[i]
+                    self.hh_dict[out_HID].own_capital_properties.land_properties_list.remove(parcel_transfer)
+                    self.hh_dict[in_HID].own_capital_properties.land_properties_list.append(parcel_transfer)
+            
+            
 
         elif role == 'spouse':
             # Just deal with monetary capitals

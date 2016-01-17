@@ -132,6 +132,11 @@ class CapitalProperty(object):
         # Reset available factors
         for land_parcel in self.land_properties_list:
             land_parcel.actual_farming = False
+
+        # Farmland
+        for land_parcel in self.land_properties_list:
+            if land_parcel.LandCover == 'Cultivate':
+                self.farmland += (float(land_parcel.Shape_Area) / float(666.7))        
         
         self.av_farmland = self.farmland
         self.av_homestead = self.homestead
