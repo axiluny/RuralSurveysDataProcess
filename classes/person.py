@@ -217,7 +217,7 @@ class Person(object):
             res = max_rate
             return res
         else:
-            res = max_rate/(self.Age - 28)**0.4
+            res = max_rate/(self.Age - 29)**0.4
             return res
 
     

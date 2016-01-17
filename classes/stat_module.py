@@ -1000,11 +1000,11 @@ class StatClass(object):
                 The two methods should yield the same results
                 '''
                 
-                abandoned_farmland_area += society_instance.hh_dict[HID].own_capital_properties.av_farmland
+#                 abandoned_farmland_area += society_instance.hh_dict[HID].own_capital_properties.av_farmland
                 
-#                 for land_parcel in society_instance.hh_dict[HID].own_capital_properties.land_properties_list:
-#                     if land_parcel.actual_farming == False:
-#                         abandoned_farmland_area += land_parcel.Shape_Area / 666.7
+                for land_parcel in society_instance.hh_dict[HID].own_capital_properties.land_properties_list:
+                    if land_parcel.actual_farming == False:
+                        abandoned_farmland_area += land_parcel.Shape_Area / 666.7
                          
         # Add the statistics
         self.ScenarioVersion = scenario_name

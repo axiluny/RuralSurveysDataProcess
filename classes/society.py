@@ -123,17 +123,17 @@ class Society(object):
             
         self.child_birth()
          
-#         # Update household capital property conditions
-#         self.household_capital_property_update()
-#           
-#         # Households' economic activities simulation; including policy-related decision-making.
-#         self.economic_activities()
-#            
-#         # The land sub-model.
-#         self.land_update()
-#           
-#         # The energy (and carbon, and habitat) sub-model.
-#         self.energy_update()
+        # Refresh household capital property conditions
+        self.household_capital_property_refresh()
+           
+        # Households' economic activities simulation; including policy-related decision-making.
+        self.economic_activities()
+            
+        # The land sub-model.
+        self.land_update()
+           
+        # The energy (and carbon, and habitat) sub-model.
+        self.energy_update()
            
 # #         # Debugging code
 # #         print self.count2, self.count1, self.count
@@ -748,7 +748,7 @@ class Society(object):
             # Remove the designated farm parcels from the parent household and allocate them to the new household
             if new_farm_parcels != 0:
                 for i in range(new_farm_parcels):
-                    parcel_transfer = self.hh_dict[out_HID].own_capital_properties.land_properties_list[i]
+                    parcel_transfer = self.hh_dict[out_HID].own_capital_properties.land_properties_list[0]
                     self.hh_dict[out_HID].own_capital_properties.land_properties_list.remove(parcel_transfer)
                     self.hh_dict[in_HID].own_capital_properties.land_properties_list.append(parcel_transfer)
             
@@ -1011,7 +1011,7 @@ class Society(object):
 
 
 
-    def household_capital_property_update(self):
+    def household_capital_property_refresh(self):
         '''
         Traverse the hh_dict. Update every existing household's capital properties status.
         '''
