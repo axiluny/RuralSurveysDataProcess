@@ -1135,6 +1135,66 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self  
 
     '''
+    Others
+    '''
+    def get_ownerless_land_area(self, society_instance, scenario_name):
+        
+        ownerless_land_area = 0
+        
+        # Get the statistics
+        for land_parcel in society_instance.ownerless_land:
+            ownerless_land_area += land_parcel.Shape_Area / 666.7
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'VI-01 Owenrless Land Area'
+        self.StatValue = ownerless_land_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self  
+
+
+    def get_uninherited_money(self, society_instance, scenario_name):
+        
+        uninherited_money = 0
+        
+        # Get the statistics
+        uninherited_money = society_instance.ownerless_money
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'VI-02 Uninherited Money'
+        self.StatValue = uninherited_money
+        self.StatUnit = 'Yuan'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    '''
     Composite Indicators
     '''
 

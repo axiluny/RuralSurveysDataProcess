@@ -137,12 +137,13 @@ class Household(object):
         # Only the existing households proceed.
         if self.is_exist == 1:                                                     
                                                                  
-            # If the updated household has no members, mark it as non-exist.
+            # Count alive members of the household who is not moved out
             alive_members_count = 0
             for PID in self.own_pp_dict:
-                if self.own_pp_dict[PID].is_alive == 1:
+                if self.own_pp_dict[PID].is_alive == 1 and self.own_pp_dict[PID].moved_out == False:
                     alive_members_count += 1
-                     
+
+            # If the updated household has no alive and not-moved-out members, mark it as non-exist.                     
             if alive_members_count == 0:        
                 self.is_exist = 0
                 self.is_dissolved_this_year = True # Turn on this switch so that the household could be dissolved later in the society class

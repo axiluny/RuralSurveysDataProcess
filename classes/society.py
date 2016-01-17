@@ -88,6 +88,10 @@ class Society(object):
         # Create a statistics dictionary; indexed by Variable Names.To be filled later in Statistics Class.
         self.stat_dict = dict()
         
+        # Create some variables to record the confiscated (due to ownerlessness) money and land
+        self.ownerless_land = list()
+        self.ownerless_money = 0
+        
         
 #         # Counters for debugging
 #         self.count = 0
@@ -157,9 +161,9 @@ class Society(object):
         for h in temp_hh_list:
             self.hh_dict[h.HID] = h
             
-            if h.is_exist == 0:
-                # Dissolve non-existing households
-                if h.is_dissolved_this_year == True:
+            if h.is_exist == 0: # If the household does not exist...                
+                if h.is_dissolved_this_year == True: # ...and it becomes non-exist this year
+                    # Dissolve non-existing households
                     self.dissolve_household(h.HID)                               
 
             
@@ -529,10 +533,22 @@ class Society(object):
         Dissolve a household with no live members.
         Only effective when the household is dissolved due to deaths of all its members;
         The other case, when the household is dissolved as a result of marriage, is taken care of in the add_person_to_household submodule.
+        
+        OR, when the household is dissolved because all its members are moved out (not dead), do nothing.
         '''
-                
+
+        # Determine if the household is dissolved because of emigration.
+        alive_count = 0
+        
+        for PID in self.hh_dict[HID].own_pp_dict:
+            pp = self.hh_dict[HID].own_pp_dict[PID]
+            if pp.is_alive == 1:
+                alive_count += 1
+
+        # If the household is dissolved not because of emigration
         # Deal with household properties that were left behind
-        self.legacy(HID)
+        if alive_count == 0:
+            self.legacy(HID)
 #         self.count1 += 1
 
 
@@ -557,6 +573,7 @@ class Society(object):
         
         # Find the one ancestor
         ancestor = ancestor_list[0][1]
+
 
         
         # Then, get the list of potential heirs
@@ -660,10 +677,12 @@ class Society(object):
 #             self.count += 1
             
         else: # Confiscate the legacy
-            '''
-            to be filled later...
-            '''
-            pass
+            
+            for land_parcel in self.hh_dict[HID].own_capital_properties.land_properties_list:            
+                self.ownerless_land.append(land_parcel)
+
+            self.ownerless_money += self.hh_dict[HID].own_capital_properties.cash
+
 
 
 

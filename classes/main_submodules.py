@@ -337,6 +337,14 @@ def add_stat_results(society_instance, scenario_name):
     stat_module.StatClass.get_total_mixed_forest_area(tmfa, society_instance, scenario_name)
     
     
+    # Ownerless land area
+    owlla = stat_module.StatClass()
+    stat_module.StatClass.get_ownerless_land_area(owlla, society_instance, scenario_name)
+    
+    # Uninherited money
+    uihrt = stat_module.StatClass()
+    stat_module.StatClass.get_uninherited_money(uihrt, society_instance, scenario_name)
+    
     
     '''
     Composite indicators

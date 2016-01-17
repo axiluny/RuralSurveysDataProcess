@@ -194,7 +194,10 @@ class CapitalProperty(object):
                         self.college_kids += 1
                     
                 
-                if hh.own_pp_dict[PID].Age >= 18: # For now, no upper age limit for being a labor
+                if hh.own_pp_dict[PID].Age >= 18 and hh.own_pp_dict[PID].moved_out == False:
+                    # For now, no upper age limit for being a labor
+                    # Those who go to college do not count as household labors
+                    
                     self.labor += 1
                     
                     if hh.own_pp_dict[PID].Gender == 1:

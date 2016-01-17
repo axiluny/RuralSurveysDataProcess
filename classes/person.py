@@ -71,7 +71,7 @@ class Person(object):
             else: # If the person lives
                 self.educate(model_parameters)
                 
-                if self.is_college == False:  # Going to college indicates moved out and being removed from the system's person list
+                if self.moved_out == False:  # Persons who moved out (through colleges) are removed from the system's active person list
                     if self.IsMarry == 1:
                         if self.divorce() == False: # Temporarily not allow anyone to divorce
                             self.marriage_length += 1
