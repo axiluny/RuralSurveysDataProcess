@@ -973,7 +973,7 @@ class StatClass(object):
         '''
 #         for HID in society_instance.hh_dict:
 #             if society_instance.hh_dict[HID].is_exist == 1:
-#                 
+#                  
 #                 farmland_area += society_instance.hh_dict[HID].own_capital_properties.farmland
                          
         # Add the statistics
@@ -994,17 +994,21 @@ class StatClass(object):
         abandoned_farmland_area = 0
         
         # Get the statistics
-        for HID in society_instance.hh_dict:
-            if society_instance.hh_dict[HID].is_exist == 1:
-                '''
-                The two methods should yield the same results
-                '''
-                
-#                 abandoned_farmland_area += society_instance.hh_dict[HID].own_capital_properties.av_farmland
-                
-                for land_parcel in society_instance.hh_dict[HID].own_capital_properties.land_properties_list:
-                    if land_parcel.actual_farming == False:
-                        abandoned_farmland_area += land_parcel.Shape_Area / 666.7
+        if society_instance.current_year == society_instance.start_year:
+            abandoned_farmland_area = 0
+        else:        
+            for HID in society_instance.hh_dict:
+                if society_instance.hh_dict[HID].is_exist == 1:
+                    '''
+                    The two methods should yield the same results
+                    '''
+                    
+    #                 abandoned_farmland_area += society_instance.hh_dict[HID].own_capital_properties.av_farmland
+                    
+                    for land_parcel in society_instance.hh_dict[HID].own_capital_properties.land_properties_list:
+                        if land_parcel.actual_farming == False:
+                            abandoned_farmland_area += land_parcel.Shape_Area / 666.7
+                         
                          
         # Add the statistics
         self.ScenarioVersion = scenario_name

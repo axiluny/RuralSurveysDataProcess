@@ -43,7 +43,8 @@ class BusinessSector(object):
         '''
         
         if self.SectorName == 'Agriculture':
-            if (365* capital.labor - self.LaborCost * capital.av_farmland) > 0 and capital.av_farmland > 0:
+#             if (365* capital.labor - self.LaborCost * capital.av_farmland) > 0 and capital.av_farmland > 0: # Can't understand first condition... 20160117
+            if capital.labor > 0 and capital.av_farmland > 0:
                 return True
             
         elif self.SectorName == 'TempJob':
@@ -113,9 +114,9 @@ class BusinessSector(object):
             
             # Find the specific labor cost as determined by the household's terrain type.
             if capital.location_type == 1: # hilly
-                spec_labor_cost = self.LaborCost + 18
+                spec_labor_cost = self.LaborCost * 1.2
             else: # plain
-                spec_labor_cost = self.LaborCost - 8
+                spec_labor_cost = self.LaborCost
             
             # Find the theoretical maximum farm land area cultivatable as permitted by the household's available labor.
             theoretical_max_farm = (new_capital.av_labor * 365) / spec_labor_cost

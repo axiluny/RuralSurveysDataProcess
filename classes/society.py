@@ -33,7 +33,8 @@ class Society(object):
         Initialize the society class;
         '''
         
-        # Set the current time stamp
+        # Set the start year and current time stamps
+        self.start_year = start_year
         self.current_year = start_year
         
         # Create a dictionary to store model parameters, indexed by Variable_Name, and contents are Variable_Value      

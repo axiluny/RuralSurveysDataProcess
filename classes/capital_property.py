@@ -84,7 +84,7 @@ class CapitalProperty(object):
         self.pre_ftob = hh.PreFToB
         self.is_tianbao = hh.IsTianbao
         
-        self.farm_to_forest = 0 # A "container" to store the FToF area incurred during simulation
+        self.farm_to_forest = float(0) # A "container" to store the FToF area incurred during simulation
         
         
         # Available factors; temporary "containers" during simulation
@@ -134,6 +134,7 @@ class CapitalProperty(object):
             land_parcel.actual_farming = False
 
         # Farmland
+        self.farmland = 0
         for land_parcel in self.land_properties_list:
             if land_parcel.LandCover == 'Cultivate':
                 self.farmland += (float(land_parcel.Shape_Area) / float(666.7))        
@@ -295,6 +296,7 @@ class CapitalProperty(object):
         # hh.AnnualCompensation is assigned in the policy class        
         
         # Land
+        hh.FToFArea = self.farm_to_forest
         hh.AbandonedFarmlandArea = self.av_farmland # available farmland at the end of each simulation circle is considered "abandoned"
         
         # Policy-related land changes
