@@ -92,7 +92,8 @@ composite_indicators_dict = {'1 Population by Education Levels': ['I-04 Preschoo
                              '6 Land-use/Land Cover Structure': ['V-01 Total Farmland Area', 'V-04 Total Construction Land Area',
                                 'V-05 Total Grassland Area', 'V-06 Total Bamboo Forest Area', 'V-07 Total Shrubbery Area', 
                                 'V-08 Total Broad-leaved Forest Area', 'V-09 Total Mixed Forest Area',
-                                'V-10 Total Coniferous Forest Area'],}
+                                'V-10 Total Coniferous Forest Area'],
+                             '7 Energy Consumption Structure' : ['VI-02 Total Electricity Consumption', 'VI-04 Total Firewood Consumption in kWh']}
 
 
 
@@ -365,6 +366,26 @@ def add_stat_results(society_instance, scenario_name):
     tcfa = stat_module.StatClass()
     stat_module.StatClass.get_total_coniferous_area(tcfa, society_instance, scenario_name)    
     
+    # Total energy demand
+    ted = stat_module.StatClass()
+    stat_module.StatClass.get_total_energy_demand(ted, society_instance, scenario_name)
+    
+    # Total electricity consumption
+    tec = stat_module.StatClass()
+    stat_module.StatClass.get_total_electricity_consumption(tec, society_instance, scenario_name)
+    
+    # Total firewood consumption
+    tfc = stat_module.StatClass()
+    stat_module.StatClass.get_total_firewood_consumption(tfc, society_instance, scenario_name)
+
+    # Total firewood consumption in kWh
+    tfckwh = stat_module.StatClass()
+    stat_module.StatClass.get_total_firewood_consumption_in_kwh(tfckwh, society_instance, scenario_name)
+    
+    # Total carbon footprint
+    tcfp = stat_module.StatClass()
+    stat_module.StatClass.get_total_carbon_footprint(tcfp, society_instance, scenario_name)
+    
     
     # Ownerless land area
     owlla = stat_module.StatClass()
@@ -402,6 +423,11 @@ def add_stat_results(society_instance, scenario_name):
     lulcs = stat_module.StatClass()
     stat_module.StatClass.get_landuse_landcover_structures(lulcs, society_instance, scenario_name)
     
+    # Energy consumption structure
+    ecs = stat_module.StatClass()
+    stat_module.StatClass.get_energy_consumption_structures(ecs, society_instance, scenario_name)
+
+   
 
     '''
     Map layers

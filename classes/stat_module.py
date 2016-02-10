@@ -54,21 +54,21 @@ class StatClass(object):
     Basic Demographics
     '''
     
-    def get_population_count(self, society_instanceiety_instance, scenario_name):
+    def get_population_count(self, society_instance, scenario_name):
          
         pp_ct = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                  
-                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
-                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].is_alive == 1:
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    if society_instance.hh_dict[HID].own_pp_dict[PID].is_alive == 1:
                         pp_ct += 1 # total population
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-01 Population'
         self.StatValue = pp_ct
         self.StatUnit = 'Persons'
@@ -76,24 +76,24 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self
+        society_instance.stat_dict[self.StatID] = self
 
 
 
-    def get_household_count(self, society_instanceiety_instance, scenario_name):
+    def get_household_count(self, society_instance, scenario_name):
          
         hh_ct = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                 
                 hh_ct += 1 # total (existing) household count
                  
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-02 Existing Household'
         self.StatValue = hh_ct
         self.StatUnit = 'Households'
@@ -101,7 +101,7 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self
+        society_instance.stat_dict[self.StatID] = self
 
 
     def get_dissolved_household_count(self, society_instance, scenario_name):
@@ -131,21 +131,21 @@ class StatClass(object):
     Demographics - Education
     '''
 
-    def get_preschool_stu(self, society_instanceiety_instance, scenario_name):
+    def get_preschool_stu(self, society_instance, scenario_name):
          
         preschool_stu = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                  
-                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
-                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'preschool':
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    if society_instance.hh_dict[HID].own_pp_dict[PID].Education == 'preschool':
                         preschool_stu += 1 # total population
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-04 Preschool'
         self.StatValue = preschool_stu
         self.StatUnit = 'Persons'
@@ -153,25 +153,25 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self
+        society_instance.stat_dict[self.StatID] = self
 
 
 
-    def get_primaryschool_stu(self, society_instanceiety_instance, scenario_name):
+    def get_primaryschool_stu(self, society_instance, scenario_name):
          
         primaryschool_stu = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                  
-                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
-                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'primary':
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    if society_instance.hh_dict[HID].own_pp_dict[PID].Education == 'primary':
                         primaryschool_stu += 1 # total population
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-05 Primary School'
         self.StatValue = primaryschool_stu
         self.StatUnit = 'Persons'
@@ -179,24 +179,24 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self
+        society_instance.stat_dict[self.StatID] = self
     
 
-    def get_secondaryschool_stu(self, society_instanceiety_instance, scenario_name):
+    def get_secondaryschool_stu(self, society_instance, scenario_name):
          
         secondaryschool_stu = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                  
-                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
-                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'secondary':
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    if society_instance.hh_dict[HID].own_pp_dict[PID].Education == 'secondary':
                         secondaryschool_stu += 1 # total population
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-06 Secondary School'
         self.StatValue = secondaryschool_stu
         self.StatUnit = 'Persons'
@@ -204,25 +204,25 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self
+        society_instance.stat_dict[self.StatID] = self
 
 
 
-    def get_highschool_stu(self, society_instanceiety_instance, scenario_name):
+    def get_highschool_stu(self, society_instance, scenario_name):
          
         highschool_stu = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                  
-                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
-                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'high_school':
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    if society_instance.hh_dict[HID].own_pp_dict[PID].Education == 'high_school':
                         highschool_stu += 1 # total population
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-07 High School'
         self.StatValue = highschool_stu
         self.StatUnit = 'Persons'
@@ -230,25 +230,25 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self    
+        society_instance.stat_dict[self.StatID] = self    
 
 
 
-    def get_college_stu(self, society_instanceiety_instance, scenario_name):
+    def get_college_stu(self, society_instance, scenario_name):
          
         college_stu = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                  
-                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
-                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'college':
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    if society_instance.hh_dict[HID].own_pp_dict[PID].Education == 'college':
                         college_stu += 1 # total population
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-08 College'
         self.StatValue = college_stu
         self.StatUnit = 'Persons'
@@ -256,25 +256,25 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self    
+        society_instance.stat_dict[self.StatID] = self    
 
 
 
-    def get_uneducated(self, society_instanceiety_instance, scenario_name):
+    def get_uneducated(self, society_instance, scenario_name):
          
         uneducated = 0
          
         # Get the statistics
-        for HID in society_instanceiety_instance.hh_dict:
-            if society_instanceiety_instance.hh_dict[HID].is_exist == 1:
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
                  
-                for PID in society_instanceiety_instance.hh_dict[HID].own_pp_dict:
-                    if society_instanceiety_instance.hh_dict[HID].own_pp_dict[PID].Education == 'uneducated':
+                for PID in society_instance.hh_dict[HID].own_pp_dict:
+                    if society_instance.hh_dict[HID].own_pp_dict[PID].Education == 'uneducated':
                         uneducated += 1 # total population
          
         # Add the statistics
         self.ScenarioVersion = scenario_name
-        self.StatDate = society_instanceiety_instance.current_year 
+        self.StatDate = society_instance.current_year 
         self.Variable = 'I-09 Uneducated'
         self.StatValue = uneducated
         self.StatUnit = 'Persons'
@@ -282,7 +282,7 @@ class StatClass(object):
         
         self.StartingPointEffective = 1
                  
-        society_instanceiety_instance.stat_dict[self.StatID] = self    
+        society_instance.stat_dict[self.StatID] = self    
 
 
     
@@ -1280,7 +1280,127 @@ class StatClass(object):
 
         society_instance.stat_dict[self.StatID] = self  
         
+    
+    '''
+    Energy
+    '''
+    def get_total_energy_demand(self, society_instance, scenario_name):
         
+        total_energy_demand = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
+                total_energy_demand += society_instance.hh_dict[HID].energy.energy_demand
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'VI-01 Total Energy Demand'
+        self.StatValue = total_energy_demand
+        self.StatUnit = 'kWh'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self  
+    
+    
+
+    def get_total_electricity_consumption(self, society_instance, scenario_name):
+        
+        total_electricity_consumption = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
+                total_electricity_consumption += society_instance.hh_dict[HID].energy.electricity_consumption
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'VI-02 Total Electricity Consumption'
+        self.StatValue = total_electricity_consumption
+        self.StatUnit = 'kWh'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self      
+    
+
+
+    def get_total_firewood_consumption(self, society_instance, scenario_name):
+        
+        total_firewood_consumption = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
+                total_firewood_consumption += society_instance.hh_dict[HID].energy.firewood_consumption
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'VI-03 Total Firewood Consumption'
+        self.StatValue = total_firewood_consumption
+        self.StatUnit = 'kg'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self 
+    
+
+    def get_total_firewood_consumption_in_kwh(self, society_instance, scenario_name):
+        
+        total_firewood_consumption_in_kwh = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
+                total_firewood_consumption_in_kwh += society_instance.hh_dict[HID].energy.firewood_consumption_in_kwh
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'VI-04 Total Firewood Consumption in kWh'
+        self.StatValue = total_firewood_consumption_in_kwh
+        self.StatUnit = 'kWh'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self     
+    
+
+
+    def get_total_carbon_footprint(self, society_instance, scenario_name):
+        
+        total_carbon_footprint = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1:
+                total_carbon_footprint += society_instance.hh_dict[HID].energy.carbon_footprint
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'VI-05 Total Carbon Footprint'
+        self.StatValue = total_carbon_footprint
+        self.StatUnit = 'kg'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self 
+    
 
     '''
     Others
@@ -1297,7 +1417,7 @@ class StatClass(object):
         # Add the statistics
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
-        self.Variable = 'VI-01 Owenrless Land Area'
+        self.Variable = 'VII-01 Owenrless Land Area'
         self.StatValue = ownerless_land_area
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
@@ -1318,7 +1438,7 @@ class StatClass(object):
         # Add the statistics
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
-        self.Variable = 'VI-02 Uninherited Money'
+        self.Variable = 'VII-02 Uninherited Money'
         self.StatValue = uninherited_money
         self.StatUnit = 'Yuan'
         self.StatID = self.Variable + '_' + str(self.StatDate)
@@ -1444,6 +1564,21 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self       
         
         
+
+    def get_energy_consumption_structures(self, society_instance, scenario_name):
+        
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year
+        self.Variable = '7 Energy Consumption Structure'
+        self.StatValue = 0
+        self.StatUnit = ''
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.CompositeIndicator = 1 # Make it a composite indicator
+
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self       
         
 
 
