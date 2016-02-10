@@ -661,7 +661,7 @@ class Household(object):
         else:
             self.business_type = 2
         
-        self.HouseholdType = self.business_type
+        self.HouseholdBusinessType = self.business_type
     
 
 

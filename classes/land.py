@@ -80,8 +80,7 @@ class Land(object):
             if self.LandCover == 'Cultivate' and self.IsG2G == 1:
                 if self.succession_length == int(model_parameters['CultivatedSuccessionYear']):
                     self.LandCover = 'Grass'
-                    self.SStartyear = current_year
-                       
+                    self.SStartyear = current_year                       
             
             elif self.LandCover == 'Construction' and self.IsC2G == 1:
                 if self.succession_length == int(model_parameters['ConstructionSuccessionYear']):
@@ -89,18 +88,33 @@ class Land(object):
                     self.SStartyear = current_year        
             
             elif self.LandCover == 'Grass':
-                if self.succession_length == int(model_parameters['GrassSuccessionYear']):
-                    self.LandCover = 'Shrubbery'
-                    self.SStartyear = current_year
-                    
-            
+                if self.ClimaxComType == 'Grass':
+                    pass # Do nothing
+                elif self.ClimaxComType == 'Bamboo':
+                    if self.succession_length == int(model_parameters['GrassSuccessionBambooYear']):
+                        self.LandCover = 'Bamboo'
+                        self.SStartyear = current_year
+                else:                
+                    if self.succession_length == int(model_parameters['GrassSuccessionShrubberyYear']):
+                        self.LandCover = 'Shrubbery'
+                        self.SStartyear = current_year
+                                
             elif self.LandCover == 'Shrubbery':
                 if self.succession_length == int(model_parameters['ShrubberySuccessionYear']):
-                    self.LandCover = 'Mixed'
-                    self.SStartyear = current_year
-        
-        
-        
+                    self.LandCover = 'Broad-leaved Forest'
+                    self.SStartyear = current_year            
+                                   
+            elif self.LandCover == 'Broad-leaved Forest':           
+                if self.ClimaxComType == 'Mixed Forest' or self.ClimaxComType == 'Coniferous Forest':                                
+                    if self.succession_length == int(model_parameters['BroadleavedForestSuccessionYear']):
+                        self.LandCover = 'Mixed Forest'
+                        self.SStartyear = current_year
+                                   
+            elif self.LandCover == 'Mixed Forest':           
+                if self.ClimaxComType == 'Coniferous Forest':                                
+                    if self.succession_length == int(model_parameters['MixedForestSuccessionYear']):
+                        self.LandCover = 'Coniferous Forest'
+                        self.SStartyear = current_year        
         
         
         

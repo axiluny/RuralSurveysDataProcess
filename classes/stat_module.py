@@ -385,6 +385,75 @@ class StatClass(object):
         self.StartingPointEffective = 0
                  
         society_instance.stat_dict[self.StatID] = self 
+
+
+    def get_housedhold_business_type_0_count(self, society_instance, scenario_name):
+        
+        business_type_0_hh_ct = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1 and society_instance.hh_dict[HID].business_type == 0:
+                
+                business_type_0_hh_ct += 1
+
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'II-05 Agriculture Only Households Count'
+        self.StatValue = business_type_0_hh_ct
+        self.StatUnit = 'Households'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
+                 
+        society_instance.stat_dict[self.StatID] = self 
+
+
+    def get_housedhold_business_type_1_count(self, society_instance, scenario_name):
+        
+        business_type_1_hh_ct = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1 and society_instance.hh_dict[HID].business_type == 1:
+                
+                business_type_1_hh_ct += 1
+
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'II-06 Agriculture and One Other Business Households Count'
+        self.StatValue = business_type_1_hh_ct
+        self.StatUnit = 'Households'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
+                 
+        society_instance.stat_dict[self.StatID] = self 
+
+
+    def get_housedhold_business_type_2_count(self, society_instance, scenario_name):
+        
+        business_type_2_hh_ct = 0
+        
+        # Get the statistics
+        for HID in society_instance.hh_dict:
+            if society_instance.hh_dict[HID].is_exist == 1 and society_instance.hh_dict[HID].business_type == 2:
+                
+                business_type_2_hh_ct += 1
+
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'II-07 Agriculture and More than One Other Businesses Households Count'
+        self.StatValue = business_type_2_hh_ct
+        self.StatUnit = 'Households'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.StartingPointEffective = 0
+                 
+        society_instance.stat_dict[self.StatID] = self 
     
     
     '''
@@ -1023,21 +1092,21 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self
     
 
-    def get_farmland_to_forest_area(self, society_instance, scenario_name):
+    def get_reverted_farmland_area(self, society_instance, scenario_name):
         
-        farmland_to_forest_area = 0
+        reverted_farmland_area = 0
         
         # Get the statistics
         for HID in society_instance.hh_dict:
             if society_instance.hh_dict[HID].is_exist == 1:
                 
-                farmland_to_forest_area += society_instance.hh_dict[HID].own_capital_properties.farm_to_forest
+                reverted_farmland_area += society_instance.hh_dict[HID].own_capital_properties.farm_to_forest
                          
         # Add the statistics
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
-        self.Variable = 'V-03 Total Farmland to Forest Area'
-        self.StatValue = farmland_to_forest_area
+        self.Variable = 'V-03 Total Reverted Farmland Area'
+        self.StatValue = reverted_farmland_area
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
                  
@@ -1091,6 +1160,30 @@ class StatClass(object):
         self.StartingPointEffective = 1
 
         society_instance.stat_dict[self.StatID] = self       
+
+
+    def get_total_bamboo_area(self, society_instance, scenario_name):
+        
+        bamboo_area = 0
+        
+        # Get the statistics
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Bamboo':
+                bamboo_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'V-06 Total Bamboo Forest Area'
+        self.StatValue = bamboo_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self  
+
     
 
     def get_total_shrubbery_area(self, society_instance, scenario_name):
@@ -1106,7 +1199,7 @@ class StatClass(object):
         # Add the statistics
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
-        self.Variable = 'V-06 Total Shrubbery Area'
+        self.Variable = 'V-07 Total Shrubbery Area'
         self.StatValue = shrubbery_area
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
@@ -1116,20 +1209,45 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self  
 
 
+
+    def get_total_broadleaf_area(self, society_instance, scenario_name):
+        
+        broadleaf_area = 0
+        
+        # Get the statistics
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Broad-leaved Forest':
+                broadleaf_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'V-08 Total Broad-leaved Forest Area'
+        self.StatValue = broadleaf_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self  
+
+
+
     def get_total_mixed_forest_area(self, society_instance, scenario_name):
         
         mixed_forest_area = 0
         
         # Get the statistics
         for ParcelID in society_instance.land_dict:
-            if society_instance.land_dict[ParcelID].LandCover == 'Mixed':
+            if society_instance.land_dict[ParcelID].LandCover == 'Mixed Forest':
                 mixed_forest_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
         
         
         # Add the statistics
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year 
-        self.Variable = 'V-07 Total Mixed Coniferous Forest Area'
+        self.Variable = 'V-09 Total Mixed Forest Area'
         self.StatValue = mixed_forest_area
         self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
         self.StatID = self.Variable + '_' + str(self.StatDate)
@@ -1137,6 +1255,32 @@ class StatClass(object):
         self.StartingPointEffective = 1
 
         society_instance.stat_dict[self.StatID] = self  
+
+
+
+    def get_total_coniferous_area(self, society_instance, scenario_name):
+        
+        coniferous_area = 0
+        
+        # Get the statistics
+        for ParcelID in society_instance.land_dict:
+            if society_instance.land_dict[ParcelID].LandCover == 'Coniferous Forest':
+                coniferous_area += society_instance.land_dict[ParcelID].Shape_Area / 666.7
+        
+        
+        # Add the statistics
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year 
+        self.Variable = 'V-10 Total Coniferous Forest Area'
+        self.StatValue = coniferous_area
+        self.StatUnit = 'Chinese Acres (1 CA = 0.067 Hectare)'
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+                 
+        self.StartingPointEffective = 1
+
+        society_instance.stat_dict[self.StatID] = self  
+        
+        
 
     '''
     Others
@@ -1264,6 +1408,23 @@ class StatClass(object):
         self.StartingPointEffective = 0
 
         society_instance.stat_dict[self.StatID] = self         
+ 
+
+
+    def get_household_business_type_structures(self, society_instance, scenario_name):
+        
+        self.ScenarioVersion = scenario_name
+        self.StatDate = society_instance.current_year
+        self.Variable = '5 Household Business Types'
+        self.StatValue = 0
+        self.StatUnit = ''
+        self.StatID = self.Variable + '_' + str(self.StatDate)
+        
+        self.CompositeIndicator = 1 # Make it a composite indicator
+
+        self.StartingPointEffective = 0
+
+        society_instance.stat_dict[self.StatID] = self  
         
         
    
@@ -1271,7 +1432,7 @@ class StatClass(object):
         
         self.ScenarioVersion = scenario_name
         self.StatDate = society_instance.current_year
-        self.Variable = '5 Land-use/Land Cover Structure'
+        self.Variable = '6 Land-use/Land Cover Structure'
         self.StatValue = 0
         self.StatUnit = ''
         self.StatID = self.Variable + '_' + str(self.StatDate)

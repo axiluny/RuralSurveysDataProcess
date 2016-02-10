@@ -85,9 +85,14 @@ composite_indicators_dict = {'1 Population by Education Levels': ['I-04 Preschoo
                                 'IV-09 Freight Trans Employment Ratio', 'IV-10 Passenger Trans Employment Ratio',
                                 'IV-11 Lodging Employment Ratio', 'IV-12 Renting Employment Ratio'], 
                              '4 Household Preference Types': ['II-01 Pref Labor_Risk Aversion HH Count', 'II-02 Pref Leisure_Risk Aversion HH Count',
-                                'II-03 Pref Labor_Risk Appetite HH Count', 'II-04 Pref Leisure_Risk Appetite HH Count'], 
-                             '5 Land-use/Land Cover Structure': ['V-01 Total Farmland Area', 'V-04 Total Construction Land Area',
-                                'V-05 Total Grassland Area', 'V-06 Total Shrubbery Area', 'V-07 Total Mixed Coniferous Forest Area']}
+                                'II-03 Pref Labor_Risk Appetite HH Count', 'II-04 Pref Leisure_Risk Appetite HH Count'],
+                             '5 Household Business Types': ['II-05 Agriculture Only Households Count',
+                                'II-06 Agriculture and One Other Business Households Count', 
+                                'II-07 Agriculture and More than One Other Businesses Households Count'], 
+                             '6 Land-use/Land Cover Structure': ['V-01 Total Farmland Area', 'V-04 Total Construction Land Area',
+                                'V-05 Total Grassland Area', 'V-06 Total Bamboo Forest Area', 'V-07 Total Shrubbery Area', 
+                                'V-08 Total Broad-leaved Forest Area', 'V-09 Total Mixed Forest Area',
+                                'V-10 Total Coniferous Forest Area'],}
 
 
 
@@ -218,6 +223,19 @@ def add_stat_results(society_instance, scenario_name):
     # Type 4 households count - Prefers leisure/risk appetite
     ty4h = stat_module.StatClass()
     stat_module.StatClass.get_pref_leisure_risk_appetite_hh_count(ty4h, society_instance, scenario_name)
+
+    # Type 0 business household count - agriculture only
+    ty0bh = stat_module.StatClass()
+    stat_module.StatClass.get_housedhold_business_type_0_count(ty0bh, society_instance, scenario_name)
+
+    # Type 1 business household count - agriculture and one other business
+    ty1bh = stat_module.StatClass()
+    stat_module.StatClass.get_housedhold_business_type_1_count(ty1bh, society_instance, scenario_name)
+
+    # Type 2 business household count - agriculture and more than one other businesses
+    ty2bh = stat_module.StatClass()
+    stat_module.StatClass.get_housedhold_business_type_2_count(ty2bh, society_instance, scenario_name)
+
     
     # Total net savings
     tns = stat_module.StatClass()
@@ -315,9 +333,9 @@ def add_stat_results(society_instance, scenario_name):
     tafa = stat_module.StatClass()
     stat_module.StatClass.get_abandoned_farmland_area(tafa, society_instance, scenario_name)
     
-    # Total Farmland to Forest Area
-    tftfa = stat_module.StatClass()
-    stat_module.StatClass.get_farmland_to_forest_area(tftfa, society_instance, scenario_name)
+    # Total reverted farmland Area
+    trfa = stat_module.StatClass()
+    stat_module.StatClass.get_reverted_farmland_area(trfa, society_instance, scenario_name)
     
     # Total construction land area
     tcla = stat_module.StatClass()
@@ -327,13 +345,25 @@ def add_stat_results(society_instance, scenario_name):
     tgla = stat_module.StatClass()
     stat_module.StatClass.get_total_grassland_area(tgla, society_instance, scenario_name)
     
+    # Total bamboo area
+    tbba = stat_module.StatClass()
+    stat_module.StatClass.get_total_bamboo_area(tbba, society_instance, scenario_name)
+    
     # Total shrubbery land area
     tsla = stat_module.StatClass()
     stat_module.StatClass.get_total_shrubbery_area(tsla, society_instance, scenario_name)
+
+    # Total braodleaf forest area
+    tblfa = stat_module.StatClass()
+    stat_module.StatClass.get_total_broadleaf_area(tblfa, society_instance, scenario_name)
     
     # Total mixed forest area
     tmfa = stat_module.StatClass()
     stat_module.StatClass.get_total_mixed_forest_area(tmfa, society_instance, scenario_name)
+    
+    # Total coniferous forest area
+    tcfa = stat_module.StatClass()
+    stat_module.StatClass.get_total_coniferous_area(tcfa, society_instance, scenario_name)    
     
     
     # Ownerless land area
@@ -363,6 +393,10 @@ def add_stat_results(society_instance, scenario_name):
     # Household preference type structure
     hpts = stat_module.StatClass()
     stat_module.StatClass.get_household_preference_type_structures(hpts, society_instance, scenario_name)
+
+    # Household business type structure
+    hbts = stat_module.StatClass()
+    stat_module.StatClass.get_household_business_type_structures(hbts, society_instance, scenario_name)
     
     # Land-use/Land cover structure
     lulcs = stat_module.StatClass()

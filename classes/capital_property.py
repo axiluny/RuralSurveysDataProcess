@@ -58,6 +58,7 @@ class CapitalProperty(object):
                    
         
         # Labor (Human capitals)
+        self.hh_size = int()
         self.labor = int()
         self.male_labor = int()
         self.female_labor = int()
@@ -171,6 +172,7 @@ class CapitalProperty(object):
         Update the household's human resource conditions according to its latest demographic status
         '''
         
+        self.hh_size = 0
         self.labor = 0
         self.male_labor = 0
         self.female_labor = 0
@@ -187,6 +189,9 @@ class CapitalProperty(object):
         
         for PID in hh.own_pp_dict:
             if hh.own_pp_dict[PID].is_alive == 1:
+                
+                self.hh_size += 1
+                
                 if hh.own_pp_dict[PID].is_student == True:
                     if hh.own_pp_dict[PID].Education == 'uneducated' and hh.own_pp_dict[PID].Age >= 4:
                         self.preschool_kids += 1
