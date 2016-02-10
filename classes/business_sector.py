@@ -51,24 +51,24 @@ class BusinessSector(object):
             if (365* capital.male_labor - self.LaborCost) > 0:
                 return True
 
-        elif self.SectorName == 'FreightTrans':
-            if capital.av_male_labor > 0:
-                if capital.av_truck > 0:
-                    return True
-                elif capital.cash > self.EntryThreshold:
-                    return True
-                elif capital.cash > self.EntryThreshold * self.own_cash_percent and capital.debt <= 0 and risk_type == False:
-                    return True
-
-        elif self.SectorName == 'PassengerTrans':
-            if capital.av_male_labor > 0:
-                if capital.av_minibus > 0:
-                    return True
-                elif capital.cash > self.EntryThreshold:
-                    return True
-                elif capital.cash > self.EntryThreshold * self.own_cash_percent and capital.debt <= 0 and risk_type == False:
-                    return True
-  
+#         elif self.SectorName == 'FreightTrans':
+#             if capital.av_male_labor > 0:
+#                 if capital.av_truck > 0:
+#                     return True
+#                 elif capital.cash > self.EntryThreshold:
+#                     return True
+#                 elif capital.cash > self.EntryThreshold * self.own_cash_percent and capital.debt <= 0 and risk_type == False:
+#                     return True
+# 
+#         elif self.SectorName == 'PassengerTrans':
+#             if capital.av_male_labor > 0:
+#                 if capital.av_minibus > 0:
+#                     return True
+#                 elif capital.cash > self.EntryThreshold:
+#                     return True
+#                 elif capital.cash > self.EntryThreshold * self.own_cash_percent and capital.debt <= 0 and risk_type == False:
+#                     return True
+#   
         elif self.SectorName == 'Lodging':
             if capital.av_male_labor > 0:
                 if capital.cash > self.EntryThreshold:
@@ -184,127 +184,127 @@ class BusinessSector(object):
 
 
 
-        elif self.SectorName == 'FreightTrans':
-            '''
-            Formula: revenue * [1 - risk_factor * rnd(-1, 1)] * truck_num
-            '''
-            
-            # Consider whether to purchase a truck first
-            if new_capital.av_male_labor > new_capital.av_truck:
-                # If the household has spare male labor
-                loan = 0
-                
-                if new_capital.cash < self.EntryThreshold:
-                    # household's own cash capital is insufficient for buying a truck
-                    if risk_type == False:
-                        # only the risk appetite household would raise loans
-                        if new_capital.debt <= 0:
-                            if new_capital.cash >= self.EntryThreshold * self.own_cash_percent:
-                                loan = self.EntryThreshold - new_capital.cash
-                                
-                                if risk_effective == True:
-                                    # refresh household's capital properties only in the real world case;
-                                    new_capital.cash = 0
-                                
-                                new_capital.debt += loan
-                                new_capital.truck += 1
-                                new_capital.av_truck += 1
-                
-                else:
-                    # household can afford a new truck without raising loans
-                    if risk_effective == True:
-                        new_capital.cash = new_capital.cash - self.EntryThreshold
-        
-                    new_capital.truck += 1
-                    new_capital.av_truck += 1
-            
-            # one male labor matches one truck
-            if new_capital.av_male_labor < new_capital.av_truck:
-                max_vehicle = new_capital.av_male_labor
-            else:
-                max_vehicle = new_capital.av_truck
-            
-            # Do the business
-            if risk_effective == True:
-                revenue = self.Revenue * (1 + (1 - 2 * random.random()) * self.Risk) * max_vehicle
-            else:
-                if risk_type == True:
-                    revenue = self.Revenue * (1 - self.Risk) * max_vehicle
-                else:
-                    revenue = self.Revenue * (1 + self.Risk) * max_vehicle
-            
-            # Update household's capital properties
-            new_capital.av_labor = self.plus(new_capital.av_labor - max_vehicle * self.LaborCost / 365)
-            new_capital.av_male_labor = self.plus(new_capital.av_male_labor - max_vehicle * self.LaborCost / 365)
-            
-            new_capital.labor_cost += max_vehicle * self.LaborCost / 365
-            new_capital.av_truck = self.plus(new_capital.truck - max_vehicle)
-            
-            new_capital.freight_trans_income += revenue
-#             new_capital.total_business_income += revenue
-            new_capital.cash += revenue
-                    
-
-
-        elif self.SectorName == 'PassengerTrans':
-            '''
-            Formula: revenue * [1 - risk_factor * rnd(-1, 1)] * passenger_car_num
-            '''
-            
-            # Consider whether to purchase a minibus first
-            if new_capital.av_male_labor > new_capital.av_minibus:
-                # If the household has spare male labor
-                loan = 0
-                
-                if new_capital.cash < self.EntryThreshold:
-                    # household's own cash capital is insufficient for buying a minibus
-                    if risk_type == False:
-                        # only the risk appetite household would raise loans
-                        if new_capital.debt <= 0:
-                            if new_capital.cash >= self.EntryThreshold * self.own_cash_percent:
-                                loan = self.EntryThreshold - new_capital.cash
-                                
-                                if risk_effective == True:
-                                    # refresh household's capital properties only in the real world case;
-                                    new_capital.cash = 0
-                                
-                                new_capital.debt += loan
-                                new_capital.minibus += 1
-                                new_capital.av_minibus += 1
-                
-                else:
-                    # household can afford a new minibus without raising loans
-                    if risk_effective == True:
-                        new_capital.cash = new_capital.cash - self.EntryThreshold
-        
-                    new_capital.minibus += 1
-                    new_capital.av_minibus += 1
-            
-            # one male labor matches one minibus
-            if new_capital.av_male_labor < new_capital.av_minibus:
-                max_vehicle = new_capital.av_male_labor
-            else:
-                max_vehicle = new_capital.av_minibus
-            
-            # Do the business
-            if risk_effective == True:
-                revenue = self.Revenue * (1 + (1 - 2 * random.random()) * self.Risk) * max_vehicle
-            else:
-                if risk_type == True:
-                    revenue = self.Revenue * (1 - self.Risk) * max_vehicle
-                else:
-                    revenue = self.Revenue * (1 + self.Risk) * max_vehicle
-            
-            # Update household's capital properties
-            new_capital.av_labor = self.plus(new_capital.av_labor - max_vehicle * self.LaborCost / 365)
-            new_capital.av_male_labor = self.plus(new_capital.av_male_labor - max_vehicle * self.LaborCost / 365)
-            
-            new_capital.labor_cost += max_vehicle * self.LaborCost / 365
-            new_capital.av_minibus = self.plus(new_capital.minibus - max_vehicle)
-            
-            new_capital.passenger_trans_income += revenue
-#             new_capital.total_business_income += revenue
-            new_capital.cash += revenue
+#         elif self.SectorName == 'FreightTrans':
+#             '''
+#             Formula: revenue * [1 - risk_factor * rnd(-1, 1)] * truck_num
+#             '''
+#             
+#             # Consider whether to purchase a truck first
+#             if new_capital.av_male_labor > new_capital.av_truck:
+#                 # If the household has spare male labor
+#                 loan = 0
+#                 
+#                 if new_capital.cash < self.EntryThreshold:
+#                     # household's own cash capital is insufficient for buying a truck
+#                     if risk_type == False:
+#                         # only the risk appetite household would raise loans
+#                         if new_capital.debt <= 0:
+#                             if new_capital.cash >= self.EntryThreshold * self.own_cash_percent:
+#                                 loan = self.EntryThreshold - new_capital.cash
+#                                 
+#                                 if risk_effective == True:
+#                                     # refresh household's capital properties only in the real world case;
+#                                     new_capital.cash = 0
+#                                 
+#                                 new_capital.debt += loan
+#                                 new_capital.truck += 1
+#                                 new_capital.av_truck += 1
+#                 
+#                 else:
+#                     # household can afford a new truck without raising loans
+#                     if risk_effective == True:
+#                         new_capital.cash = new_capital.cash - self.EntryThreshold
+#         
+#                     new_capital.truck += 1
+#                     new_capital.av_truck += 1
+#             
+#             # one male labor matches one truck
+#             if new_capital.av_male_labor < new_capital.av_truck:
+#                 max_vehicle = new_capital.av_male_labor
+#             else:
+#                 max_vehicle = new_capital.av_truck
+#             
+#             # Do the business
+#             if risk_effective == True:
+#                 revenue = self.Revenue * (1 + (1 - 2 * random.random()) * self.Risk) * max_vehicle
+#             else:
+#                 if risk_type == True:
+#                     revenue = self.Revenue * (1 - self.Risk) * max_vehicle
+#                 else:
+#                     revenue = self.Revenue * (1 + self.Risk) * max_vehicle
+#             
+#             # Update household's capital properties
+#             new_capital.av_labor = self.plus(new_capital.av_labor - max_vehicle * self.LaborCost / 365)
+#             new_capital.av_male_labor = self.plus(new_capital.av_male_labor - max_vehicle * self.LaborCost / 365)
+#             
+#             new_capital.labor_cost += max_vehicle * self.LaborCost / 365
+#             new_capital.av_truck = self.plus(new_capital.truck - max_vehicle)
+#             
+#             new_capital.freight_trans_income += revenue
+# #             new_capital.total_business_income += revenue
+#             new_capital.cash += revenue
+#                     
+# 
+# 
+#         elif self.SectorName == 'PassengerTrans':
+#             '''
+#             Formula: revenue * [1 - risk_factor * rnd(-1, 1)] * passenger_car_num
+#             '''
+#             
+#             # Consider whether to purchase a minibus first
+#             if new_capital.av_male_labor > new_capital.av_minibus:
+#                 # If the household has spare male labor
+#                 loan = 0
+#                 
+#                 if new_capital.cash < self.EntryThreshold:
+#                     # household's own cash capital is insufficient for buying a minibus
+#                     if risk_type == False:
+#                         # only the risk appetite household would raise loans
+#                         if new_capital.debt <= 0:
+#                             if new_capital.cash >= self.EntryThreshold * self.own_cash_percent:
+#                                 loan = self.EntryThreshold - new_capital.cash
+#                                 
+#                                 if risk_effective == True:
+#                                     # refresh household's capital properties only in the real world case;
+#                                     new_capital.cash = 0
+#                                 
+#                                 new_capital.debt += loan
+#                                 new_capital.minibus += 1
+#                                 new_capital.av_minibus += 1
+#                 
+#                 else:
+#                     # household can afford a new minibus without raising loans
+#                     if risk_effective == True:
+#                         new_capital.cash = new_capital.cash - self.EntryThreshold
+#         
+#                     new_capital.minibus += 1
+#                     new_capital.av_minibus += 1
+#             
+#             # one male labor matches one minibus
+#             if new_capital.av_male_labor < new_capital.av_minibus:
+#                 max_vehicle = new_capital.av_male_labor
+#             else:
+#                 max_vehicle = new_capital.av_minibus
+#             
+#             # Do the business
+#             if risk_effective == True:
+#                 revenue = self.Revenue * (1 + (1 - 2 * random.random()) * self.Risk) * max_vehicle
+#             else:
+#                 if risk_type == True:
+#                     revenue = self.Revenue * (1 - self.Risk) * max_vehicle
+#                 else:
+#                     revenue = self.Revenue * (1 + self.Risk) * max_vehicle
+#             
+#             # Update household's capital properties
+#             new_capital.av_labor = self.plus(new_capital.av_labor - max_vehicle * self.LaborCost / 365)
+#             new_capital.av_male_labor = self.plus(new_capital.av_male_labor - max_vehicle * self.LaborCost / 365)
+#             
+#             new_capital.labor_cost += max_vehicle * self.LaborCost / 365
+#             new_capital.av_minibus = self.plus(new_capital.minibus - max_vehicle)
+#             
+#             new_capital.passenger_trans_income += revenue
+# #             new_capital.total_business_income += revenue
+#             new_capital.cash += revenue
 
   
   

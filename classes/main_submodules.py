@@ -80,7 +80,6 @@ output_gis_path = "C:\WolongRun\Results_Output"
 composite_indicators_dict = {'1 Population by Education Levels': ['I-04 Preschool', 'I-05 Primary School', 'I-06 Secondary School', 
                                 'I-07 High School', 'I-08 College', 'I-09 Uneducated'],                             
                              '2 Total Income by Sectors': ['IV-01 Total Agriculture Income', 'IV-02 Total Temp Job Income', 
-                                'IV-03 Total Freight Trans Income', 'IV-04 Total Passenger Trans Income',
                                 'IV-05 Total Lodging Income', 'IV-06 Total Renting Income'], 
                              '3 Employment by Sectors': ['IV-07 Agriculture Employment Ratio', 'IV-08 Temp Jobs Employment Ratio',
                                 'IV-09 Freight Trans Employment Ratio', 'IV-10 Passenger Trans Employment Ratio',

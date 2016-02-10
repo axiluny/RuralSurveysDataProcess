@@ -206,8 +206,9 @@ class Household(object):
             True - risk aversion; False - risk appetite;
         '''        
 
-        
-        # Define variables in the formula
+
+        # Risk Preference
+        # Define variables in the formula for risk preference determination
         # is_truck
         if self.own_capital_properties.truck > 0:
             is_truck = 1
@@ -219,9 +220,6 @@ class Household(object):
             is_minibus = 1
         else:
             is_minibus = 0
-            
-#             # Temporary debug codes for intentionally creating an error.
-#             is_minibus = None
         
         # house_size
         house_size = self.own_capital_properties.house_area
@@ -231,19 +229,26 @@ class Household(object):
         
         
         p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation))
-        
-        p_labor = math.exp(0.461 * self.own_capital_properties.labor) / (1 + math.exp(0.461 * self.own_capital_properties.labor))
 
+
+        # Labor Preference
+#         p_labor = math.exp(0.461 * self.own_capital_properties.labor) / (1 + math.exp(0.461 * self.own_capital_properties.labor))
+        labor_pref = 0
+        if self.own_capital_properties.young_male_labor == 0 and self.own_capital_properties.kids == 0:
+            labor_pref = 0
+        else:
+            labor_pref = 1
+        
         
         if p_risk < 0.5:
-            if p_labor > 0.75:
+            if labor_pref == 1:
                 self.hh_preference_type = 1
                 self.hh_risk_type = True
             else:
                 self.hh_preference_type = 2
                 self.hh_risk_type = True
         else:
-            if p_labor > 0.75:
+            if labor_pref == 1:
                 self.hh_preference_type = 3
                 self.hh_risk_type = False
             else:
