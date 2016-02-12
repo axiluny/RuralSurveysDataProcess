@@ -1442,7 +1442,7 @@ class Ui_frm_SEEMS_main(object):
         '''
         Finally, initialize the GUI components
         '''        
-        # Automatically add a default new scenario name at initiation
+#         # Automatically add a default new scenario name at initiation
         self.add_default_new_scenario_name()
 
         # Initialize the scenario selection combo boxes in the control panel
@@ -1593,6 +1593,9 @@ class Ui_frm_SEEMS_main(object):
 
 
     def add_default_new_scenario_name(self):
+        '''
+        Note that the codes here is based on scenario names that begin with "_S00x_" ...
+        '''
         # Refresh the version_table cursor.
         output_db = DataAccess(output_db_location, dbdriver)
         
@@ -1604,16 +1607,16 @@ class Ui_frm_SEEMS_main(object):
             scenario_list.append(str(version[0]))
         
         if len(scenario_list) == 0:
-            new_scenario_name = 'a001'
+            new_scenario_name = '_S001'
         else:        
-            new_scenario_name_num = int(max(scenario_list)[1:]) + 1
+            new_scenario_name_num = int(max(scenario_list)[2:5]) + 1
 
             if int(new_scenario_name_num/100) != 0: # if the new scenario number is in hundreds
-                new_scenario_name = max(scenario_list)[:1] + str(new_scenario_name_num)
+                new_scenario_name = max(scenario_list)[:2] + str(new_scenario_name_num) + max(scenario_list)[5:]
             elif int(new_scenario_name_num/100) == 0 and int(new_scenario_name_num/10) != 0: # if the new scenario number is in tens
-                new_scenario_name = max(scenario_list)[:1] + '0' + str(new_scenario_name_num)
+                new_scenario_name = max(scenario_list)[:2] + '0' + str(new_scenario_name_num) + max(scenario_list)[5:]
             else:
-                new_scenario_name = max(scenario_list)[:1] + '00' + str(new_scenario_name_num)
+                new_scenario_name = max(scenario_list)[:2] + '00' + str(new_scenario_name_num) + max(scenario_list)[5:]
         
         self.txt_input_scenario_name.setText(new_scenario_name)
 
