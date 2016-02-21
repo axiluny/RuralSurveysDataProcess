@@ -76,8 +76,8 @@ class CapitalProperty(object):
                 
                 
         # Other specific factors of production
-        self.minibus = hh.Minibus
-        self.truck = hh.Truck
+#         self.minibus = hh.Minibus
+#         self.truck = hh.Truck
         
         
         # Policy-related factors
@@ -93,8 +93,8 @@ class CapitalProperty(object):
         self.av_homestead = float()
         self.av_house_area = float()        
         self.av_house_rooms = int()
-        self.av_minibus = int()
-        self.av_truck = int()
+#         self.av_minibus = int()
+#         self.av_truck = int()
         self.av_labor = float()
         self.av_male_labor = float()
         self.av_female_labor = float()
@@ -143,8 +143,8 @@ class CapitalProperty(object):
         self.av_farmland = self.farmland
         self.av_homestead = self.homestead
         self.av_house_rooms = (self.house_area - self.homestead) / 30
-        self.av_minibus = self.minibus
-        self.av_truck = self.truck
+#         self.av_minibus = self.minibus
+#         self.av_truck = self.truck
         self.av_labor = self.labor
         self.av_male_labor = self.male_labor
         self.av_female_labor = self.female_labor
@@ -282,8 +282,8 @@ class CapitalProperty(object):
         
                                 
         # Other specific factors of production
-        hh.Minibus = self.minibus 
-        hh.Truck = self.truck
+#         hh.Minibus = self.minibus 
+#         hh.Truck = self.truck
         
         # Incomes
         hh.AgricultureIncome = self.agriculture_income

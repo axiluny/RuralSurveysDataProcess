@@ -659,50 +659,50 @@ class StatClass(object):
         society_instance.stat_dict[self.StatID] = self  
 
 
-    def get_trucks_count(self, society_instance, scenario_name):
-        trucks_count = 0
-        
-        # Get the statistics
-        for HID in society_instance.hh_dict:
-            if society_instance.hh_dict[HID].is_exist == 1:
-                
-                trucks_count += society_instance.hh_dict[HID].own_capital_properties.truck
-                
-         
-        # Add the statistics
-        self.ScenarioVersion = scenario_name
-        self.StatDate = society_instance.current_year 
-        self.Variable = 'III-09 Trucks Count'
-        self.StatValue = trucks_count
-        self.StatUnit = 'Trucks'
-        self.StatID = self.Variable + '_' + str(self.StatDate)
-                 
-        self.StartingPointEffective = 1
-
-        society_instance.stat_dict[self.StatID] = self      
-
-
-    def get_minibuses_count(self, society_instance, scenario_name):
-        minibuses_count = 0
-        
-        # Get the statistics
-        for HID in society_instance.hh_dict:
-            if society_instance.hh_dict[HID].is_exist == 1:
-                
-                minibuses_count += society_instance.hh_dict[HID].own_capital_properties.minibus
-                
-         
-        # Add the statistics
-        self.ScenarioVersion = scenario_name
-        self.StatDate = society_instance.current_year 
-        self.Variable = 'III-10 Minibuses Count'
-        self.StatValue = minibuses_count
-        self.StatUnit = 'Mini-buses'
-        self.StatID = self.Variable + '_' + str(self.StatDate)
-                 
-        self.StartingPointEffective = 1
-
-        society_instance.stat_dict[self.StatID] = self     
+#     def get_trucks_count(self, society_instance, scenario_name):
+#         trucks_count = 0
+#         
+#         # Get the statistics
+#         for HID in society_instance.hh_dict:
+#             if society_instance.hh_dict[HID].is_exist == 1:
+#                 
+#                 trucks_count += society_instance.hh_dict[HID].own_capital_properties.truck
+#                 
+#          
+#         # Add the statistics
+#         self.ScenarioVersion = scenario_name
+#         self.StatDate = society_instance.current_year 
+#         self.Variable = 'III-09 Trucks Count'
+#         self.StatValue = trucks_count
+#         self.StatUnit = 'Trucks'
+#         self.StatID = self.Variable + '_' + str(self.StatDate)
+#                  
+#         self.StartingPointEffective = 1
+# 
+#         society_instance.stat_dict[self.StatID] = self      
+# 
+# 
+#     def get_minibuses_count(self, society_instance, scenario_name):
+#         minibuses_count = 0
+#         
+#         # Get the statistics
+#         for HID in society_instance.hh_dict:
+#             if society_instance.hh_dict[HID].is_exist == 1:
+#                 
+#                 minibuses_count += society_instance.hh_dict[HID].own_capital_properties.minibus
+#                 
+#          
+#         # Add the statistics
+#         self.ScenarioVersion = scenario_name
+#         self.StatDate = society_instance.current_year 
+#         self.Variable = 'III-10 Minibuses Count'
+#         self.StatValue = minibuses_count
+#         self.StatUnit = 'Mini-buses'
+#         self.StatID = self.Variable + '_' + str(self.StatDate)
+#                  
+#         self.StartingPointEffective = 1
+# 
+#         society_instance.stat_dict[self.StatID] = self     
 
     '''
     Income and employment by sectors

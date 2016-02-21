@@ -262,13 +262,13 @@ def add_stat_results(society_instance, scenario_name):
     aiph = stat_module.StatClass()
     stat_module.StatClass.get_annual_income_per_household(aiph, society_instance, scenario_name)
     
-    # Trucks count
-    trk = stat_module.StatClass()
-    stat_module.StatClass.get_trucks_count(trk, society_instance, scenario_name)
-    
-    # Minibuses count
-    mnb = stat_module.StatClass()
-    stat_module.StatClass.get_minibuses_count(mnb, society_instance, scenario_name)
+#     # Trucks count
+#     trk = stat_module.StatClass()
+#     stat_module.StatClass.get_trucks_count(trk, society_instance, scenario_name)
+#     
+#     # Minibuses count
+#     mnb = stat_module.StatClass()
+#     stat_module.StatClass.get_minibuses_count(mnb, society_instance, scenario_name)
     
     # Total agriculture income
     agi = stat_module.StatClass()

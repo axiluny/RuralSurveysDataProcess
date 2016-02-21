@@ -209,17 +209,17 @@ class Household(object):
 
         # Risk Preference
         # Define variables in the formula for risk preference determination
-        # is_truck
-        if self.own_capital_properties.truck > 0:
-            is_truck = 1
-        else:
-            is_truck = 0
-        
-        # is_minibus
-        if self.own_capital_properties.minibus > 0:
-            is_minibus = 1
-        else:
-            is_minibus = 0
+#         # is_truck
+#         if self.own_capital_properties.truck > 0:
+#             is_truck = 1
+#         else:
+#             is_truck = 0
+#         
+#         # is_minibus
+#         if self.own_capital_properties.minibus > 0:
+#             is_minibus = 1
+#         else:
+#             is_minibus = 0
         
         # house_size
         house_size = self.own_capital_properties.house_area
@@ -228,7 +228,15 @@ class Household(object):
         
         
         
-        p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 0.005 * self.Elevation))
+#         p_risk = math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 0.004 * house_size -
+#                            1.436 * high_school_kids + 0.775 * self.NonRural - 
+#                            0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.749 * is_truck + 1.748 * is_minibus + 
+#                                                                    0.004 * house_size - 1.436 * high_school_kids + 
+#                                                                    0.775 * self.NonRural - 0.005 * self.Elevation))
+
+        p_risk = math.exp(6.702 + 0.004 * house_size - 1.436 * high_school_kids + 0.775 * self.NonRural - 
+                           0.005 * self.Elevation) / (1 + math.exp(6.702 + 0.004 * house_size - 1.436 * high_school_kids + 
+                                                                   0.775 * self.NonRural - 0.005 * self.Elevation))
 
 
         # Labor Preference
