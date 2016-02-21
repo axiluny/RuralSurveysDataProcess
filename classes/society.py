@@ -437,9 +437,31 @@ class Society(object):
         '''
         Temporarily let the new household inherit its parent household's geographic features
         '''
+        new_hh.Township = self.hh_dict[ori_hid].Township
+        new_hh.GroupNo = self.hh_dict[ori_hid].GroupNo
+
+        new_hh.Elevation = self.hh_dict[ori_hid].Elevation        
         new_hh.LocType = self.hh_dict[ori_hid].LocType
-        new_hh.Elevation = self.hh_dict[ori_hid].Elevation
-        new_hh.DistanceFrom303 = self.hh_dict[ori_hid].DistanceFrom303
+
+        new_hh.CostDist_Farm = self.hh_dict[ori_hid].CostDist_Farm
+        new_hh.CostDist_Road = self.hh_dict[ori_hid].CostDist_Road        
+        new_hh.CostDist_Township = self.hh_dict[ori_hid].CostDist_Township        
+        
+        '''
+        Temporary codes
+        '''
+#         new_hh.Version = ''
+#         new_hh.IsHotel = 0
+#         new_hh.IsTianbao = 0
+#         new_hh.PreFToF = 0
+#         new_hh.PreFToB = 0
+#         new_hh.OwnLandArea = 0
+#         new_hh.ExchangedLandArea = 0
+#         new_hh.FarmlandArea_PreEQ = 0
+#         new_hh.Post_EQ_Compensate = 0
+#         new_hh.Post_EQ_RemoveCompensate = 0
+#         new_hh.Recons_Loan = 0        
+        
         
         # Modify the new household head's personal attributes to match the new household
         pp.HID = new_hh.HID

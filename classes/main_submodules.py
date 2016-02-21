@@ -33,7 +33,7 @@ icons_path = 'C:\WolongRun\GUI Resources\SEEMS Icons'
 
 
 # Global constants for database managements
-db_file_name = 'WolongDB.mdb'
+db_file_name = 'WolongSEEMSDB.mdb'
 input_dbpath = 'C:/WolongRun'
 output_dbpath = 'C:/WolongRun/Results_Output'
 input_db_location = str(input_dbpath + '\\' + db_file_name)
@@ -52,16 +52,6 @@ version_table_name = 'VersionTable'
 
 # Get the input database (the output database is get later when initiating the GUI)
 input_db = DataAccess(input_db_location, dbdriver)
-
-# Get the table pointers
-model_table = DataAccess.get_table(input_db, model_table_name)
-household_table = DataAccess.get_table(input_db, household_table_name)
-person_table = DataAccess.get_table(input_db, person_table_name)
-land_table = DataAccess.get_table(input_db, land_table_name)
-business_sector_table = DataAccess.get_table(input_db, business_sector_table_name)
-policy_table = DataAccess.get_table(input_db, policy_table_name)
-stat_table = DataAccess.get_table(input_db, stat_table_name)
-version_table = DataAccess.get_table(input_db, version_table_name)
 
 
 # Arcpy workspace
@@ -125,7 +115,7 @@ def create_scenario(output_db, scenario_name, model_table_name, model_table, hh_
       
     #Start simulation
     for iteration_count in range(simulation_depth):
-        step_go(output_db, soc, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval)
+        step_go(output_db, soc, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval, gui)
   
         # Set value for the progress bar
         refresh_progress_bar((iteration_count + 1) * 100, gui)
@@ -136,7 +126,7 @@ def create_scenario(output_db, scenario_name, model_table_name, model_table, hh_
 
 
 
-def step_go(output_db, society_instance, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval):
+def step_go(output_db, society_instance, start_year, iteration_count, scenario_name, pp_save_interval, hh_save_interval, land_save_interval, gui):
     
     # If it's the first round of iteration, just get the stats and save the records to database
     # Else, proceed with the simulation in society.society_step_go, and then get the stats and save the records to database
@@ -148,7 +138,8 @@ def step_go(output_db, society_instance, start_year, iteration_count, scenario_n
         save_results_to_db(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
         
         # Export maps
-#         export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+        if gui.ckb_save_landuse_status.isChecked() == True:
+            export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval, gui)
         
     # Do the simulation
     Society.society_step_go(society_instance, start_year, iteration_count)
@@ -157,7 +148,8 @@ def step_go(output_db, society_instance, start_year, iteration_count, scenario_n
     
     save_results_to_db(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
 
-#     export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval)
+    if gui.ckb_save_landuse_status.isChecked() == True:
+        export_maps(output_db, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval, gui)
 
 
 
@@ -654,7 +646,7 @@ def save_results_to_db(output_database, society_instance, scenario_name, iterati
 
 
 
-def export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval):
+def export_maps(database, society_instance, scenario_name, iteration_count, pp_save_interval, hh_save_interval, land_save_interval, gui):
 
     # Import arcpy first.
     import arcpy
@@ -690,6 +682,15 @@ def export_maps(database, society_instance, scenario_name, iteration_count, pp_s
         os.makedirs(export_png_path)
 
 
+    # Get the LandUse feature class name respective to the specific post-earthquake restoration scenario
+    if gui.rbt_S1_Onsite.isChecked() == True:
+        land_feature_name = 'LandUse_S1'
+    elif gui.rbt_S2_VilGroups.isChecked() == True:
+        land_feature_name = 'LandUse_S2'              
+    elif gui.rbt_S3_Townctrs.isChecked() == True:
+        land_feature_name = 'LandUse_S3'        
+    
+
     # Check saving intervals. Only export maps along with a land table saved.
     if iteration_count % int(land_save_interval) == 0:
 
@@ -700,14 +701,15 @@ def export_maps(database, society_instance, scenario_name, iteration_count, pp_s
         # Get the map file (.mxd)
         map_mxd = arcpy.mapping.MapDocument(output_mxd)
 
+
         # Get the legend, and set not to auto add newly added items into the legend.
         legend = arcpy.mapping.ListLayoutElements(map_mxd, "LEGEND_ELEMENT", "Legend")[0]
         legend.autoAdd = False
-
         
 
         # Export the base feature (LandUse feature) as a shapefile as the working feature for map display
-        arcpy.FeatureClassToFeatureClass_conversion ("LandUse", export_shapefile_path, new_landuse_feature_name)        
+        arcpy.FeatureClassToFeatureClass_conversion (land_feature_name, export_shapefile_path, new_landuse_feature_name)        
+        
         
         # Make a layer from the copied feature.
         new_landuse_feature_full_path = str(export_shapefile_path + '\\' + new_landuse_feature_name)
@@ -726,17 +728,34 @@ def export_maps(database, society_instance, scenario_name, iteration_count, pp_s
 
         # Update values in field LandCover in the shapefile's attribute table to reflect the new land cover status
         features = arcpy.UpdateCursor(new_landuse_feature_full_path)
-        for feature in features:
+        for feature in features:            
             feature.LandCover = to_be_inserted_dict[feature.ParcelID]
             features.updateRow(feature)
 
 
-        # Apply the predefined symbology to the new layer, and add the layer to the .mxd map.
+        # Apply the predefined symbology to the new layer. 
         layer = arcpy.mapping.Layer(new_landuse_feature_full_path)
         arcpy.ApplySymbologyFromLayer_management(layer, layer_styles_location)
-        d_f = arcpy.mapping.ListDataFrames(map_mxd)[0]
-        arcpy.mapping.AddLayer(d_f, layer, "AUTO_ARRANGE")
-        map_mxd.save()
+        
+        
+        # Add the layer to every data frame in the .mxd map, and then turn off the original land use layers
+        for i in range(3):
+            d_f = arcpy.mapping.ListDataFrames(map_mxd)[i]
+            map_mxd.activeView = d_f
+                    
+            arcpy.mapping.AddLayer(d_f, layer, "AUTO_ARRANGE")
+            
+            current_layers = arcpy.mapping.ListLayers(map_mxd, "*", d_f)
+            original_layer_names = ['LandUse_S1', 'LandUse_S2', 'LandUse_S3']
+            for ly in current_layers:
+                if ly.name in original_layer_names:
+                    ly.visible = False
+            
+            arcpy.RefreshTOC()
+            arcpy.RefreshActiveView()
+                            
+            map_mxd.save()
+
 
         # Output the map as a .PNG image
         # The [:-4] slicing is for removing the '.shp' extension
@@ -954,6 +973,30 @@ class Ui_frm_SEEMS_main(object):
         self.txt_input_scenario_name.setObjectName(_fromUtf8("txt_input_scenario_name"))
         self.formLayout_3.setWidget(0, QtGui.QFormLayout.FieldRole, self.txt_input_scenario_name)
         self.verticalLayout_7.addLayout(self.formLayout_3)
+        self.groupBox = QtGui.QGroupBox(self.gbx_setup_a_scenario)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
+        self.groupBox.setSizePolicy(sizePolicy)
+        self.groupBox.setMaximumSize(QtCore.QSize(16777215, 100))
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.gridLayout_6 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
+        self.horizontalLayout_13 = QtGui.QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(_fromUtf8("horizontalLayout_13"))
+        self.rbt_S1_Onsite = QtGui.QRadioButton(self.groupBox)
+        self.rbt_S1_Onsite.setChecked(True)
+        self.rbt_S1_Onsite.setObjectName(_fromUtf8("rbt_S1_Onsite"))
+        self.horizontalLayout_13.addWidget(self.rbt_S1_Onsite)
+        self.rbt_S2_VilGroups = QtGui.QRadioButton(self.groupBox)
+        self.rbt_S2_VilGroups.setObjectName(_fromUtf8("rbt_S2_VilGroups"))
+        self.horizontalLayout_13.addWidget(self.rbt_S2_VilGroups)
+        self.rbt_S3_Townctrs = QtGui.QRadioButton(self.groupBox)
+        self.rbt_S3_Townctrs.setObjectName(_fromUtf8("rbt_S3_Townctrs"))
+        self.horizontalLayout_13.addWidget(self.rbt_S3_Townctrs)
+        self.gridLayout_6.addLayout(self.horizontalLayout_13, 0, 0, 1, 1)
+        self.verticalLayout_7.addWidget(self.groupBox)
         self.gbx_set_simulation_period = QtGui.QGroupBox(self.gbx_setup_a_scenario)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -993,14 +1036,15 @@ class Ui_frm_SEEMS_main(object):
         self.gridLayout = QtGui.QGridLayout()
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.lbl_save_hh = QtGui.QLabel(self.gbx_results_saving_options)
+        self.lbl_save_hh.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.lbl_save_hh.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_save_hh.setObjectName(_fromUtf8("lbl_save_hh"))
-        self.gridLayout.addWidget(self.lbl_save_hh, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.lbl_save_hh, 0, 1, 1, 1)
         self.txt_save_hh_interval = QtGui.QLineEdit(self.gbx_results_saving_options)
         self.txt_save_hh_interval.setMaximumSize(QtCore.QSize(50, 16777215))
         self.txt_save_hh_interval.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.txt_save_hh_interval.setObjectName(_fromUtf8("txt_save_hh_interval"))
-        self.txt_save_hh_interval.setText('1')
-        self.gridLayout.addWidget(self.txt_save_hh_interval, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.txt_save_hh_interval, 0, 2, 1, 1)
         self.lbl_save_hh_years = QtGui.QLabel(self.gbx_results_saving_options)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -1009,19 +1053,25 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_save_hh_years.setSizePolicy(sizePolicy)
         self.lbl_save_hh_years.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_save_hh_years.setObjectName(_fromUtf8("lbl_save_hh_years"))
-        self.gridLayout.addWidget(self.lbl_save_hh_years, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.lbl_save_hh_years, 0, 3, 1, 1)
+        self.ckb_save_hh_status = QtGui.QCheckBox(self.gbx_results_saving_options)
+        self.ckb_save_hh_status.setEnabled(False)
+        self.ckb_save_hh_status.setAcceptDrops(False)
+        self.ckb_save_hh_status.setChecked(True)
+        self.ckb_save_hh_status.setObjectName(_fromUtf8("ckb_save_hh_status"))
+        self.gridLayout.addWidget(self.ckb_save_hh_status, 0, 0, 1, 1)
         self.verticalLayout_6.addLayout(self.gridLayout)
         self.gridLayout_4 = QtGui.QGridLayout()
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
+        self.lbl_save_pp = QtGui.QLabel(self.gbx_results_saving_options)
+        self.lbl_save_pp.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lbl_save_pp.setObjectName(_fromUtf8("lbl_save_pp"))
+        self.gridLayout_4.addWidget(self.lbl_save_pp, 0, 1, 1, 1)
         self.txt_save_pp_interval = QtGui.QLineEdit(self.gbx_results_saving_options)
         self.txt_save_pp_interval.setMaximumSize(QtCore.QSize(50, 16777215))
         self.txt_save_pp_interval.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.txt_save_pp_interval.setObjectName(_fromUtf8("txt_save_pp_interval"))
-        self.txt_save_pp_interval.setText('1')
-        self.gridLayout_4.addWidget(self.txt_save_pp_interval, 0, 1, 1, 1)
-        self.lbl_save_pp = QtGui.QLabel(self.gbx_results_saving_options)
-        self.lbl_save_pp.setObjectName(_fromUtf8("lbl_save_pp"))
-        self.gridLayout_4.addWidget(self.lbl_save_pp, 0, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.txt_save_pp_interval, 0, 2, 1, 1)
         self.lbl_save_pp_years = QtGui.QLabel(self.gbx_results_saving_options)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -1030,19 +1080,25 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_save_pp_years.setSizePolicy(sizePolicy)
         self.lbl_save_pp_years.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_save_pp_years.setObjectName(_fromUtf8("lbl_save_pp_years"))
-        self.gridLayout_4.addWidget(self.lbl_save_pp_years, 0, 2, 1, 1)
+        self.gridLayout_4.addWidget(self.lbl_save_pp_years, 0, 3, 1, 1)
+        self.ckb_save_person_status = QtGui.QCheckBox(self.gbx_results_saving_options)
+        self.ckb_save_person_status.setEnabled(False)
+        self.ckb_save_person_status.setCheckable(True)
+        self.ckb_save_person_status.setChecked(True)
+        self.ckb_save_person_status.setObjectName(_fromUtf8("ckb_save_person_status"))
+        self.gridLayout_4.addWidget(self.ckb_save_person_status, 0, 0, 1, 1)
         self.verticalLayout_6.addLayout(self.gridLayout_4)
         self.gridLayout_5 = QtGui.QGridLayout()
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
-        self.lbl_save_land = QtGui.QLabel(self.gbx_results_saving_options)
-        self.lbl_save_land.setObjectName(_fromUtf8("lbl_save_land"))
-        self.gridLayout_5.addWidget(self.lbl_save_land, 0, 0, 1, 1)
         self.txt_save_land_interval = QtGui.QLineEdit(self.gbx_results_saving_options)
         self.txt_save_land_interval.setMaximumSize(QtCore.QSize(50, 16777215))
         self.txt_save_land_interval.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.txt_save_land_interval.setObjectName(_fromUtf8("txt_save_land_interval"))
-        self.txt_save_land_interval.setText('1')
-        self.gridLayout_5.addWidget(self.txt_save_land_interval, 0, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.txt_save_land_interval, 0, 2, 1, 1)
+        self.lbl_save_land = QtGui.QLabel(self.gbx_results_saving_options)
+        self.lbl_save_land.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lbl_save_land.setObjectName(_fromUtf8("lbl_save_land"))
+        self.gridLayout_5.addWidget(self.lbl_save_land, 0, 1, 1, 1)
         self.lbl_save_land_years = QtGui.QLabel(self.gbx_results_saving_options)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -1051,7 +1107,10 @@ class Ui_frm_SEEMS_main(object):
         self.lbl_save_land_years.setSizePolicy(sizePolicy)
         self.lbl_save_land_years.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lbl_save_land_years.setObjectName(_fromUtf8("lbl_save_land_years"))
-        self.gridLayout_5.addWidget(self.lbl_save_land_years, 0, 2, 1, 1)
+        self.gridLayout_5.addWidget(self.lbl_save_land_years, 0, 3, 1, 1)
+        self.ckb_save_landuse_status = QtGui.QCheckBox(self.gbx_results_saving_options)
+        self.ckb_save_landuse_status.setObjectName(_fromUtf8("ckb_save_landuse_status"))
+        self.gridLayout_5.addWidget(self.ckb_save_landuse_status, 0, 0, 1, 1)
         self.verticalLayout_6.addLayout(self.gridLayout_5)
         self.verticalLayout_7.addWidget(self.gbx_results_saving_options)
         self.btn_start_simulation = QtGui.QPushButton(self.gbx_setup_a_scenario)
@@ -1463,16 +1522,26 @@ class Ui_frm_SEEMS_main(object):
         frm_SEEMS_main.setWindowTitle(_translate("frm_SEEMS_main", "SEEMS  -  Socio-Econ-Ecosystem Multipurpose Simulator", None))
         self.gbx_setup_a_scenario.setTitle(_translate("frm_SEEMS_main", "Setup a New Scenario", None))
         self.lbl_input_scenario_name.setText(_translate("frm_SEEMS_main", "Scenario Name:", None))
+        self.groupBox.setTitle(_translate("frm_SEEMS_main", "Post-Earthquake Restoration Options", None))
+        self.rbt_S1_Onsite.setText(_translate("frm_SEEMS_main", "On Site", None))
+        self.rbt_S2_VilGroups.setText(_translate("frm_SEEMS_main", "To Village Groups", None))
+        self.rbt_S3_Townctrs.setText(_translate("frm_SEEMS_main", "To Township Centers", None))
         self.gbx_set_simulation_period.setTitle(_translate("frm_SEEMS_main", "Set Simulation Period", None))
         self.lbl_set_simulation_start_year.setText(_translate("frm_SEEMS_main", "Start Year:", None))
         self.lbl_set_simulation_end_year.setText(_translate("frm_SEEMS_main", "End Year:", None))
         self.gbx_results_saving_options.setTitle(_translate("frm_SEEMS_main", "Results Saving Options", None))
-        self.lbl_save_hh.setText(_translate("frm_SEEMS_main", "Save Household Status to Database Every", None))
+        self.lbl_save_hh.setText(_translate("frm_SEEMS_main", " Every", None))
+        self.txt_save_hh_interval.setText(_translate("frm_SEEMS_main", "1", None))
         self.lbl_save_hh_years.setText(_translate("frm_SEEMS_main", "Year(s)", None))
-        self.lbl_save_pp.setText(_translate("frm_SEEMS_main", "Save Person Status to Database Every", None))
+        self.ckb_save_hh_status.setText(_translate("frm_SEEMS_main", "Save Household Status", None))
+        self.lbl_save_pp.setText(_translate("frm_SEEMS_main", " Every", None))
+        self.txt_save_pp_interval.setText(_translate("frm_SEEMS_main", "1", None))
         self.lbl_save_pp_years.setText(_translate("frm_SEEMS_main", "Year(s)", None))
-        self.lbl_save_land.setText(_translate("frm_SEEMS_main", "Save LandUse Status to Database Every", None))
+        self.ckb_save_person_status.setText(_translate("frm_SEEMS_main", "Save Person Status", None))
+        self.txt_save_land_interval.setText(_translate("frm_SEEMS_main", "4", None))
+        self.lbl_save_land.setText(_translate("frm_SEEMS_main", " Every", None))
         self.lbl_save_land_years.setText(_translate("frm_SEEMS_main", "Year(s)", None))
+        self.ckb_save_landuse_status.setText(_translate("frm_SEEMS_main", "Save LandUse Status", None))
         self.btn_start_simulation.setText(_translate("frm_SEEMS_main", "Start Simulation", None))
         self.gbx_manage_scenarios.setTitle(_translate("frm_SEEMS_main", "Manage Scenarios", None))
         self.lbl_select_manage_scenario.setText(_translate("frm_SEEMS_main", "Select Scenario:", None))
@@ -1509,6 +1578,30 @@ class Ui_frm_SEEMS_main(object):
 
 
     def btn_start_simulation_onclick(self):
+        
+        
+        model_table_name = 'ModelTable'
+        household_table_name = 'HouseholdTable'
+        person_table_name = 'PersonTable'
+        land_table_name = 'LandUseTable'
+        business_sector_table_name = 'BusinessSectorTable'
+        policy_table_name = 'PolicyTable'
+        stat_table_name = 'StatTable'
+        version_table_name = 'VersionTable'            
+
+            
+        # Update household_table_name and land_table_name according to the GUI input                    
+        if self.rbt_S1_Onsite.isChecked() == True:
+            household_table_name = household_table_name + '_S1'
+            land_table_name = land_table_name + '_S1'
+        elif self.rbt_S2_VilGroups.isChecked() == True:
+            household_table_name = household_table_name + '_S2'
+            land_table_name = land_table_name + '_S2'                
+        elif self.rbt_S3_Townctrs.isChecked() == True:
+            household_table_name = household_table_name + '_S3'
+            land_table_name = land_table_name + '_S3'               
+        
+        
         
         # Get scenario settings from user inputs
         output_db = DataAccess(output_db_location, dbdriver)
@@ -1547,7 +1640,19 @@ class Ui_frm_SEEMS_main(object):
 #             try:
             self.statusbar.showMessage('Running simulation...')
 
+     
+            # Get the table pointers
+            model_table = DataAccess.get_table(input_db, model_table_name)
+            household_table = DataAccess.get_table(input_db, household_table_name)
+            person_table = DataAccess.get_table(input_db, person_table_name)
+            land_table = DataAccess.get_table(input_db, land_table_name)
+            business_sector_table = DataAccess.get_table(input_db, business_sector_table_name)
+            policy_table = DataAccess.get_table(input_db, policy_table_name)
+            stat_table = DataAccess.get_table(input_db, stat_table_name)
+            version_table = DataAccess.get_table(input_db, version_table_name)
+            
 
+            # Create the scenario
             create_scenario(output_db, scenario_name, model_table_name, model_table, household_table_name, household_table, 
                             person_table_name, person_table, land_table_name, land_table, 
                             business_sector_table_name, business_sector_table, policy_table_name, policy_table, 
