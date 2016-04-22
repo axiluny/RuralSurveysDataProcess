@@ -26,21 +26,10 @@ class Person(object):
 
         self.spouse = list()
 
-        self.kidslist = list()
+        self.childrenlist = list()
         
-        self.sonlist = list()
-        self.grandsonlist=list()
-        
-        self.son1 = ''
-        self.son2 = ''        
-        self.son3 = ''            
-        self.son4 = ''    
-        self.son5 = ''        
-        self.grandson1 = ''        
-        self.grandson2 = ''            
-        self.grandson3 = ''        
-        self.grandson4 = ''        
-        self.grandson5 = ''                              
+        self.grandchildrenlist=list()
+                  
         
         
         
